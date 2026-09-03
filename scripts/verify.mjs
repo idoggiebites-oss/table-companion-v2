@@ -12,7 +12,7 @@ rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
 
 /* Minimums ratchet upward. A suite that quietly stops being collected is loud. */
-const MINIMUMS = { domain: 702, component: 91, journey: 57 };
+const MINIMUMS = { domain: 708, component: 91, journey: 57 };
 
 /* Tier 1 is meant to be instant. It reached 14.8s the day a 20MB compendium
    landed in `public/` and Vite began scanning it on every run.
