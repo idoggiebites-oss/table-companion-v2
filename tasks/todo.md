@@ -213,9 +213,22 @@ It is not room membership — V2 already validates room codes in
 `worker/index.ts` — and it is not what hides the DM's monsters, which is the
 disclosure ladder working on the seat.
 
-**Do not start until it is confirmed this is still wanted.** `gate.ts` exists
-because a workers.dev subdomain cannot use Cloudflare Access. On a custom
-domain the right move is to delete it, not port it.
+**Confirmed wanted (3 Sep 2026).** `gate.ts` exists because a workers.dev
+subdomain cannot use Cloudflare Access, and V1's `wrangler.jsonc` has no routes
+and no custom domain — so Access really is unavailable and the gate earns its
+port. Revisit only if V2 moves to a custom domain, where the right move is to
+delete it rather than port it.
+
+**It does NOT protect the compendium, and never did.** The compendium is now
+public on GitHub Pages by design. What sits behind this gate is the app and the
+room — that is, the campaign — not the published books.
+
+**`run_worker_first: true` belongs to THIS task.** It is deliberately absent
+from `wrangler.jsonc` today, with a note saying so: without it the asset layer
+answers before the worker runs, so the gate never sees a request for the app
+shell and anybody can load the app without the passphrase. Adding it is what
+makes the last acceptance criterion true. It is cheap now — the worker serves
+~50 files since the compendium left.
 
 **Acceptance criteria:**
 - [ ] An unauthenticated request is challenged with the passphrase page
@@ -225,12 +238,12 @@ domain the right move is to delete it, not port it.
 - [ ] Asset and room routes both sit behind it
 
 **Verification:**
-- [ ] Tests pass: `npm run test:room` against `npm run dev:worker` (wrangler boots in ~25s; probe with curl before concluding anything)
+- [ ] Tests pass: `npm run test:room` (boots in ~4s now that the compendium is not in `dist/`; the room suite starts its own worker and content server)
 - [ ] Typecheck passes: `npm run typecheck` (includes `worker/tsconfig.json`)
 - [ ] Manual check: unset the secret, confirm the app opens; set it, confirm the challenge
 
 **Dependencies:** Task 1
-**Files likely touched:** `worker/gate.ts` (new), `worker/index.ts`
+**Files likely touched:** `worker/gate.ts` (new), `worker/index.ts`, `wrangler.jsonc`
 **Estimated scope:** S-M
 
 ---
@@ -241,6 +254,20 @@ domain the right move is to delete it, not port it.
 due" nudge. Port the worker half and the subscription half together; a push
 backend with no client subscription is dead code.
 
+**Two things this task must settle that are not in V1's file.**
+
+`nodejs_compat` is deliberately absent from V2's `wrangler.jsonc`, with a note
+saying to add it with whatever first needs a node builtin. V1 sets it, and VAPID
+signing is the likely reason. Add it if and only if this actually needs it —
+check, do not copy.
+
+**The service worker is the delivery path, and this repo's SW has form.** A push
+arrives at `sw.js`, not at the app. V1's registration is `autoUpdate`, and a
+stale SW was already caught serving a whole previous app after a backend swap
+(see the Phase 7 risk). A push handler that lands in a service worker nobody has
+updated to yet is a feature that silently does not exist. Verify against a
+device that installed the app BEFORE the change, not only a fresh one.
+
 **Acceptance criteria:**
 - [ ] A device can subscribe, and a pushed event arrives with the app closed
 - [ ] The VAPID private key is a wrangler secret and `.dev.vars` is gitignored — never committed
@@ -249,7 +276,8 @@ backend with no client subscription is dead code.
 
 **Verification:**
 - [ ] Tests pass: `npm run test:room`
-- [ ] Manual check: subscribe on a phone, trigger from another device, confirm arrival
+- [ ] Manual check: subscribe on a phone, trigger from another device, confirm arrival — **and on a phone that already had the app installed**, not only a fresh install
+- [ ] `npm run verify` clean, including the room tier
 - [ ] `git ls-files | grep -c dev.vars` is 0
 
 **Dependencies:** Task 5 (shares `worker/index.ts`)
