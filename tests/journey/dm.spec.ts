@@ -406,3 +406,38 @@ test("the log reads differently per person", async ({ page }) => {
 
   await page.screenshot({ path: "shots/log-player.png", fullPage: true });
 });
+
+test("the DM applies a hit without leaving the party", async ({ page }) => {
+  await hub(page);
+  await make(page, "Bree Thorn");
+
+  await page.getByRole("button", { name: "Characters" }).click();
+  await page.getByTestId("seat").selectOption({ value: "dm" });
+  await bar(page).getByRole("button", { name: "Party" }).click();
+
+  const row = page.getByTestId("party-row").first();
+  const before = (await row.innerText()) ?? "";
+  const max = Number(/(\d+)\s*\/\s*(\d+)/.exec(before)?.[2] ?? "0");
+  expect(max).toBeGreaterThan(0);
+
+  /* V1's default: the DM types it while narrating rather than waiting for the
+     player to find the field. Attributed and reversible, which is the price. */
+  await page.getByRole("spinbutton", { name: /^Damage Bree Thorn/ }).fill("2");
+  await page.getByRole("button", { name: /^Apply to Bree Thorn/ }).click();
+  await expect(page.getByTestId("party-row").first())
+    .toContainText(`${String(max - 2)} / ${String(max)}`);
+
+  /* A minus heals, same control. */
+  await page.getByRole("spinbutton", { name: /^Damage Bree Thorn/ }).fill("-2");
+  await page.getByRole("button", { name: /^Apply to Bree Thorn/ }).click();
+  await expect(page.getByTestId("party-row").first())
+    .toContainText(`${String(max)} / ${String(max)}`);
+
+  await page.screenshot({ path: "shots/party-hit.png", fullPage: true });
+
+  /* And it lands on the character's own sheet, because there is one number. */
+  await page.getByRole("button", { name: "Characters" }).click();
+  await page.getByTestId("seat").selectOption({ label: "Bree Thorn" });
+  await bar(page).getByRole("button", { name: "Sheet" }).click();
+  await expect(page.getByTestId("vitals")).toContainText(`${String(max)}`);
+});

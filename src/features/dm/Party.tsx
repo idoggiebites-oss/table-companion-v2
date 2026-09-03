@@ -19,11 +19,20 @@ import s from "./Party.module.css";
  * columns as the width allows and collapses to one on a phone, because the DM
  * side has to work on both without being two designs.
  */
-export function Party({ events, nav, onOpen }: {
+export function Party({ events, nav, onOpen, onHit }: {
   events: readonly Event[];
   nav?: ReactNode;
-  /** Sitting in somebody, which is how the DM acts for them at all. */
+  /** Sitting in somebody, to read their whole sheet. */
   onOpen?: (id: string) => void;
+  /**
+   * A hit, applied from here.
+   *
+   * V1's default, and its reason: the DM applies damage and healing to anyone,
+   * because waiting for a player to find the right field mid-combat is slower
+   * than the DM typing it while narrating. It is only acceptable because every
+   * change is attributed and reversible — see `permissions.ts`.
+   */
+  onHit?: (character: string, amount: number) => void;
 }) {
   const party = membersIn(events);
   return (
@@ -35,18 +44,22 @@ export function Party({ events, nav, onOpen }: {
         </p>
       ) : (
         <div className={s.grid} data-testid="party">
-          {party.map((m) => <Row key={m.id} m={m} {...(onOpen === undefined ? {} : { onOpen })} />)}
+          {party.map((m) => <Row key={m.id} m={m} {...(onHit === undefined ? {} : { onHit })} {...(onOpen === undefined ? {} : { onOpen })} />)}
         </div>
       )}
     </Shell>
   );
 }
 
-function Row({ m, onOpen }: { m: Member; onOpen?: (id: string) => void }) {
+function Row({ m, onOpen, onHit }: {
+  m: Member; onOpen?: (id: string) => void;
+  onHit?: (character: string, amount: number) => void;
+}) {
   /* A bar AND the number. The vague word is what a PLAYER gets about a
      creature; the DM looking after this party gets the real figure. */
   const part = m.max > 0 ? Math.max(0, Math.min(1, m.hp / m.max)) : 0;
   return (
+    <div className={s.wrap} data-testid="party-row-wrap">
     <button type="button" className={s.row} data-step={m.step} data-testid="party-row"
             onClick={() => onOpen?.(m.id)}>
       <span className={s.head}>
@@ -79,5 +92,22 @@ function Row({ m, onOpen }: { m: Member; onOpen?: (id: string) => void }) {
         <span className={s.owed} data-testid="party-owed">{m.waiting[0]}</span>
       )}
     </button>
+    {onHit !== undefined && (
+      /* Beside the row, not inside it: the row is one big button and nesting
+         a control in a button is neither valid nor tappable. */
+      <form className={s.hit} onSubmit={(e) => {
+        e.preventDefault();
+        const field = new FormData(e.currentTarget).get("amount");
+        const n = Number(String(field ?? "").trim());
+        if (!Number.isFinite(n) || n === 0) return;
+        onHit(m.id, n);
+        e.currentTarget.reset();
+      }}>
+        <input className={s.amount} name="amount" type="number" inputMode="numeric"
+               placeholder="±" aria-label={`Damage ${m.name}, or heal with a minus`} />
+        <button type="submit" className={s.apply} aria-label={`Apply to ${m.name}`}>Hit</button>
+      </form>
+    )}
+    </div>
   );
 }

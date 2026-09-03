@@ -784,3 +784,40 @@ own initiative. Production needs `VITE_CONTENT_BASE` set to the Pages URL.
 **Actual scope:** L
 
 **DONE.**
+
+---
+
+## Task 15: Who may change what
+
+**Description:** V1's `permissions.ts` ported. Its header is the point and is
+carried: **this is NOT a security boundary.** Everyone holding a room code is a
+person at the table and the log is trusted among them — someone who wanted to
+forge an event could. What it prevents is accidents: the wrong sheet edited,
+two people applying the same hit, a player quietly topping up their own hit
+points without anyone seeing.
+
+**Acceptance criteria:**
+- [x] A player may change their own sheet and nobody else's
+- [x] The DM may change anyone's **by default and on purpose** — waiting for a player to find the right field mid-combat is slower than the DM typing it while narrating, and speed is the point. Acceptable only because every change is attributed to a device in the log and undoable.
+- [x] A table can turn that off (`TableRules.dmMayEditCharacters`)
+- [x] Creatures are the DM's, always — a player rolls damage and says what they got; the DM applies it. Same division as the claim seam.
+
+**The screen the rule governs.** The rules were worth nothing until something
+could break them: the Party screen was read-only, so the DM had to change SEAT
+to touch anybody. It now takes a hit or a heal per member without leaving the
+screen, which is the behaviour the default exists for.
+
+**Verification:**
+- [x] 7 domain tests covering both seats and the rule being turned off
+- [x] Journey: the DM hits and heals from the Party screen, and the number lands on the character's own sheet — because there is only one of it
+- [x] `npm run verify` clean — 618 domain, 91 component, 57 journey, 5 room
+
+**A structural note:** the party row is one large button, so the hit control
+sits BESIDE it rather than inside — nesting a control in a button is neither
+valid nor tappable.
+
+**Dependencies:** Task 14
+**Files touched:** `features/room/permissions.ts` + test (new), `dm/Party.tsx` + css, `ui/App.tsx`, journeys, `scripts/verify.mjs`
+**Actual scope:** M
+
+**DONE.**

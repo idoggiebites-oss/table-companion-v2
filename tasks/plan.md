@@ -110,7 +110,7 @@ starts, and breaking down work three slices out is planning fiction.
 
 ### Phase 4: Disclosure (slice 8)
 - [x] Task 14: The log reads differently per person — `visibility.ts` ported; the ladder can no longer be read around via the Log tab
-- [ ] `permissions.ts` — the rest of the ladder beyond the log
+- [x] Task 15: Who may change what — `permissions.ts` ported, and the Party screen now has the control the default exists for
 
 ### Phase 5: Prep (slice 9)
 Ports `encounter.ts`, `scenes.ts`, `npc.ts`, `homebrew-item.ts`, plus V1's

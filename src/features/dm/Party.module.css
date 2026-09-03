@@ -94,3 +94,19 @@
   border-top: 1px solid var(--hairline);
   padding-top: var(--s-3);
 }
+
+/* The row, and a way to act on it without leaving the screen — see the note
+   in Party.tsx for why the DM may. */
+.wrap { display: flex; flex-direction: column; gap: var(--s-2); }
+.hit { display: flex; gap: var(--s-2); align-items: center; padding-inline-start: var(--s-5); }
+.amount {
+  width: 4.5ch; padding: var(--s-1) var(--s-2); text-align: center;
+  appearance: textfield; -webkit-appearance: none;
+  font-family: var(--font-mono); font-size: var(--t-sm); color: var(--ink);
+  background: var(--surface-2); border: var(--panel-border); border-radius: var(--r-control);
+}
+.apply {
+  min-height: var(--tap); padding: 0 var(--s-4); font-size: var(--t-sm);
+  color: var(--ink); background: var(--surface-2);
+  border: var(--panel-border); border-radius: var(--r-control);
+}

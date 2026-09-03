@@ -3,6 +3,7 @@ import { Shell } from "./Shell";
 import { Button, ButtonRow } from "./Button";
 import { LogView } from "./LogView";
 import { logFor, mayRevert } from "../features/room/visibility";
+import { mayEditCharacter } from "../features/room/permissions";
 import { useFeatures } from "../features/progression/useFeatures";
 import { useCatalogue } from "../features/sheet/useCatalogue";
 import { useLog } from "./useLog";
@@ -218,9 +219,28 @@ export function App({ dbName }: { dbName?: string }) {
       <Party
         events={events}
         nav={nav("party")}
-        /* Sitting in them is how the DM acts for them at all — `controls` is
-           about the seat, not about authority (see `room/seat.ts`). */
+        /* Sitting in them reads their whole sheet — `controls` is about the
+           seat, not about authority (see `room/seat.ts`). */
         onOpen={(id) => { claim(id); setCharacter(id); setMode("sheet"); }}
+        /*
+         * A hit applied without leaving the screen, which is V1's default and
+         * the reason for it: waiting for a player to find the right field
+         * mid-combat is slower than the DM typing it while narrating. Only
+         * offered where the rules allow it — and it is attributed to this
+         * device in the log, and undoable, which is what makes it acceptable.
+         */
+        {...(dm ? {
+          onHit: (id: string, amount: number) => {
+            /* Only reachable from the DM's own screen, so the seat here is
+               provably the DM. The rule is still asked, because turning it off
+               is the table's to decide and this is where that takes effect. */
+            if (!mayEditCharacter(null, id)) return;
+            record(VITAL, {
+              ...(amount > 0 ? { act: "damage", n: amount } : { act: "heal", n: -amount }),
+              character: id,
+            });
+          },
+        } : {})}
       />
     );
   }
