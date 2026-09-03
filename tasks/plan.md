@@ -67,12 +67,12 @@ starts, and breaking down work three slices out is planning fiction.
 
 ### Phase 0: Safety net
 - [x] Task 1: Commit V2 — done, commit `9ae2a27`
-- [ ] Task 2: Break the creation barrel cycle
+- [x] Task 2: Break the creation barrel cycle — done; zero runtime cycles, guarded by a new tier-4 `check-cycles`
 
 ### Checkpoint: Safety net
-- [ ] `git log` shows a root commit; `git status` is clean
-- [ ] `/graphify . --update` reports zero import cycles
-- [ ] `npm run verify` passes all four tiers
+- [x] `git log` shows a root commit; `git status` is clean
+- [x] Zero **runtime** import cycles, enforced by tier-4 `check-cycles`. (graphify's own cycle count includes type-only edges, which tsc erases and which cannot cause the module-init bug — it reports 24 before and after. Value-import cycles are the real measure.)
+- [~] `npm run verify`: typecheck, tier 4 (10 checks), tier 1 (531), tier 2 (91) and tier 3 journey (49) all pass. **Tier 3 "the room" fails on `config.webServer` timeout — `wrangler dev` on 8791 never answers from this shell. Pre-existing and environmental**, reproduced before any Task 2 edit; it is Task 4's verification step, to be run from Arturo's own terminal.
 
 ### Phase 1: V2 survives on V1's origin
 - [x] Task 3: Namespace V2's IndexedDB away from V1's — done, verified against real IndexedDB and a live browser; surfaced the service-worker risk above

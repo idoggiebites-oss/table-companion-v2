@@ -9,14 +9,15 @@ import { CONDITIONS, conditionById } from "../../rules/5e/conditions";
 import { SKILLS, proficiency } from "../../rules/5e/skills";
 import { modifier, signed } from "../../rules/5e/abilities";
 import type { Item } from "../../rules/5e/items";
-import type { Choice } from "../creation/model";
+import type { Choice } from "../creation/choices";
 import { Identity } from "./Identity";
 import { StatStrip } from "./StatStrip";
 import { Overview } from "./Overview";
 import { Inventory } from "./Inventory";
 import { diceLeft, type Vital, type Vitals } from "./model";
 import { waitingOn } from "./waiting";
-import { scoresOf, type Build } from "../creation/model";
+import type { Build } from "../creation/model";
+import { scoresOf } from "../creation/scores";
 import s from "./Sheet.module.css";
 
 type Tab = "overview" | "combat" | "inventory" | "notes";

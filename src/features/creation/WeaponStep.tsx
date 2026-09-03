@@ -1,6 +1,6 @@
 import { PickPerGroupStep } from "./PickStep";
 import type { Group } from "../../ui/step/Choices";
-import type { Choice } from "./model";
+import type { Choice } from "./choices";
 import type { Step } from "../../rules/5e/steps";
 
 /**

@@ -3,7 +3,8 @@ import { maxHitPoints } from "../../rules/5e/vitals";
 import { nextThreshold } from "../../rules/5e/progression";
 import { portraitFor } from "./portraits";
 import { STANDARD } from "./lineage";
-import { primary, scoresOf, type Build } from "./model";
+import { primary, type Build } from "./model";
+import { scoresOf } from "./scores";
 import s from "./Hero.module.css";
 
 /** The character you are in the middle of, and what is true about them. */

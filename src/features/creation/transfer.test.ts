@@ -1,7 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { Clock } from "../../core/log";
 import { asDevice, type Event } from "../../core/types";
-import { buildFrom, charactersIn, primary, CHOICE, type Choice } from "./model";
+import { primary, CHOICE } from "./model";
+import { buildFrom, charactersIn } from "./log";
+import type { Choice } from "./choices";
 import { adopt, toSheet, fromSheet } from "./transfer";
 import { BLANK } from "../../rules/5e/abilities";
 

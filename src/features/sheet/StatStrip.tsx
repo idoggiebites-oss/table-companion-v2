@@ -2,7 +2,8 @@ import { signed } from "../../rules/5e/abilities";
 import { proficiency } from "../../rules/5e/skills";
 import { acFor, initiative } from "../../rules/5e/defence";
 import { BLOODIED } from "../../rules/5e/vitals";
-import { scoresOf, type Build } from "../creation/model";
+import type { Build } from "../creation/model";
+import { scoresOf } from "../creation/scores";
 import type { Vitals } from "./model";
 import s from "./StatStrip.module.css";
 

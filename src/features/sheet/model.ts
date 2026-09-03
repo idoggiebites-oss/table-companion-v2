@@ -4,7 +4,8 @@ import {
   maxHitPoints, hitDice, applyDamage, applyHealing, applyTemp,
   EMPTY_DEATHS, clampExhaustion, type Health, type Deaths,
 } from "../../rules/5e/vitals";
-import { scoresOf, type Build } from "../creation/model";
+import type { Build } from "../creation/model";
+import { scoresOf } from "../creation/scores";
 
 export const VITAL = "sheet.vital";
 

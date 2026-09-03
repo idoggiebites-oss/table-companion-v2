@@ -4,7 +4,7 @@ import { Segmented } from "../../ui/step/Controls";
 import { CheckList, type Option } from "../../ui/step/Choices";
 import { Button, ButtonRow } from "../../ui/Button";
 import { ABILITIES, ABILITY_NAME, modifier, signed, type Ability, type Scores } from "../../rules/5e/abilities";
-import type { Improvement } from "./model";
+import type { Improvement } from "./scores";
 import s from "./ImprovementsStep.module.css";
 
 /** One improvement this character has already passed. */

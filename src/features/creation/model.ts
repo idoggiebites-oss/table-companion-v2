@@ -10,17 +10,10 @@ import { NO_GRANT, type Grant, type Source } from "./proficiency";
 import { type Improvement } from "./scores";
 /* Straight from the leaf, not through `scores`: see the note in heritage.ts. */
 import { NO_HERITAGE, type Heritage } from "./heritage";
-import { characterOf, type Choice, type CharacterId } from "./choices";
 import { NO_INNATE, type InnateCasting } from "../../content/innate";
 import { NO_SENSES, type Senses } from "../../content/senses";
 import type { FeatEffects } from "../../rules/5e/feats";
 
-export { scoresOf, featsOf } from "./scores";
-export { characterOf } from "./choices";
-export { reduce } from "./reduce";
-export { buildFrom, charactersIn } from "./log";
-export type { Choice, Named, CharacterId } from "./choices";
-export type { Heritage, Improvement };
 import type { Offer } from "./offers";
 import { TAKE, takeLevel, type LevelTaken } from "../progression/model";
 import { allocate } from "./allocate";

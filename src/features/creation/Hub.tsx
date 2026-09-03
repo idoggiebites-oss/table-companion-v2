@@ -1,7 +1,9 @@
 import { useRef, useState, type ReactNode } from "react";
 import { Shell } from "../../ui/Shell";
 import { Icon, Crest } from "../../ui/Icon";
-import { charactersIn, buildFrom, CHOICE, type Build, type CharacterId } from "./model";
+import { CHOICE, type Build } from "./model";
+import { charactersIn, buildFrom } from "./log";
+import type { CharacterId } from "./choices";
 import { toSheet, fromSheet, adopt } from "./transfer";
 import { Hero } from "./Hero";
 import { Activity } from "./Activity";

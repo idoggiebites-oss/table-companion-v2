@@ -1,4 +1,6 @@
-import { charactersIn, buildFrom, scoresOf, primary, type Build } from "../creation/model";
+import { primary, type Build } from "../creation/model";
+import { charactersIn, buildFrom } from "../creation/log";
+import { scoresOf } from "../creation/scores";
 import { vitalsFrom } from "../sheet/model";
 import { waitingOn } from "../sheet/waiting";
 import { acFor } from "../../rules/5e/defence";

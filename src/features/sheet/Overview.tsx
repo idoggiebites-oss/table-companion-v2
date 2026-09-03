@@ -2,7 +2,8 @@ import { Icon } from "../../ui/Icon";
 import { ABILITIES, ABILITY_NAME, modifier, signed } from "../../rules/5e/abilities";
 import { SKILLS, proficiency } from "../../rules/5e/skills";
 
-import { primary, scoresOf, featsOf, type Build } from "../creation/model";
+import { primary, type Build } from "../creation/model";
+import { scoresOf, featsOf } from "../creation/scores";
 import { languagesOf, toolsOf } from "../creation/proficiency";
 import { innateAt } from "../../content/innate";
 import { describeSenses } from "../../content/senses";

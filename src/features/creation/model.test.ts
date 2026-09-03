@@ -1,7 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { Clock } from "../../core/log";
 import { asDevice, type Event } from "../../core/types";
-import { buildFrom, charactersIn, primary, scoresOf, featsOf, CHOICE, EMPTY, type Choice } from "./model";
+import { primary, CHOICE, EMPTY } from "./model";
+import { buildFrom, charactersIn } from "./log";
+import { scoresOf, featsOf } from "./scores";
+import type { Choice } from "./choices";
 import { factsOf, type Catalogue } from "./facts";
 import { toSheet, fromSheet } from "./transfer";
 import { NO_OFFER } from "./offers";

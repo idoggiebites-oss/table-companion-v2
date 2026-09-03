@@ -5,7 +5,6 @@ import { savesFor } from "../../rules/5e/defence";
 import { castsWith, slotsAt } from "../../rules/5e/casting";
 import { multiclassSlots, pactMagic } from "../../rules/5e/multiclassing";
 
-export { NO_HERITAGE, type Heritage } from "./heritage";
 
 /** One ability score improvement, or the feat taken instead of it. */
 export type Improvement =

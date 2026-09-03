@@ -1,6 +1,7 @@
 import type { Event } from "../../core/types";
 import type { Clock } from "../../core/log";
-import { CHOICE, type CharacterId } from "./model";
+import { CHOICE } from "./model";
+import type { CharacterId } from "./choices";
 import { TAKE } from "../progression/model";
 
 /**

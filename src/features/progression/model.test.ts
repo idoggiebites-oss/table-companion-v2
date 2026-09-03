@@ -1,7 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { Clock } from "../../core/log";
 import { asDevice, type Event } from "../../core/types";
-import { buildFrom, featsOf, scoresOf, CHOICE, type Choice } from "../creation/model";
+import { CHOICE } from "../creation/model";
+import { buildFrom } from "../creation/log";
+import { featsOf, scoresOf } from "../creation/scores";
+import type { Choice } from "../creation/choices";
 import { TAKE, levelsTo, asksFor, defaultHp, type LevelTaken } from "./model";
 import { asiLevels, grantsAt } from "../../rules/5e/progression";
 import { BLANK } from "../../rules/5e/abilities";

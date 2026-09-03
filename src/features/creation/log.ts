@@ -4,7 +4,8 @@ import { live } from "../../core/log";
 import { characterOf, type CharacterId } from "./choices";
 import { CHOICE } from "./model";
 import { TAKE } from "../progression/model";
-import { reduce, EMPTY, type Build } from "./model";
+import { EMPTY, type Build } from "./model";
+import { reduce } from "./reduce";
 
 /**
  * The build of one character. Events carrying another character's id are not

@@ -5,7 +5,8 @@ import { STANDARD } from "./lineage";
 import { SKILLS } from "../../rules/5e/skills";
 import { maxHitPoints } from "../../rules/5e/vitals";
 import { acFor } from "../../rules/5e/defence";
-import { scoresOf, featsOf, type Build } from "./model";
+import type { Build } from "./model";
+import { scoresOf, featsOf } from "./scores";
 import { languagesOf, toolsOf } from "./proficiency";
 import s from "./ReviewStep.module.css";
 

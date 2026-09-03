@@ -1,7 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { Clock } from "../../core/log";
 import { asDevice } from "../../core/types";
-import { buildFrom, CHOICE, type Choice } from "./model";
+import { CHOICE } from "./model";
+import { buildFrom } from "./log";
+import type { Choice } from "./choices";
 import { scoresOf, featsOf, slotsOf, pactOf } from "./scores";
 import { EMPTY } from "./model";
 

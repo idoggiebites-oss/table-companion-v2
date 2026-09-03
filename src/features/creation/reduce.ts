@@ -2,7 +2,7 @@ import type { Event } from "../../core/types";
 import { takeLevel, TAKE, type LevelTaken } from "../progression/model";
 import { allocate } from "./allocate";
 import { NO_GRANT } from "./proficiency";
-import { NO_HERITAGE } from "./scores";
+import { NO_HERITAGE } from "./heritage";
 import { NO_INNATE } from "../../content/innate";
 import { NO_SENSES } from "../../content/senses";
 import { CHOICE, needsPath, type Build } from "./model";
