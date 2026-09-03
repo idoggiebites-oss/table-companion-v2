@@ -55,9 +55,34 @@ Settled with Arturo, 2 Sep 2026:
   port V1's *reasoning*, which is the half that goes thin when re-derived from
   the data (the armour lesson).
 
-Task 3 depends on Task 1, so the two Sonnet tasks run in sequence, not parallel.
 A delegated task carries its `todo.md` entry verbatim — the acceptance criteria
 and verification commands are the brief.
+
+**The rule that held, across seventeen tasks.** Sonnet is right where V1's file
+is the specification and the criteria are precise: a port with a clear brief
+(Task 5, the gate), a mechanical change (Task 1), a test pass (Task 17). Opus is
+right where a plausible-looking wrong answer would survive: architecture (10),
+a subtle invariant (2, 16), an investigation with live unknowns (4, 12), or
+prose that has to be accurate (22).
+
+**Nothing here is Haiku-shaped**, and that is worth writing down rather than
+inventing a slot: every task carries reasoning to port out of V1, and the
+failure mode is always a thin re-derivation that passes its own tests.
+
+**What is left, and who should run it:**
+
+| | task | model | why |
+|---|---|---|---|
+| 19 | A scene | **Opus** | The phase's architectural join, and it carries the open drawer-vs-order question |
+| 20 | NPCs | **Sonnet** | A record type with a clear V1 spec and low subtlety |
+| 21 | Homebrew items | **Opus** | The invariant is "no branch reads *is this homebrew*" — a parallel code path would look correct |
+| 22 | Guidance | **Opus** | The code is a static table; the work is prose that must be accurate. Absent is honest, wrong is not |
+| 23 | The recap | **Opus** | Judgement about what to refuse to say, not just what to read |
+| 24 | Prompts | **Sonnet** | A mapping from recap facts to screens, with a clear filter rule, once 23 defines the shape |
+| R1 | Measure V1 usage | **Arturo** | A conversation with the DM, not code |
+| R2 | Freeze and rollback | **Opus** | The rollback must be executed once, not just written |
+| R3 | Cut the origin over | **Opus** | A switch with consequences and no parallel running |
+| R4 | Archive V1 | **Sonnet** | Mechanical, against a checklist |
 
 ## Task List
 
