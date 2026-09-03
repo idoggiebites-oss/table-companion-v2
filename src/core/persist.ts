@@ -20,7 +20,14 @@ const promise = <T,>(req: IDBRequest<T>): Promise<T> =>
     req.onerror = () => rej(req.error ?? new Error("indexeddb request failed"));
   });
 
-export async function openLog(name = "table-companion"): Promise<Store> {
+/**
+ * Named distinctly from V1's `table-companion` database (version 2, stores
+ * `log` + `meta`). V2 opens at version 1 — a lower version than an existing
+ * database raises `IDBOpenDBRequest.onerror` with `VersionError`, so sharing
+ * the name would break V2 on every device that ever ran V1. No data migrates
+ * between the two; this is a distinct name, not a rename in place.
+ */
+export async function openLog(name = "table-companion-v2"): Promise<Store> {
   const db = await new Promise<IDBDatabase>((res, rej) => {
     const req = indexedDB.open(name, 1);
     req.onupgradeneeded = () => {

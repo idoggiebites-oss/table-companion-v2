@@ -19,14 +19,16 @@ this one is a refactor, and there is currently nothing to roll back to. Make
 the root commit before touching a line.
 
 **Acceptance criteria:**
-- [ ] `git log` shows a root commit containing all of `src/`, `worker/`, `tests/`, `scripts/` and the plan docs
-- [ ] `.gitignore` still excludes `node_modules/`, `dist/`, `shots/`, `test-results/`, `public/content/`, `graphify-out/`
-- [ ] No compendium output or `.dev.vars`-style secret is in the commit
+- [x] `git log` shows a root commit containing all of `src/`, `worker/`, `tests/`, `scripts/` and the plan docs
+- [x] `.gitignore` still excludes `node_modules/`, `dist/`, `shots/`, `test-results/`, `public/content/`, `graphify-out/` (added `.wrangler/` too — untracked local dev state, same as V1's own gitignore)
+- [x] No compendium output or `.dev.vars`-style secret is in the commit
 
 **Verification:**
-- [ ] `git status --short` is empty
-- [ ] `git ls-files | wc -l` is ~400, and `git ls-files | grep -c public/content` is 0
-- [ ] Build succeeds: `npm run build`
+- [x] `git status --short` is empty
+- [x] `git ls-files | wc -l` is 299 (fewer than the ~400 estimate — the estimate counted all untracked entries recursively before `.wrangler/` was excluded), and `git ls-files | grep -c public/content` is 0
+- [x] Build succeeds: `npm run build` (exit 0, 154 modules, 4.06s)
+
+**DONE** — commit `9ae2a27`, root commit, 299 files, 35,478 insertions.
 
 **Dependencies:** None
 **Files likely touched:** `.gitignore`
@@ -82,15 +84,27 @@ read, upgrade or delete V1's database: V1 stays deployable as the rollback for
 Task R2, and a V2 that clobbers V1's data destroys the way back.
 
 **Acceptance criteria:**
-- [ ] `openLog`'s default name is distinct from V1's (e.g. `table-companion-v2`)
-- [ ] Opening V2 on an origin that already holds V1's `table-companion` database succeeds and reads an empty log
-- [ ] V1's database is never opened, upgraded or deleted by V2
-- [ ] Reloading V1 afterwards still finds its own data intact
+- [x] `openLog`'s default name is distinct from V1's (`table-companion-v2`)
+- [x] Opening V2 on an origin that already holds V1's `table-companion` database succeeds and reads an empty log
+- [x] V1's database is never opened, upgraded or deleted by V2
+- [x] Reloading V1 afterwards still finds its own data intact
 
 **Verification:**
-- [ ] Tests pass: `npm run test:domain` — a domain test that seeds a `table-companion` DB at version 2 and asserts `openLog()` opens clean beside it
-- [ ] Manual check: in one browser profile, load V1 on `localhost:4173`, then serve V2 on the **same** port and confirm both open without error
-- [ ] Build succeeds: `npm run build`
+- [x] Tests pass — **corrected: `test:component`, not `test:domain`.** Domain tier runs under Node (`environment: "node"` in `vitest.config.ts`), which has no `indexedDB` global at all; a collision this specific has to be proven against real IndexedDB, which only the component tier's real Chromium provides. New file `src/core/persist.test.tsx`, 2 tests, both pass.
+- [x] Manual check, done for real against a live browser (Playwright, persistent profile): V1 served on `:4173`, loaded, created `table-companion@2`. Server swapped to V2's build on the **same** port, same profile, reloaded. Both databases coexist: `table-companion@2` (`upgraded: false` — V1 untouched) and `table-companion-v2@1`. Zero console errors either load.
+- [x] Build succeeds: `npm run build` (`tsc --noEmit` + vite build, exit 0)
+
+**Also found during the manual check, not part of this task's fix:** V1 registers a
+service worker (`vite-plugin-pwa`) at scope `http://localhost:4173/`. Swapping
+the backend server alone did **not** show V2 — the browser kept rendering V1's
+UI from the stale SW's cache until it was explicitly unregistered. Real finding,
+added to `plan.md`'s risk table under Phase 7 (cutover), since that is where it
+bites — Task 3 itself is unaffected, the IndexedDB fix is correct and proven
+independently of the SW question.
+
+**DONE.** `persist.ts` renamed, `persist.test.tsx` added (2/2 passing),
+`scripts/verify.mjs` MINIMUMS.component ratcheted 89 → 91 (component tier grew
+by these 2 tests). Full domain (531) and component (91) suites re-run clean.
 
 **Dependencies:** Task 1
 **Files likely touched:** `src/core/persist.ts`, `src/ui/useLog.ts`, `src/core/log.test.ts`

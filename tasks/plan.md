@@ -66,7 +66,7 @@ not broken down — per PLAN.md's own rule, the next slice is named before work
 starts, and breaking down work three slices out is planning fiction.
 
 ### Phase 0: Safety net
-- [ ] Task 1: Commit V2
+- [x] Task 1: Commit V2 — done, commit `9ae2a27`
 - [ ] Task 2: Break the creation barrel cycle
 
 ### Checkpoint: Safety net
@@ -75,7 +75,7 @@ starts, and breaking down work three slices out is planning fiction.
 - [ ] `npm run verify` passes all four tiers
 
 ### Phase 1: V2 survives on V1's origin
-- [ ] Task 3: Namespace V2's IndexedDB away from V1's
+- [x] Task 3: Namespace V2's IndexedDB away from V1's — done, verified against real IndexedDB and a live browser; surfaced the service-worker risk above
 - [ ] Task 4: Separate V2's deployment identity from V1's
 
 ### Checkpoint: Storage and deployment
@@ -139,6 +139,7 @@ Phase 5 closes.
 | **Same DO class (`Room`) and same migration tag (`v1`) in both.** V2's `Room.ts` would inherit Durable Objects holding room state written by V1's class; the differing binding name (`ROOM` vs `ROOMS`) does not isolate them. | **High** | Task 4 answers it with evidence — reuse safely, or declare a distinct class/tag. |
 | **The cutover is not reversible by parallel running.** One origin serves one app, so V2 replacing V1 is a switch, not a gradual migration. | **High** | Task R2 writes the rollback *before* R3 cuts over: V1 stays deployable and one command restores it. |
 | **V2's `worker/index.ts:20` calls `env.ASSETS.fetch` but no `ASSETS` binding is declared** — confirmed from wrangler's own bindings table, which lists only `env.ROOMS`. V1 declares both `assets.binding` and `run_worker_first`. Runtime impact unverified: V2's `wrangler dev` on 8791 answers nothing from the Claude Code shell. | Medium | Task 4 — Arturo probes it from his own terminal, then the fix follows the evidence. |
+| **V1 runs a service worker (`vite-plugin-pwa`) at the same scope V2 will occupy.** Verified 2 Sep 2026 in a real browser: swapping the backend server alone did not surface V2 — the page kept rendering V1's cached UI until the SW was explicitly unregistered. A device that has V1 installed will keep running it after R3's cutover until its service worker is superseded, on Workbox's own update timing, not ours. | **High** | New: confirm `vite-plugin-pwa`'s update strategy (`registerType`) in both configs before R3. R2's rollback plan and R3's cutover both need to account for this — a "cut over" that half the table doesn't see for an unknown number of reloads is not a clean switch. |
 | **Three runtime import cycles in `features/creation/`**, all caused by `model.ts` re-exporting its own dependents. This is the mechanism behind the `EMPTY.heritage === undefined` bug already fixed once at the symbol level. | Medium | Task 2, before porting anything through that core. |
 | `src/ui/Combat.tsx` fails AST parse at line 581 — 11 of ~1,602 lines extracted. V1's combat is under-represented in the graph, so Phase 3 sizing is a floor. | Medium | Read `Combat.tsx` directly when starting Task 6; do not trust the graph's sizing there. |
 | Porting reasoning gets dropped and V2 re-derives something thinner (the armour lesson). | Medium | Standing rule: open V1's module first. Each task names its V1 source. |
