@@ -94,3 +94,17 @@
   font-size: var(--t-micro); letter-spacing: 0.08em; text-transform: uppercase;
   color: var(--ink-dim);
 }
+
+/* What is on it. Small, because a row with four conditions still has to be a
+   row — and tappable, because taking one off is as common as putting it on. */
+.conds { display: flex; flex-wrap: wrap; gap: var(--s-2); align-items: center; }
+.cond {
+  padding: var(--s-1) var(--s-3); font-size: var(--t-micro);
+  color: var(--ink); background: var(--surface-2);
+  border: var(--panel-border); border-radius: var(--r-pill);
+}
+.addCond {
+  min-width: var(--tap); min-height: var(--tap);
+  color: var(--ink-dim); background: none; border: none; font-size: var(--t-sm);
+}
+.picker { display: flex; flex-wrap: wrap; gap: var(--s-2); grid-column: 1 / -1; }

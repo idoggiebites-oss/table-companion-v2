@@ -98,7 +98,7 @@ starts, and breaking down work three slices out is planning fiction.
 ### Phase 3: The fight, end to end (completes slice 7)
 - [x] Task 7: Initiative and turn order — done; order derived, not stored. Four bugs found only by the screenshot.
 - [x] Task 8: Damage and healing on staged creatures — done; brief had the dying/dead rule wrong, corrected against V1
-- [ ] Task 9: Conditions on combatants
+- [x] Task 9: Conditions on combatants — done; found the `paralysed`/`paralyzed` id mismatch against 401 statblocks
 - [ ] Task 10: The attack — a player claims, the DM answers
 - [ ] Task 11: The player's half of the fight
 

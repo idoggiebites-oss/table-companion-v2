@@ -216,3 +216,32 @@ test("a creature takes damage, and mends, and remembers both", async ({ page }) 
   await expect(page.getByTestId("staged-row").first().locator('[class*="rowNote"]'))
     .toContainText(`${String(max - 5)}/${String(max)}`);
 });
+
+test("a condition goes on a creature, says what it does, and comes off", async ({ page }) => {
+  await hub(page);
+  await bar(page).getByRole("button", { name: "Fight" }).click();
+  await page.getByTestId("bestiary-search").fill("goblin");
+  await page.getByTestId("bestiary-row").first().click();
+
+  const row = page.getByTestId("staged-row").first();
+  await row.getByRole("button", { name: /^Add a condition/ }).click();
+  await row.getByRole("button", { name: "Poisoned", exact: true }).click();
+
+  /* The effect is carried with it: "poisoned" teaches nothing on its own. */
+  const chip = row.getByRole("button", { name: /^Clear Poisoned/ });
+  await expect(chip).toBeVisible();
+  await expect(chip).toHaveAttribute("title", /[Dd]isadvantage/);
+
+  await page.screenshot({ path: "shots/fight-conditions.png", fullPage: true });
+
+  /* It is in the log, so it survives the app closing. */
+  await page.reload();
+  await bar(page).getByRole("button", { name: "Fight" }).click();
+  await expect(page.getByTestId("staged-row").first()
+    .getByRole("button", { name: /^Clear Poisoned/ })).toBeVisible();
+
+  await page.getByTestId("staged-row").first()
+    .getByRole("button", { name: /^Clear Poisoned/ }).click();
+  await expect(page.getByTestId("staged-row").first()
+    .getByRole("button", { name: /^Clear Poisoned/ })).toHaveCount(0);
+});

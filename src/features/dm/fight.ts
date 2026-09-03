@@ -41,6 +41,15 @@ export type Combatant = {
   readonly disclosure: Disclosure;
   /** Damage taken. Only creatures carry it; a character's is on their sheet. */
   readonly damage: number;
+  /**
+   * What is on it, by condition id.
+   *
+   * A creature's conditions live in the fight for the same reason its hit
+   * points do — nothing else holds a creature. A CHARACTER's live on their
+   * sheet, so this stays empty for them and `conditionsOf` reads the sheet
+   * instead. One number, one home, is the rule the party screen depends on.
+   */
+  readonly conditions: readonly string[];
 };
 
 export type Fight = {
@@ -75,6 +84,8 @@ export type Act =
    * act would need the same clamping written twice.
    */
   | { readonly act: "hurt"; readonly id: string; readonly amount: number }
+  /** On or off. Idempotent, because two devices may say the same thing. */
+  | { readonly act: "condition"; readonly id: string; readonly condition: string; readonly on: boolean }
   | { readonly act: "begin" }
   /**
    * `from` is the turn the presser could see. Without it a DM and a player
@@ -117,6 +128,7 @@ function reduce(f: Fight, e: Event): Fight {
            encounter before it starts. Staging is preparation, not narration. */
         disclosure: a.disclosure ?? "hidden",
         damage: 0,
+        conditions: [],
       }] };
     case "unstage":
       return { ...f, combatants: f.combatants.filter((c) => c.id !== a.id) };
@@ -144,6 +156,19 @@ function reduce(f: Fight, e: Event): Fight {
            has. The floor is the same rule from the other side — a creature is
            at zero or it is not, and 5e gives it no dying to be in. */
         return { ...c, damage: Math.min(c.source.max, Math.max(0, c.damage + a.amount)) };
+      }) };
+    case "condition":
+      return { ...f, combatants: f.combatants.map((c) => {
+        if (c.id !== a.id) return c;
+        /* Same rule as `hurt`: a character's conditions are on their sheet,
+           and a second copy here would be a second source of truth for the
+           one thing the party screen and the sheet must agree about. */
+        if (c.source.kind !== "creature") return c;
+        const has = c.conditions.includes(a.condition);
+        if (a.on === has) return c; // idempotent: two devices may say it at once
+        return { ...c, conditions: a.on
+          ? [...c.conditions, a.condition]
+          : c.conditions.filter((x) => x !== a.condition) };
       }) };
     case "begin":
       /* Anyone who never rolled is dropped rather than placed arbitrarily.

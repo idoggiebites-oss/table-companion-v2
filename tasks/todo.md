@@ -425,18 +425,40 @@ repo before.
 **Description:** Port `stance.ts` (13 symbols, depth 4) alongside V2's existing
 `rules/5e/conditions.ts` into a condition a DM can apply and both sides see.
 
+**Corrected 3 Sep 2026.** This brief said to "port `stance.ts`". That is V1's
+ADVANTAGE engine — advantage computed from conditions on both sides, shown as a
+sentence naming every reason. None of the criteria below mention it, and it
+belongs with the attack or with guidance, not here. Conditions themselves
+already existed in V2 for CHARACTERS (`rules/5e/conditions.ts`, applied on the
+Sheet, shown on the Party screen); what was missing was creatures.
+
 **Acceptance criteria:**
-- [ ] A condition can be applied to and cleared from any combatant
-- [ ] Conditions show on the party screen, the staging screen and the sheet
-- [ ] The 2014 condition set matches V1's `CONDITIONS_2014`
+- [x] A condition goes on a creature and comes off, from the fight screen
+- [x] Applying twice does not double it and clearing what was never there is not an error — two devices may say the same thing
+- [x] Conditions show on the staging screen; the party screen and the sheet already had them for characters
+- [x] The set matches V1's `CONDITIONS_2014` — **it did not, and now does**
+
+**The bug the last criterion actually found.** V2 spelled the id `paralysed`;
+V1 and the books spell it `paralyzed`, and so does this corpus — **401 times in
+the statblocks**. Nothing joins on it yet, which is precisely why it was free to
+be wrong; the first thing to match a statblock's condition immunities against
+these ids would have silently missed every one. The ID is now the corpus
+spelling because it is a matching key. The NAME is prose and stays ours.
 
 **Verification:**
-- [ ] Tests pass: `npm run test:domain`, `npm run test:component`
-- [ ] Manual check: screenshot the condition row on a 390px viewport; no tap target under 44px
+- [x] `npm run verify` clean — 566 domain, 91 component, 52 journey, 5 room
+- [x] Journey: on, the effect carried with it, a **reload**, then off
+- [x] Screenshot read — the row still reads as a row with a condition on it
+
+**Kept to V1's rule about what a condition SAYS:** the chip carries the effect,
+because "poisoned" teaches nothing and "disadvantage on attacks and ability
+checks" teaches the rule while it is being used.
 
 **Dependencies:** Task 8
-**Files likely touched:** `src/rules/5e/conditions.ts`, `src/features/dm/fight.ts`, `Staging.tsx`, `src/features/sheet/Overview.tsx`
-**Estimated scope:** M
+**Files touched:** `rules/5e/conditions.ts`, `fight.ts`, `fight.test.ts`, `Combatant.tsx`, `Combatant.module.css`, `tests/journey/dm.spec.ts`, `scripts/verify.mjs`
+**Actual scope:** M
+
+**DONE.**
 
 ---
 

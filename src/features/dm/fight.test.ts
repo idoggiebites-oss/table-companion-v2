@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { fightFrom, nameFor, visibleTo, showsNumbers, orderOf, awaiting, activeOf, hpOf, healthShown, DISCLOSURE, FIGHT, NO_FIGHT, type Act, type Combatant } from "./fight";
 import type { Event } from "../../core/types";
+import { CONDITIONS } from "../../rules/5e/conditions";
 
 let n = 0;
 const ev = (a: Act): Event =>
@@ -254,5 +255,51 @@ describe("what a player is allowed to see of a creature's health", () => {
 
   it("gives a player the numbers only once the DM says exact", () => {
     expect(healthShown(false, at("exact"))).toEqual({ kind: "numbers", hp: 3, max: 7 });
+  });
+});
+
+describe("conditions on a creature", () => {
+  const on = (condition: string): Act => ({ act: "condition", id: "g1", condition, on: true });
+  const off = (condition: string): Act => ({ act: "condition", id: "g1", condition, on: false });
+  const staged = [ev(goblin("g1"))];
+
+  it("goes on and comes off", () => {
+    expect(fightFrom([...staged, ev(on("prone"))]).combatants[0]?.conditions).toEqual(["prone"]);
+    expect(fightFrom([...staged, ev(on("prone")), ev(off("prone"))]).combatants[0]?.conditions).toEqual([]);
+  });
+
+  it("holds more than one at a time", () => {
+    const f = fightFrom([...staged, ev(on("prone")), ev(on("poisoned"))]);
+    expect(f.combatants[0]?.conditions).toEqual(["prone", "poisoned"]);
+  });
+
+  it("says the same thing twice without doubling it", () => {
+    /* Two devices may both say "it is prone" — the log takes both events. */
+    const f = fightFrom([...staged, ev(on("prone")), ev(on("prone"))]);
+    expect(f.combatants[0]?.conditions).toEqual(["prone"]);
+  });
+
+  it("clearing something it never had is not an error", () => {
+    const f = fightFrom([...staged, ev(off("prone"))]);
+    expect(f.combatants[0]?.conditions).toEqual([]);
+  });
+
+  it("leaves a character alone — theirs are on their sheet", () => {
+    const pc: Act = { act: "stage", id: "c1", name: "Bree",
+      source: { kind: "character", character: "c1" } };
+    const f = fightFrom([ev(pc), ev({ act: "condition", id: "c1", condition: "prone", on: true })]);
+    expect(f.combatants[0]?.conditions).toEqual([]);
+  });
+});
+
+describe("the condition set", () => {
+  it("is V1's fourteen, spelled the way the books and the corpus spell them", () => {
+    /* V1's CONDITIONS_2014. The z in `paralyzed` is not a typo: it is a
+       matching key, and the statblocks use it 401 times. */
+    expect(CONDITIONS.map((c) => c.id)).toEqual([
+      "blinded", "charmed", "deafened", "frightened", "grappled",
+      "incapacitated", "invisible", "paralyzed", "petrified", "poisoned",
+      "prone", "restrained", "stunned", "unconscious",
+    ]);
   });
 });

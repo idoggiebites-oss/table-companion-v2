@@ -13,7 +13,11 @@ export const CONDITIONS: readonly Condition[] = [
   { id: "grappled", name: "Grappled", effect: "Your speed is zero." },
   { id: "incapacitated", name: "Incapacitated", effect: "No actions and no reactions." },
   { id: "invisible", name: "Invisible", effect: "Attacks against you have disadvantage; yours have advantage." },
-  { id: "paralysed", name: "Paralysed", effect: "Incapacitated, cannot move or speak; hits within five feet are critical." },
+  /* The ID is "paralyzed", not "paralysed": it is a matching key, and both the
+     books and this corpus spell it with a z — 401 times in the statblocks
+     alone. Nothing joins on it yet, which is exactly why it was free to be
+     wrong. The NAME is ours to spell. */
+  { id: "paralyzed", name: "Paralysed", effect: "Incapacitated, cannot move or speak; hits within five feet are critical." },
   { id: "petrified", name: "Petrified", effect: "Incapacitated and unaware; resistance to all damage." },
   { id: "poisoned", name: "Poisoned", effect: "Disadvantage on attacks and ability checks." },
   { id: "prone", name: "Prone", effect: "Disadvantage on your attacks; attacks within five feet have advantage." },

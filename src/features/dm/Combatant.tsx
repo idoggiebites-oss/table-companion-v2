@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { DISCLOSURE, hpOf, type Act, type Combatant as Row } from "./fight";
+import { CONDITIONS, conditionById } from "../../rules/5e/conditions";
 import s from "./Combatant.module.css";
 
 /** How much of this one the table can see, and a way off the table. */
@@ -6,6 +8,7 @@ export function Staged({ c, onAct, now }: {
   c: Row; onAct: (a: Act) => void; now: boolean;
 }) {
   const at = hpOf(c);
+  const [picking, setPicking] = useState(false);
   return (
     <li className={`${s.row} ${now ? s.now : ""}`} data-testid="staged-row"
         aria-current={now ? "true" : undefined}>
@@ -72,6 +75,34 @@ export function Staged({ c, onAct, now }: {
                  placeholder="±" aria-label={`Damage ${c.name}, or heal with a minus`} />
           <button type="submit" className={s.apply} aria-label={`Apply to ${c.name}`}>Hit</button>
         </form>
+      )}
+      {c.source.kind === "creature" && (
+        <span className={s.conds}>
+          {c.conditions.map((id) => (
+            /* The name, and what it DOES, because "poisoned" teaches nothing
+               and "disadvantage on attacks" teaches the rule while it is
+               being used. Tap to take it off. */
+            <button key={id} type="button" className={s.cond}
+                    title={conditionById(id)?.effect}
+                    aria-label={`Clear ${conditionById(id)?.name ?? id} from ${c.name}`}
+                    onClick={() => onAct({ act: "condition", id: c.id, condition: id, on: false })}>
+              {conditionById(id)?.name ?? id}
+            </button>
+          ))}
+          <button type="button" className={s.addCond} aria-label={`Add a condition to ${c.name}`}
+                  aria-expanded={picking} onClick={() => setPicking((p) => !p)}>+</button>
+        </span>
+      )}
+      {picking && (
+        <span className={s.picker} role="group" aria-label={`Conditions for ${c.name}`}>
+          {CONDITIONS.filter((x) => !c.conditions.includes(x.id)).map((x) => (
+            <button key={x.id} type="button" className={s.cond} title={x.effect}
+                    onClick={() => {
+                      onAct({ act: "condition", id: c.id, condition: x.id, on: true });
+                      setPicking(false);
+                    }}>{x.name}</button>
+          ))}
+        </span>
       )}
       <button type="button" className={s.off} aria-label={`Take ${c.name} off the table`}
               onClick={() => onAct({ act: "unstage", id: c.id })}>×</button>
