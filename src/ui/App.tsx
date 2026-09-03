@@ -32,7 +32,9 @@ import { Fight as PlayerFight } from "../features/room/Fight";
 import { scoresOf } from "../features/creation/scores";
 import { BLANK } from "../rules/5e/abilities";
 import { fightFrom, FIGHT, type Act } from "../features/dm/fight";
+import { onTurn } from "../features/dm/nudge";
 import { SeatControl } from "../features/room/SeatControl";
+import { PushToggle } from "../features/room/PushToggle";
 import { membersIn } from "../features/dm/members";
 import { waitingOn } from "../features/sheet/waiting";
 
@@ -43,7 +45,7 @@ import { waitingOn } from "../features/sheet/waiting";
 export function App({ dbName }: { dbName?: string }) {
   const [room, setRoom] = useState<string | undefined>(undefined);
   const { showing: theme, flip } = useTheme();
-  const { events, add, record, pushMany, undo, reset, clock, link, ready } = useLog(dbName, room);
+  const { events, add, record, pushMany, undo, reset, say, clock, link, ready } = useLog(dbName, room);
   const [mode, setMode] = useState<"hub" | "log" | "create" | "sheet" | "levelup" | "party" | "fight">("hub");
   const [character, setCharacter] = useState<string>("");
   const [onlyGames, setOnlyGames] = useState(true);
@@ -198,7 +200,22 @@ export function App({ dbName }: { dbName?: string }) {
      * assembled and run; a player's is their own two-state view of it. Same
      * tab, different room, because they are not doing the same job.
      */
-    const act = (a: Act) => record(FIGHT, a as unknown as Record<string, unknown>);
+    /*
+     * The nudge is worked out HERE, on the device that appends the event —
+     * V1's rule, and the reason is that this device is awake by definition:
+     * it is the DM pressing Next turn. The room holds a log and has never had
+     * to understand it.
+     *
+     * Not an event. A buzz is not a fact about the campaign, and a device
+     * replaying the log must not re-buzz a phone a week later.
+     */
+    const act = (a: Act) => {
+      record(FIGHT, a as unknown as Record<string, unknown>);
+      if (a.act !== "advance" && a.act !== "begin") return;
+      const next = fightFrom([...events, { ...clock.issue(FIGHT, a as unknown as Record<string, unknown>) }]);
+      const n = onTurn(next);
+      if (n !== null) say({ kind: "nudge", to: n.to, title: n.title, body: n.body });
+    };
     if (dm) return <Staging fight={fight} party={membersIn(events)} nav={nav("fight")} onAct={act} />;
     const build = current;
     return (
@@ -266,6 +283,13 @@ export function App({ dbName }: { dbName?: string }) {
         }
         theme={theme}
         onTheme={flip}
+        push={
+          <PushToggle
+            characters={mine}
+            onSubscribe={(sub) => say({ kind: "subscribe", sub, characters: mine })}
+            onUnsubscribe={(endpoint) => say({ kind: "unsubscribe", endpoint })}
+          />
+        }
       />
     );
   }

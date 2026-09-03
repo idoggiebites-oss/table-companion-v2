@@ -28,6 +28,16 @@ export type SyncState = "offline" | "connecting" | "live";
 export type Sync = {
   /** Offer events to the room. Safe to call while offline. */
   push(events: readonly Event[]): void;
+  /**
+   * Anything that is not an event.
+   *
+   * A push subscription and a nudge are not facts about the campaign, so they
+   * do not belong in the log — no device replaying it should re-buzz a phone.
+   * They are messages to the ROOM, and unlike events they are dropped when
+   * offline rather than queued: a nudge that arrives after the turn has passed
+   * is worse than one that never came.
+   */
+  say(message: Readonly<Record<string, unknown>>): void;
   state(): SyncState;
   close(): void;
 };
@@ -118,6 +128,10 @@ export function connect(code: string, o: SyncOptions): Sync {
         // A phone in a cellar is offline, not broken. It catches up later.
         pending.push(...events);
       }
+    },
+    say(message) {
+      if (socket === null || state !== "live") return;
+      try { socket.send(JSON.stringify(message)); } catch { /* it will reconnect */ }
     },
     state: () => state,
     close() {

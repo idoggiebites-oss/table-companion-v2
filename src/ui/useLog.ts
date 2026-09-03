@@ -103,5 +103,10 @@ export function useLog(dbName?: string, room?: string) {
     await store?.clear();
   }, [store]);
 
-  return { events, add, record, pushMany, undo, reset, clock, link, ready: store !== null };
+  /** Non-event traffic to the room: subscriptions and nudges. See `Sync.say`. */
+  const say = useCallback((message: Readonly<Record<string, unknown>>) => {
+    sync.current?.say(message);
+  }, []);
+
+  return { events, add, record, pushMany, undo, reset, say, clock, link, ready: store !== null };
 }

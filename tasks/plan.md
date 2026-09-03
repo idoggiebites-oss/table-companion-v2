@@ -88,7 +88,7 @@ starts, and breaking down work three slices out is planning fiction.
 *Safe to parallelize with Phase 3 — no shared files.*
 - [x] Task 12: Publish the compendium separately, versioned — **unblocked this phase**; `npm run test:room` runs, 5 passed
 - [x] Task 5: Port the passphrase gate — done; `run_worker_first` landed with it, and the gate gained the tests it had none of
-- [ ] Task 6: Port web push
+- [x] Task 6: Port web push — built and deployed; the on-device check is the one thing left and needs Arturo's phone
 
 ### Checkpoint: The room
 - [ ] `npm run test:room` passes against `npm run dev:worker`

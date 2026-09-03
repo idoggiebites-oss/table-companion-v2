@@ -48,3 +48,7 @@
 .chev { color: var(--ink-dim); grid-row: 1; }
 .tileNote { grid-column: 2 / -1; font-size: var(--t-aside); color: var(--ink-dim); line-height: 1.3; }
 
+
+/* Away from the tiles: asking for notification permission cannot be un-asked,
+   so the control is nowhere near anything a thumb reaches for. */
+.push { padding: 0 var(--card-pad) var(--s-4); }

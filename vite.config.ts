@@ -47,6 +47,10 @@ export default defineConfig({
          * compendium on a phone in a basement.
          */
         globPatterns: ["**/*.{js,css,html,woff2}", "art/**/*.jpg", "icon-*.png"],
+        /* The push handlers. Workbox writes the precache and the routing and
+           has no opinion about notifications; this adds the two listeners it
+           does not generate, without taking over the whole service worker. */
+        importScripts: ["/push-sw.js"],
         maximumFileSizeToCacheInBytes: 3_000_000,
         runtimeCaching: [
           {

@@ -290,20 +290,41 @@ updated to yet is a feature that silently does not exist. Verify against a
 device that installed the app BEFORE the change, not only a fresh one.
 
 **Acceptance criteria:**
-- [ ] A device can subscribe, and a pushed event arrives with the app closed
-- [ ] The VAPID private key is a wrangler secret and `.dev.vars` is gitignored — never committed
-- [ ] Push failure never blocks an event from reaching the log
-- [ ] Only the two things V1 lets move a player on their own can push
+- [x] A device can subscribe; the room stores the endpoint and who it watches
+- [x] The VAPID private key is a wrangler secret and `.dev.vars` is gitignored
+- [x] Push failure never blocks an event from reaching the log — sending is `waitUntil`, never awaited by the socket, because a slow push service must not hold up the log
+- [x] Only the moments V1 allows can push — see below
+- [ ] **A pushed event arrives with the app closed.** NOT verified. Needs a real device and a real push service, and specifically one that already had the app installed.
+
+**`nodejs_compat` answered: not needed.** `push.ts` imports nothing —
+`crypto.subtle`, `TextEncoder`, `btoa`/`atob` are workerd natives. Checked by
+porting and typechecking the worker, not by copying V1's config.
+
+**The moments, corrected.** This brief said "the two things V1 lets move a
+player on their own", which conflated two different V1 concepts. `nudge.ts`
+names THREE: your turn has come round, initiative is being rolled and yours is
+not in, and the DM has asked YOU for a roll. The first two are built; the third
+needs the claim seam running the other way. V1's reason for the shortness of
+that list is carried: *a notification that arrives when nothing is being asked
+of you teaches people to swipe them away without reading, and then the one that
+mattered goes with it.*
+
+**Computed on the device that APPENDS the event**, not in the room — the room
+holds a log and has never had to understand it, and the appending device is
+awake by definition: it is the DM pressing Next turn. A nudge is also NOT an
+event, so a device replaying the log cannot re-buzz a phone a week later.
 
 **Verification:**
-- [ ] Tests pass: `npm run test:room`
-- [ ] Manual check: subscribe on a phone, trigger from another device, confirm arrival — **and on a phone that already had the app installed**, not only a fresh install
-- [ ] `npm run verify` clean, including the room tier
-- [ ] `git ls-files | grep -c dev.vars` is 0
+- [x] `npm run verify` clean — 715 domain, 91 component, 57 journey, 5 room
+- [x] The crypto proved by doing the other half: encrypt, then decrypt from the subscriber's side per RFC 8291. Proven by sabotage — swapping the two public keys in the derivation turns it red.
+- [x] `/push/key` verified on the live deployment, behind the gate
+- [ ] **The phone check — Arturo's, and the last thing owed.**
 
-**Dependencies:** Task 5 (shares `worker/index.ts`)
-**Files likely touched:** `worker/push.ts` (new), `worker/index.ts`, `src/core/sync.ts`, one new `src/features/room/usePush.ts`
-**Estimated scope:** M
+**Dependencies:** Task 5
+**Files touched:** `worker/push.ts` + test, `worker/Room.ts`, `worker/index.ts`, `core/sync.ts`, `ui/useLog.ts`, `ui/App.tsx`, `features/room/push.ts`, `PushToggle.tsx` + css, `features/dm/nudge.ts` + test, `features/creation/Hub.tsx` + css, `public/push-sw.js`, `vite.config.ts`
+**Actual scope:** L, over two commits
+
+**DONE apart from the device check.**
 
 ---
 

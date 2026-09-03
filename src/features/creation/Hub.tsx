@@ -15,10 +15,12 @@ import s from "./Hub.module.css";
  * what you can do about it, and what has happened lately.
  */
 export function Hub({
-  events, room, onNew, onOpen, onEdit, onImport, onLog, nav, who, theme, onTheme,
+  events, room, onNew, onOpen, onEdit, onImport, onLog, nav, who, theme, onTheme, push,
 }: {
   events: readonly Event[];
   room?: ReactNode;
+  /** The "buzz this phone" control, when this deployment can. */
+  push?: ReactNode;
   onNew: () => void;
   onOpen: (id: CharacterId) => void;
   onEdit: (id: CharacterId) => void;
@@ -73,6 +75,7 @@ export function Hub({
           <button type="button" className={s.tool} aria-label="Menu"><Icon name="book" /></button>
         </span>
       </div>
+      {push !== undefined && <div className={s.push}>{push}</div>}
 
       {/*
         * The hub's own section row lived here: Create, Combat, Equip, Book,

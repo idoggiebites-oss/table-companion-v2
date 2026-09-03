@@ -1,0 +1,16 @@
+/* One button, away from anything a thumb hits by accident — asking for
+   notification permission cannot be un-asked. */
+.toggle {
+  min-height: var(--tap); padding: 0 var(--s-5);
+  font-size: var(--t-sm); font-family: var(--font-sans);
+  color: var(--ink); background: var(--surface-1);
+  border: var(--panel-border); border-radius: var(--r-control);
+}
+.toggle[aria-pressed="true"] {
+  color: var(--gold-ink); background: var(--gold-wash); border-color: var(--gold-edge);
+}
+.toggle:disabled { color: var(--ink-dim); }
+
+/* A reason, not a disabled control: "not supported" and "you said no once"
+   are different situations and a greyed-out button says neither. */
+.note { margin: 0; font-size: var(--t-aside); color: var(--ink-dim); max-width: 34em; }
