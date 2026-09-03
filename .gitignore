@@ -1,5 +1,9 @@
 node_modules/
 dist/
+
+# The passphrase gate's secret for local runs (worker/gate.ts). The deployed
+# one is a wrangler secret; this file must never be committed.
+.dev.vars
 .verify/
 test-results/
 playwright-report/

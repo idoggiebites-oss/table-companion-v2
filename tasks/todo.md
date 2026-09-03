@@ -238,13 +238,34 @@ makes the last acceptance criterion true. It is cheap now — the worker serves
 - [ ] Asset and room routes both sit behind it
 
 **Verification:**
-- [ ] Tests pass: `npm run test:room` (boots in ~4s now that the compendium is not in `dist/`; the room suite starts its own worker and content server)
-- [ ] Typecheck passes: `npm run typecheck` (includes `worker/tsconfig.json`)
-- [ ] Manual check: unset the secret, confirm the app opens; set it, confirm the challenge
+- [x] `npm run verify` clean — typecheck, tier 4 (10 checks), **551** domain, 91 component, 50 journey, 5 room
+- [x] Manual check against a real `wrangler dev`, run independently of the implementer: with no secret, `/` is 200. With `SITE_PASSPHRASE` set, `/`, `/icon-192.png` **and the JS bundle** all 401 — that last one is what `run_worker_first` buys; without it the asset layer answers first and anyone loads the app unchallenged. A wrong passphrase 401s. The right one returns a 64-hex token that does not contain the passphrase, after which `/`, assets and a SPA deep link are 200 and `/room/BCDFGH` falls through to Room's own 426.
+
+**Added beyond the brief: `worker/gate.test.ts`, 9 tests in tier 1.** The brief's
+verification would have passed with the gate completely broken. The room tier
+boots with no passphrase, so it exercises the open path only — and nothing else
+asserted a word about the one security control in the codebase. That is exactly
+what `verify.mjs` refuses at the tier level ("silence is not success"), applied
+one level down. `guard` is a pure function of a Request and a secret, so it
+needs no server; `vitest.config.ts`'s domain project now includes
+`worker/**/*.test.ts`. **Proven by sabotage**: making `sameToken` always return
+true turns one test red, and reverting turns it green.
 
 **Dependencies:** Task 1
-**Files likely touched:** `worker/gate.ts` (new), `worker/index.ts`, `wrangler.jsonc`
-**Estimated scope:** S-M
+**Files touched:** `worker/gate.ts` (new), `worker/gate.test.ts` (new), `worker/index.ts`, `wrangler.jsonc`, `vitest.config.ts`, `.gitignore`, `scripts/verify.mjs`
+**Actual scope:** S-M
+
+**One deliberate difference from V1, argued in the file:** V1 special-cases
+`/api/` so a request expecting JSON gets a bare status rather than an HTML login
+page. V2 has no `/api/` prefix — the room is `/room/:code` and only ever answers
+a socket upgrade or plain text — so the same reasoning is applied to `/room/`.
+
+**A trap worth knowing:** the room tier boots fail-open because there is no
+`.dev.vars`. Leave a real `SITE_PASSPHRASE` in one and the room suite will 401
+and look broken for no visible reason. `.dev.vars` is now gitignored (it was
+missing entirely — V1 had it), which Task 6 also needs for its VAPID keys.
+
+**DONE.**
 
 ---
 

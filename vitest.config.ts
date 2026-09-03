@@ -16,7 +16,11 @@ export default defineConfig({
         // Tier 1 — pure. No DOM, no React, no server. Budget: under 5 seconds.
         test: {
           name: "domain",
-          include: ["src/**/*.test.ts"],
+          /*  too: the gate is a pure function of a Request and a
+             secret, and it is the one security control here. Nothing asserted
+             anything about it while the room tier — which boots with no
+             passphrase — was its only coverage. */
+          include: ["src/**/*.test.ts", "worker/**/*.test.ts"],
           environment: "node",
         },
       },

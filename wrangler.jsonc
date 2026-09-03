@@ -37,15 +37,19 @@
    * `undefined`. Measured, not assumed — every SPA deep link answered 500
    * before this line existed, and 200 after.
    *
-   * No `run_worker_first`: assets are served without waking the worker, and
-   * the room route reaches it regardless. V1 sets it because its passphrase
-   * gate has to see asset requests too; add it with the gate (Task 5), not
-   * before.
+   * `run_worker_first: true` — added with the gate (Task 5), as promised
+   * above. Without it, assets are served before the Worker runs at all, so
+   * worker/gate.ts never sees a request for the app shell and anyone can
+   * load the app unauthenticated. The room route always reached the Worker
+   * regardless (it isn't an asset path); the app shell is what this fixes.
+   * Cheap now that the compendium is out of `dist/` (Task 4) — the Worker
+   * fronts ~50 files, not 13,683.
    */
   "assets": {
     "directory": "./dist",
     "not_found_handling": "single-page-application",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
+    "run_worker_first": true
   },
 
   "durable_objects": {
