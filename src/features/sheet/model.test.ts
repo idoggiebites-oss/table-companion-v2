@@ -3,6 +3,7 @@ import { Clock } from "../../core/log";
 import { asDevice, type Event } from "../../core/types";
 import { vitalsFrom, diceLeft, startingVitals, VITAL, type Vital } from "./model";
 import { EMPTY, type Build } from "../creation/model";
+import type { Attack } from "../../rules/5e/attack";
 import { BLANK } from "../../rules/5e/abilities";
 
 const build = (over: Partial<Build> = {}): Build => ({
@@ -134,5 +135,42 @@ describe("conditions", () => {
     const s = sheet();
     for (const id of ["poisoned", "prone", "frightened"]) s.act({ act: "condition", id, on: true });
     expect(s.now().conditions).toHaveLength(3);
+  });
+});
+
+describe("what a character swings", () => {
+  const sword = (over: Partial<Attack> = {}): Attack => ({
+    name: "Longsword", ability: "str", proficient: true, bonus: 0,
+    damage: { count: 1, die: 8, addAbility: true }, damageType: "slashing", ...over,
+  });
+
+  it("keeps what was added", () => {
+    const t = sheet();
+    t.act({ act: "attack", attack: sword() });
+    expect(t.now().attacks.map((a) => a.name)).toEqual(["Longsword"]);
+  });
+
+  it("replaces one of the same name rather than doubling it", () => {
+    /* A character has one Longsword; editing it is not acquiring a second. */
+    const t = sheet();
+    t.act({ act: "attack", attack: sword() });
+    t.act({ act: "attack", attack: sword({ proficient: false }) });
+    expect(t.now().attacks).toHaveLength(1);
+    expect(t.now().attacks[0]?.proficient).toBe(false);
+  });
+
+  it("puts one down again", () => {
+    const t = sheet();
+    t.act({ act: "attack", attack: sword() });
+    t.act({ act: "unattack", name: "Longsword" });
+    expect(t.now().attacks).toEqual([]);
+  });
+
+  it("stores what it IS, never the bonus — that is the whole point", () => {
+    /* Entering "+7" leaves a number that stays +7 after the level-up that
+       should have made it +8. */
+    const t = sheet();
+    t.act({ act: "attack", attack: sword() });
+    expect(JSON.stringify(t.now().attacks[0])).not.toContain("toHit");
   });
 });

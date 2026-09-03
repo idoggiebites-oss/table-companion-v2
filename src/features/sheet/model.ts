@@ -5,6 +5,7 @@ import {
   EMPTY_DEATHS, clampExhaustion, type Health, type Deaths,
 } from "../../rules/5e/vitals";
 import type { Build } from "../creation/model";
+import type { Attack } from "../../rules/5e/attack";
 import { scoresOf } from "../creation/scores";
 
 export const VITAL = "sheet.vital";
@@ -19,6 +20,15 @@ export type Vitals = {
   readonly concentrating: string | null;
   /** Hit dice already spent, by die size. */
   readonly spent: Readonly<Record<number, number>>;
+  /**
+   * What this character swings, keyed by name.
+   *
+   * Stored as what it IS — ability, proficiency, dice — never as the final
+   * bonus. V1's reason, and it is the whole point: entering "+7" leaves a
+   * number that silently stays +7 after the level-up that should have made
+   * it +8. The bonus is derived at read time, every time.
+   */
+  readonly attacks: readonly Attack[];
 };
 
 export type Vital =
@@ -31,7 +41,10 @@ export type Vital =
   | { readonly act: "death"; readonly result: "success" | "failure" | "clear" }
   | { readonly act: "exhaustion"; readonly n: number }
   | { readonly act: "inspiration"; readonly on: boolean }
-  | { readonly act: "concentrate"; readonly spell: string | null };
+  | { readonly act: "concentrate"; readonly spell: string | null }
+  /** Adds, or replaces one of the same name — a character has one Longsword. */
+  | { readonly act: "attack"; readonly attack: Attack }
+  | { readonly act: "unattack"; readonly name: string };
 
 export function startingVitals(build: Build): Vitals {
   const con = scoresOf(build).con;
@@ -40,6 +53,7 @@ export function startingVitals(build: Build): Vitals {
     health: { hp: max, max, temp: 0, dying: false, dead: false },
     deaths: EMPTY_DEATHS,
     conditions: [],
+    attacks: [],
     exhaustion: 0,
     inspiration: false,
     concentrating: null,
@@ -54,6 +68,12 @@ export function reduceVitals(v: Vitals, e: Event): Vitals {
   if (e.kind !== VITAL) return v;
   const a = e.data as unknown as Vital;
   switch (a.act) {
+    case "attack":
+      return { ...v, attacks: [
+        ...v.attacks.filter((x) => x.name !== a.attack.name), a.attack,
+      ] };
+    case "unattack":
+      return { ...v, attacks: v.attacks.filter((x) => x.name !== a.name) };
     case "damage": {
       const { health, deathFails } = applyDamage(v.health, a.n);
       // Damage breaks concentration unless the save is made; the DM confirms

@@ -14,6 +14,8 @@ import { Identity } from "./Identity";
 import { StatStrip } from "./StatStrip";
 import { Overview } from "./Overview";
 import { Inventory } from "./Inventory";
+import { Attacks } from "./Attacks";
+import { stacksOf } from "./carried";
 import { diceLeft, type Vital, type Vitals } from "./model";
 import { waitingOn } from "./waiting";
 import type { Build } from "../creation/model";
@@ -134,10 +136,13 @@ export function Sheet({
         <Inventory build={build} catalogue={catalogue} loading={catalogueLoading}
                    {...(onChoose === undefined ? {} : { onAct: onChoose })} />
       )}
-      {tab !== "overview" && tab !== "inventory" && (
+      {tab === "combat" && (
+        <Attacks attacks={vitals.attacks} scores={scoresOf(build)} level={build.level}
+                 catalogue={catalogue} carried={stacksOf(build, catalogue).map((x) => x.itemId)} onAct={onAct} />
+      )}
+      {tab === "notes" && (
         <p className={s.note} data-testid="soon">
-          {tab === "combat" ? "Attacks and reactions arrive with the fight."
-            : "Notes live in the log, so they survive a lost phone."}
+          Notes live in the log, so they survive a lost phone.
         </p>
       )}
 
