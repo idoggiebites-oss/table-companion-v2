@@ -1,0 +1,96 @@
+/* One row in the fight: who, how fast, how hurt, and how much of it the
+   table can see. Split out of Staging.module.css when the screen grew past
+   its budget — the row is its own component and now has its own sheet. */
+.row {
+  display: grid; grid-template-columns: 1fr auto; gap: var(--s-3); align-items: center;
+  padding: var(--s-4) var(--s-5); border: var(--panel-border); border-radius: var(--r-card);
+  background: var(--surface-1); box-shadow: var(--lift-1);
+}
+
+.rowHead { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.rowName { font-weight: 600; font-size: var(--t-sm); font-family: var(--font-sans); }
+.rowNote { font-size: var(--t-aside); color: var(--ink-dim); font-family: var(--font-mono); }
+
+.ladder {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-pill);
+  overflow: hidden;
+}
+
+.step {
+  min-height: var(--tap);
+  border: 0;
+  border-inline-start: 1px solid var(--hairline);
+  background: var(--surface-2);
+  color: var(--ink-dim);
+  font-family: var(--font-sans);
+  font-size: var(--t-micro);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.step:first-child { border-inline-start: 0; }
+
+/* Everything UP TO the current rung is lit: the ladder is cumulative, and
+   "vague" means the table sees it is there AND roughly how hurt. Lighting one
+   rung drew it as a pick from four, which is the reading a dropdown gives and
+   the reason this is not one. `:has(~ .at)` because CSS has no preceding
+   sibling. */
+.step:has(~ .at) {
+  background: var(--gold-wash);
+  color: var(--gold-ink);
+}
+
+.at {
+  background: var(--gold-fill);
+  color: var(--on-gold);
+  font-weight: 600;
+}
+
+.off {
+  grid-row: 1;
+  grid-column: 2;
+  min-width: var(--tap);
+  min-height: var(--tap);
+  border: 0;
+  background: none;
+  color: var(--ink-dim);
+  font-size: var(--t-card);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.now { border-color: var(--gold-edge); box-shadow: inset 3px 0 0 0 var(--gold-edge), var(--lift-1); }
+
+.initBox {
+  width: 4.5ch; padding: var(--s-1) var(--s-2); text-align: center;
+  appearance: textfield; -webkit-appearance: none; /* spinners ate the second digit */
+  font-family: var(--font-mono); font-size: var(--t-sm); color: var(--ink);
+  background: var(--surface-2); border: var(--panel-border); border-radius: var(--r-control);
+}
+
+.hurt { display: flex; gap: var(--s-2); align-items: center; }
+.amount {
+  width: 4.5ch; padding: var(--s-1) var(--s-2); text-align: center;
+  appearance: textfield; -webkit-appearance: none;
+  font-family: var(--font-mono); font-size: var(--t-sm); color: var(--ink);
+  background: var(--surface-2); border: var(--panel-border); border-radius: var(--r-control);
+}
+.apply {
+  min-height: var(--tap); padding: 0 var(--s-4); font-size: var(--t-sm);
+  color: var(--ink); background: var(--surface-2);
+  border: var(--panel-border); border-radius: var(--r-control);
+}
+
+/* Two number boxes in one row is one too many to leave unlabelled: initiative
+   and damage looked identical, and only a screenshot said so. */
+.init { display: inline-flex; align-items: center; gap: var(--s-2); }
+.tag {
+  font-size: var(--t-micro); letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink-dim);
+}

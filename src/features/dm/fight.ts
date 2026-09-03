@@ -1,5 +1,6 @@
 import { fold } from "../../core/fold";
 import type { Event } from "../../core/types";
+import { healthStep, VAGUE } from "../../rules/5e/vitals";
 
 export const FIGHT = "fight.act";
 
@@ -66,6 +67,14 @@ export type Act =
   | { readonly act: "unstage"; readonly id: string }
   | { readonly act: "disclose"; readonly id: string; readonly to: Disclosure }
   | { readonly act: "roll"; readonly id: string; readonly value: number }
+  /**
+   * Damage, or healing when `amount` is negative.
+   *
+   * One act rather than two, which is V1's shape: at a table "heal it four"
+   * and "hit it four" are the same gesture with the sign flipped, and a second
+   * act would need the same clamping written twice.
+   */
+  | { readonly act: "hurt"; readonly id: string; readonly amount: number }
   | { readonly act: "begin" }
   /**
    * `from` is the turn the presser could see. Without it a DM and a player
@@ -122,6 +131,20 @@ function reduce(f: Fight, e: Event): Fight {
         phase: f.phase === "staging" ? "rolling" : f.phase,
         combatants: f.combatants.map((c) => c.id === a.id ? { ...c, initiative: a.value } : c),
       };
+    case "hurt":
+      return { ...f, combatants: f.combatants.map((c) => {
+        if (c.id !== a.id) return c;
+        /* A character's hit points are not the fight's to hold — they are in
+           the log, on their own sheet (V1's `Source` union). Ignoring it here
+           is what stops the party screen and the fight ever disagreeing:
+           there is only ever one of the number. */
+        if (c.source.kind !== "creature") return c;
+        /* Clamped both ends. The ceiling is V1's, and so is its reason: a
+           ghoul patched up twice reads 30/22, which is not a state the game
+           has. The floor is the same rule from the other side — a creature is
+           at zero or it is not, and 5e gives it no dying to be in. */
+        return { ...c, damage: Math.min(c.source.max, Math.max(0, c.damage + a.amount)) };
+      }) };
     case "begin":
       /* Anyone who never rolled is dropped rather than placed arbitrarily.
          V1's reason, kept: a fight that starts with somebody at a made-up
@@ -180,6 +203,34 @@ export function activeOf(f: Fight): Combatant | null {
 }
 
 export const fightFrom = (events: readonly Event[]): Fight => fold(events, reduce, NO_FIGHT);
+
+/** A creature's hit points, or null for a character — theirs are on their sheet. */
+export function hpOf(c: Combatant): { hp: number; max: number } | null {
+  if (c.source.kind !== "creature") return null;
+  return { hp: c.source.max - c.damage, max: c.source.max };
+}
+
+/**
+ * What a seat may be told about a creature's health, by its rung.
+ *
+ * A player asking "how hurt is that ogre" gets a WORD, never a number, until
+ * the DM decides the mystery has stopped being fun — `healthStep` and `VAGUE`
+ * already exist in `rules/5e/vitals.ts` for exactly that, and are the same
+ * words the party screen uses, so the two sides of the table cannot end up
+ * describing the same creature differently.
+ */
+export type HealthShown =
+  | { readonly kind: "none" }
+  | { readonly kind: "word"; readonly word: string }
+  | { readonly kind: "numbers"; readonly hp: number; readonly max: number };
+
+export function healthShown(dm: boolean, c: Combatant): HealthShown {
+  const at = hpOf(c);
+  if (at === null) return { kind: "none" };
+  if (showsNumbers(dm, c)) return { kind: "numbers", hp: at.hp, max: at.max };
+  if (c.disclosure === "vague") return { kind: "word", word: VAGUE[healthStep(at.hp, at.max)] };
+  return { kind: "none" };
+}
 
 /** Whether a seat may be shown this combatant at all. */
 export const visibleTo = (dm: boolean, c: Combatant): boolean => dm || c.disclosure !== "hidden";

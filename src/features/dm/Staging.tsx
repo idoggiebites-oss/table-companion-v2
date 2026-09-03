@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Shell } from "../../ui/Shell";
 import { Button, ButtonRow } from "../../ui/Button";
 import { bestiary, describe, crName } from "./creatures";
-import { DISCLOSURE, orderOf, awaiting, activeOf, type Act, type Combatant, type Fight } from "./fight";
+import { orderOf, awaiting, activeOf, type Act, type Fight } from "./fight";
+import { Staged } from "./Combatant";
 import type { CreatureEntry } from "../../content/schema";
 import type { ReactNode } from "react";
 import s from "./Staging.module.css";
@@ -141,59 +142,6 @@ export function Staging({ fight, nav, onAct }: {
         </section>
       </div>
     </Shell>
-  );
-}
-
-/** How much of this one the table can see, and a way off the table. */
-function Staged({ c, onAct, now }: {
-  c: Combatant; onAct: (a: Act) => void; now: boolean;
-}) {
-  return (
-    <li className={`${s.row} ${now ? s.now : ""}`} data-testid="staged-row"
-        aria-current={now ? "true" : undefined}>
-      <span className={s.rowHead}>
-        <span className={s.rowName}>{c.name}</span>
-        {/*
-          * Null until rolled, and shown as blank rather than 0 — "has not
-          * rolled" and "rolled badly" are different facts, and a 0 in the box
-          * would assert the second.
-          */}
-        <input
-          className={s.init}
-          type="number"
-          inputMode="numeric"
-          value={c.initiative ?? ""}
-          placeholder="—"
-          aria-label={`Initiative for ${c.name}`}
-          data-testid="initiative"
-          onChange={(e) => {
-            const v = e.target.value.trim();
-            if (v === "") return;
-            onAct({ act: "roll", id: c.id, value: Number(v) });
-          }}
-        />
-        {c.source.kind === "creature" && (
-          <span className={s.rowNote}>AC {c.source.ac} · {c.source.max} hp</span>
-        )}
-      </span>
-      {/*
-        * A ladder drawn as a ladder. The DM slides it up as the fight
-        * develops, and the order is the information — a dropdown would hide
-        * which way is "more".
-        */}
-      <span className={s.ladder} role="radiogroup" aria-label={`What the table sees of ${c.name}`}>
-        {DISCLOSURE.map((step) => (
-          <button key={step} type="button" role="radio" aria-checked={c.disclosure === step}
-                  className={`${s.step} ${c.disclosure === step ? s.at : ""}`}
-                  data-testid={`step-${step}`}
-                  onClick={() => onAct({ act: "disclose", id: c.id, to: step })}>
-            {step}
-          </button>
-        ))}
-      </span>
-      <button type="button" className={s.off} aria-label={`Take ${c.name} off the table`}
-              onClick={() => onAct({ act: "unstage", id: c.id })}>×</button>
-    </li>
   );
 }
 

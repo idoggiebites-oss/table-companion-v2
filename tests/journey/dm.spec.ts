@@ -175,3 +175,44 @@ test("the order settles, then the fight walks down it", async ({ page }) => {
   await bar(page).getByRole("button", { name: "Fight" }).click();
   await expect(page.getByRole("heading", { name: /Round 2/ })).toBeVisible();
 });
+
+test("a creature takes damage, and mends, and remembers both", async ({ page }) => {
+  await hub(page);
+  await bar(page).getByRole("button", { name: "Fight" }).click();
+  await page.getByTestId("bestiary-search").fill("goblin");
+  await page.getByTestId("bestiary-row").first().click();
+
+  const row = page.getByTestId("staged-row").first();
+  const hp = row.locator('[class*="rowNote"]');
+  const before = (await hp.textContent()) ?? "";
+  const max = Number(/(\d+)\s*hp/.exec(before)?.[1] ?? "0");
+  expect(max).toBeGreaterThan(0);
+
+  const hit = async (n: string) => {
+    /* Two number inputs in a row now — initiative and damage — so name it. */
+    await row.getByRole("spinbutton", { name: /^Damage/ }).fill(n);
+    await row.getByRole("button", { name: /^Apply to/ }).click();
+  };
+
+  await hit("4");
+  await expect(hp).toContainText(`${String(max - 4)}/${String(max)}`);
+
+  /* A minus is healing — one gesture with the sign flipped. */
+  await hit("-2");
+  await expect(hp).toContainText(`${String(max - 2)}/${String(max)}`);
+
+  /* Neither end runs away: not past dead, not past whole. */
+  await hit("999");
+  await expect(hp).toContainText(`0/${String(max)}`);
+  await hit("-999");
+  await expect(hp).toContainText(`${String(max)}/${String(max)}`);
+
+  await hit("5");
+  await page.screenshot({ path: "shots/fight-damage.png", fullPage: true });
+
+  /* It is in the log like everything else, so it survives the app closing. */
+  await page.reload();
+  await bar(page).getByRole("button", { name: "Fight" }).click();
+  await expect(page.getByTestId("staged-row").first().locator('[class*="rowNote"]'))
+    .toContainText(`${String(max - 5)}/${String(max)}`);
+});

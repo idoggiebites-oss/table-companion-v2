@@ -375,19 +375,48 @@ tier 4, 542 domain tests, 91 component tests and 50 journeys:
 log — V1's `Source` union. Apply damage and healing to the fight side, keeping
 dying and dead as separate fields (`hp <= -max` is death outright).
 
+**Corrected 3 Sep 2026, after reading V1.** This brief said "dying and dead
+remain distinct; 999 damage is death, not dying". That is the CHARACTER rule,
+already built in `rules/5e/vitals.ts` and `features/dm/members.ts`. V1 gives
+creatures no dying state at all — `project.ts` clamps a creature to
+`[0, max]` and treats a negative amount as healing, with a ceiling, because
+"a ghoul patched up twice reads 30/22, which is not a state the game has".
+Reuse the existing character rule; do not give creatures a second one.
+
 **Acceptance criteria:**
-- [ ] Damage and healing apply to a staged creature and survive reload
-- [ ] Dying and dead remain distinct; 999 damage to a healthy creature is death, not dying
-- [ ] The party screen and the fight never disagree on a number
-- [ ] Disclosure still governs what a player sees of a creature's hit points
+- [x] Damage and healing apply to a staged creature and survive reload
+- [x] Clamped to `[0, max]` both ends
+- [x] Healing is a negative amount — one act, V1's shape
+- [x] The party and the fight cannot disagree: `hurt` ignores a character outright, because their hit points are in the log
+- [x] Disclosure governs what a player sees — `healthShown` gives numbers only at `exact`, a WORD at `vague`, nothing below. **The rule is built and tested; no player-facing screen consumes it until Task 11.**
 
 **Verification:**
-- [ ] Tests pass: `npm run test:domain`, `npm run test:journey`
-- [ ] Manual check: damage a goblin from the DM screen, confirm the player's view respects its disclosure rung
+- [x] `npm run verify` clean — 560 domain, 91 component, 51 journey, 5 room
+- [x] Journey: damage, heal, both clamps, and a **reload** proving it is in the log
+- [x] Screenshot read
+
+**Reused rather than rebuilt:** `healthStep` and `VAGUE` already existed in
+`rules/5e/vitals.ts` and are what the party screen uses, so the two sides of the
+table cannot end up describing the same creature with different words.
+
+**Two things the screenshot caught, again:** the row grew a second number box,
+and initiative and damage were visually identical with no labels — a DM could
+not tell which was which. Both are labelled now (`INIT`, and `±` with the Hit
+button as the affordance), and the damage placeholder was `0`, which read as a
+value rather than a prompt.
+
+**A split, forced by the size check:** `Staging.module.css` went past its
+150-line budget, so the row became `Combatant.tsx` + `Combatant.module.css`.
+Done now rather than by compacting, because Task 9 adds conditions to the same
+row and would have blown it again immediately. `check-styles` is what makes this
+safe — splitting a stylesheet and leaving a reference behind has bitten this
+repo before.
 
 **Dependencies:** Task 7
-**Files likely touched:** `src/features/dm/fight.ts`, `fight.test.ts`, `Staging.tsx`, `src/features/dm/members.ts`
-**Estimated scope:** M
+**Files touched:** `fight.ts`, `fight.test.ts`, `Staging.tsx`, `Staging.module.css`, `Combatant.tsx` (new), `Combatant.module.css` (new), `tests/journey/dm.spec.ts`, `scripts/verify.mjs`
+**Actual scope:** M
+
+**DONE.**
 
 ---
 

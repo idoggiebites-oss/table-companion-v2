@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { fightFrom, nameFor, visibleTo, showsNumbers, orderOf, awaiting, activeOf, DISCLOSURE, FIGHT, NO_FIGHT, type Act, type Combatant } from "./fight";
+import { fightFrom, nameFor, visibleTo, showsNumbers, orderOf, awaiting, activeOf, hpOf, healthShown, DISCLOSURE, FIGHT, NO_FIGHT, type Act, type Combatant } from "./fight";
 import type { Event } from "../../core/types";
 
 let n = 0;
@@ -192,5 +192,67 @@ describe("running the fight", () => {
     const f = fightFrom([...three, ev({ act: "advance", from: 0 })]);
     expect(f.phase).toBe("rolling");
     expect(f.round).toBe(0);
+  });
+});
+
+/* Ported from V1's `project.ts` creatureDamaged: clamped both ends, and a
+   negative amount is healing. V1's reason for the ceiling: "a ghoul patched up
+   twice reads 30/22, which is not a state the game has." */
+describe("hurting and mending a creature", () => {
+  const hurt = (id: string, amount: number): Act => ({ act: "hurt", id, amount });
+  const staged = [ev(goblin("g1"))]; // Goblin, max 7
+
+  it("takes damage off its maximum", () => {
+    const f = fightFrom([...staged, ev(hurt("g1", 3))]);
+    expect(hpOf(f.combatants[0]!)).toEqual({ hp: 4, max: 7 });
+  });
+
+  it("cannot be driven below zero, however hard it is hit", () => {
+    const f = fightFrom([...staged, ev(hurt("g1", 999))]);
+    expect(hpOf(f.combatants[0]!)?.hp).toBe(0);
+  });
+
+  it("heals on a negative amount, and never above its maximum", () => {
+    const f = fightFrom([...staged, ev(hurt("g1", 5)), ev(hurt("g1", -99))]);
+    expect(hpOf(f.combatants[0]!)).toEqual({ hp: 7, max: 7 });
+  });
+
+  it("accumulates, so two blows are the sum of them", () => {
+    const f = fightFrom([...staged, ev(hurt("g1", 2)), ev(hurt("g1", 3))]);
+    expect(hpOf(f.combatants[0]!)?.hp).toBe(2);
+  });
+
+  it("leaves a character alone — their hit points are not the fight's to hold", () => {
+    /* V1's `Source` union: a creature's hit points live in the fight, a
+       character's in the log, on their own sheet. The two cannot disagree
+       because there is only ever one of them. */
+    const pc: Act = { act: "stage", id: "c1", name: "Bree",
+      source: { kind: "character", character: "c1" } };
+    const f = fightFrom([ev(pc), ev(hurt("c1", 5))]);
+    expect(hpOf(f.combatants[0]!)).toBeNull();
+  });
+});
+
+describe("what a player is allowed to see of a creature's health", () => {
+  const staged = [ev(goblin("g1")), ev({ act: "hurt", id: "g1", amount: 4 })];
+  const at = (rung: "hidden" | "present" | "vague" | "exact") =>
+    fightFrom([...staged, ev({ act: "disclose", id: "g1", to: rung })]).combatants[0]!;
+
+  it("gives the DM the numbers whatever the rung says", () => {
+    expect(healthShown(true, at("hidden"))).toEqual({ kind: "numbers", hp: 3, max: 7 });
+  });
+
+  it("gives a player nothing below vague", () => {
+    expect(healthShown(false, at("present"))).toEqual({ kind: "none" });
+  });
+
+  it("gives a player a WORD at vague, never a number", () => {
+    const shown = healthShown(false, at("vague"));
+    expect(shown.kind).toBe("word");
+    expect(JSON.stringify(shown)).not.toContain("3");
+  });
+
+  it("gives a player the numbers only once the DM says exact", () => {
+    expect(healthShown(false, at("exact"))).toEqual({ kind: "numbers", hp: 3, max: 7 });
   });
 });
