@@ -245,3 +245,58 @@ test("a condition goes on a creature, says what it does, and comes off", async (
   await expect(page.getByTestId("staged-row").first()
     .getByRole("button", { name: /^Clear Poisoned/ })).toHaveCount(0);
 });
+
+test("a player claims a hit, and nothing lands until the DM says so", async ({ page }) => {
+  await hub(page);
+  await make(page, "Bree Thorn");
+
+  /* Stage something to swing at, and start the fight — a swing needs a fight.
+     The seat control is on the hub's crest row, so seats change from there. */
+  await bar(page).getByRole("button", { name: "Characters" }).click();
+  await page.getByTestId("seat").selectOption({ value: "dm" });
+  await bar(page).getByRole("button", { name: "Fight" }).click();
+  /* 6,633 creatures arrive as a 142KB fetch when this screen opens; the search
+     is live before they land and says so. Wait for it rather than for a row. */
+  await expect(page.getByTestId("bestiary-search"))
+    .toHaveAttribute("placeholder", /Search/, { timeout: 30_000 });
+  await page.getByTestId("bestiary-search").fill("goblin");
+  await page.getByTestId("bestiary-row").first().click();
+  const row = page.getByTestId("staged-row").first();
+  const before = (await row.locator('[class*="rowNote"]').textContent()) ?? "";
+  const max = Number(/(\d+)\s*hp/.exec(before)?.[1] ?? "0");
+  await row.getByRole("spinbutton", { name: /^Initiative/ }).fill("10");
+  /* Visible, or a player cannot swing at what they are not allowed to know. */
+  await row.getByTestId("step-present").click();
+  await page.getByRole("button", { name: "Begin", exact: true }).click();
+
+  /* Now as the player, with something to swing. */
+  await bar(page).getByRole("button", { name: "Characters" }).click();
+  await page.getByTestId("seat").selectOption({ label: "Bree Thorn" });
+  await bar(page).getByRole("button", { name: "Sheet" }).click();
+  await page.getByRole("tab", { name: "Combat", exact: true }).click();
+  await page.getByRole("button", { name: "Add an attack" }).click();
+  await page.getByRole("group", { name: "Add an attack" }).getByRole("button").first().click();
+
+  const attack = page.getByTestId("attack").first();
+  await attack.getByRole("button", { name: /^Swing/ }).click();
+  await page.getByRole("spinbutton", { name: /rolled to hit/ }).fill("18");
+  await page.getByRole("spinbutton", { name: /damage you rolled/ }).fill("4");
+  await page.getByRole("button", { name: "Tell the DM" }).click();
+
+  /* Sent, and nothing has happened to the goblin yet. */
+  await bar(page).getByRole("button", { name: "Characters" }).click();
+  await page.getByTestId("seat").selectOption({ value: "dm" });
+  await bar(page).getByRole("button", { name: "Fight" }).click();
+  await expect(page.getByTestId("claim")).toHaveCount(1);
+  await expect(page.getByTestId("staged-row").first().locator('[class*="rowNote"]'))
+    .toContainText(`${String(max)}/${String(max)}`);
+
+  /* The line suggests; it does not decide. */
+  await expect(page.getByTestId("verdict")).toContainText("18 against");
+  await page.screenshot({ path: "shots/fight-claim.png", fullPage: true });
+
+  await page.getByRole("button", { name: /lands$/ }).click();
+  await expect(page.getByTestId("claim")).toHaveCount(0);
+  await expect(page.getByTestId("staged-row").first().locator('[class*="rowNote"]'))
+    .toContainText(`${String(max - 4)}/${String(max)}`);
+});

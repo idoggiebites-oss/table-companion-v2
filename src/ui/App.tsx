@@ -181,6 +181,11 @@ export function App({ dbName }: { dbName?: string }) {
         onBack={() => setMode("hub")}
         nav={nav("sheet")}
         onLevelUp={() => setMode("levelup")}
+        /* The fight, so a swing can name what it is swung at. A player attacks
+           IN a fight; the sheet is where they keep what they attack with. */
+        fight={fightFrom(events)}
+        onFight={(a: Act) => record(FIGHT, a as unknown as Record<string, unknown>)}
+        character={character}
       />
     );
   }

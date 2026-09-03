@@ -44,3 +44,9 @@
 }
 
 .empty { font-size: var(--t-sm); color: var(--ink-dim); margin: 0; max-width: 32em; }
+
+.swing {
+  min-height: var(--tap); padding: 0 var(--s-4); font-size: var(--t-sm);
+  color: var(--ink); background: var(--surface-2);
+  border: var(--panel-border); border-radius: var(--r-control);
+}

@@ -4,6 +4,8 @@ import { proficiency } from "../../rules/5e/skills";
 import { signed, type Scores } from "../../rules/5e/abilities";
 import type { Item } from "../../rules/5e/items";
 import type { Vital } from "./model";
+import { visibleTo, type Fight, type Act as FightAct } from "../dm/fight";
+import { Swing } from "./Swing";
 import s from "./Attacks.module.css";
 
 /**
@@ -22,7 +24,7 @@ import s from "./Attacks.module.css";
  * sheet has no class content loaded, and guessing from the class alone gets a
  * bard's simple weapons wrong.
  */
-export function Attacks({ attacks, scores, level, catalogue, carried, onAct }: {
+export function Attacks({ attacks, scores, level, catalogue, carried, onAct, fight, onFight, who, whoName }: {
   attacks: readonly Attack[];
   scores: Scores;
   level: number;
@@ -30,7 +32,18 @@ export function Attacks({ attacks, scores, level, catalogue, carried, onAct }: {
   /** Item ids the character is carrying — not only what is in hand. */
   carried: readonly string[];
   onAct: (a: Vital) => void;
+  /** Present only while a fight is running — you swing AT something. */
+  fight?: Fight;
+  onFight?: (a: FightAct) => void;
+  who?: string;
+  whoName?: string;
 }) {
+  const [swinging, setSwinging] = useState<string | null>(null);
+
+  /* Only what a player is allowed to see. A hidden creature is not a target,
+     because knowing it is there is the thing the ladder is protecting. */
+  const targets = (fight?.phase === "active" ? fight.combatants : [])
+    .filter((c) => visibleTo(false, c) && c.source.kind === "creature");
   const [adding, setAdding] = useState(false);
   const prof = proficiency(level);
 
@@ -67,8 +80,23 @@ export function Attacks({ attacks, scores, level, catalogue, carried, onAct }: {
                       onClick={() => onAct({ act: "attack", attack: { ...a, proficient: !a.proficient } })}>
                 {a.proficient ? "proficient" : "not proficient"}
               </button>
+              {targets.length > 0 && (
+                <button type="button" className={s.swing} aria-label={`Swing ${a.name}`}
+                        onClick={() => setSwinging(swinging === a.name ? null : a.name)}>Swing</button>
+              )}
               <button type="button" className={s.drop} aria-label={`Put down ${a.name}`}
                       onClick={() => onAct({ act: "unattack", name: a.name })}>×</button>
+              {swinging === a.name && (
+                <Swing attack={r} targets={targets} onCancel={() => setSwinging(null)}
+                       onClaim={(targetId, toHit, damage) => {
+                         onFight?.({ act: "claim", claim: {
+                           id: `${who ?? ""}-${a.name}-${String(Date.now())}`,
+                           who: who ?? "", whoName: whoName ?? "Someone",
+                           targetId, weapon: a.name, toHit, damage, damageType: r.damageType,
+                         } });
+                         setSwinging(null);
+                       }} />
+              )}
             </li>
           );
         })}

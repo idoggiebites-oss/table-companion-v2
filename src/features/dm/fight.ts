@@ -1,6 +1,7 @@
 import { fold } from "../../core/fold";
 import type { Event } from "../../core/types";
 import { healthStep, VAGUE } from "../../rules/5e/vitals";
+import type { Claim } from "./claim";
 
 export const FIGHT = "fight.act";
 
@@ -65,9 +66,11 @@ export type Fight = {
    */
   readonly turn: number;
   readonly combatants: readonly Combatant[];
+  /** Unanswered swings, oldest first. */
+  readonly claims: readonly Claim[];
 };
 
-export const NO_FIGHT: Fight = { phase: "staging", round: 0, turn: 0, combatants: [] };
+export const NO_FIGHT: Fight = { phase: "staging", round: 0, turn: 0, combatants: [], claims: [] };
 
 /** What the DM does to a fight while assembling it. */
 export type Act =
@@ -86,6 +89,13 @@ export type Act =
   | { readonly act: "hurt"; readonly id: string; readonly amount: number }
   /** On or off. Idempotent, because two devices may say the same thing. */
   | { readonly act: "condition"; readonly id: string; readonly condition: string; readonly on: boolean }
+  | { readonly act: "claim"; readonly claim: Claim }
+  /**
+   * The DM's answer. `lands` is theirs, not the app's — the suggestion is
+   * offered and can always be overruled, because a shield spell or a cover
+   * rule this app has never heard of is still true at the table.
+   */
+  | { readonly act: "verdict"; readonly claim: string; readonly lands: boolean }
   | { readonly act: "begin" }
   /**
    * `from` is the turn the presser could see. Without it a DM and a player
@@ -170,6 +180,21 @@ function reduce(f: Fight, e: Event): Fight {
           ? [...c.conditions, a.condition]
           : c.conditions.filter((x) => x !== a.condition) };
       }) };
+    case "claim":
+      /* Idempotent by id: a flaky socket may deliver the same swing twice. */
+      return f.claims.some((c) => c.id === a.claim.id)
+        ? f
+        : { ...f, claims: [...f.claims, a.claim] };
+    case "verdict": {
+      const claim = f.claims.find((c) => c.id === a.claim);
+      if (claim === undefined) return f; // already answered, or never arrived
+      const rest = f.claims.filter((c) => c.id !== a.claim);
+      if (!a.lands) return { ...f, claims: rest };
+      return { ...f, claims: rest, combatants: f.combatants.map((c) => {
+        if (c.id !== claim.targetId || c.source.kind !== "creature") return c;
+        return { ...c, damage: Math.min(c.source.max, Math.max(0, c.damage + claim.damage)) };
+      }) };
+    }
     case "begin":
       /* Anyone who never rolled is dropped rather than placed arbitrarily.
          V1's reason, kept: a fight that starts with somebody at a made-up

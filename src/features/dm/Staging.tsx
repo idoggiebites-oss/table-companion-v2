@@ -3,6 +3,7 @@ import { Shell } from "../../ui/Shell";
 import { Button, ButtonRow } from "../../ui/Button";
 import { bestiary, describe, crName } from "./creatures";
 import { orderOf, awaiting, activeOf, type Act, type Fight } from "./fight";
+import { describeVerdict, verdictFor, acOf } from "./claim";
 import { Staged } from "./Combatant";
 import type { CreatureEntry } from "../../content/schema";
 import type { ReactNode } from "react";
@@ -120,6 +121,43 @@ export function Staging({ fight, nav, onAct }: {
                 to the roster, so it is shown while there is a roster. */}
             {fight.phase !== "active" && <span className={s.count}>{fight.combatants.length}</span>}
           </h2>
+          {fight.claims.length > 0 && (
+            /*
+             * Unanswered swings, oldest first — a queue is answered in the
+             * order it arrived. The line SUGGESTS and never decides: "18
+             * against 15 — hits" is one tap to confirm and still one tap to
+             * overrule, because a shield spell or a cover rule this app has
+             * never heard of is still true at the table.
+             */
+            <ul className={s.claims} data-testid="claims">
+              {fight.claims.map((k) => {
+                const ac = acOf(fight, k.targetId);
+                const target = fight.combatants.find((c) => c.id === k.targetId);
+                return (
+                  <li key={k.id} className={s.claim} data-testid="claim">
+                    <span className={s.claimWho}>
+                      {k.whoName} · {k.weapon} → {target?.name ?? "gone"}
+                    </span>
+                    <span className={s.claimLine} data-testid="verdict">
+                      {describeVerdict(k.toHit, ac)} · {k.damage} {k.damageType}
+                    </span>
+                    <span className={s.claimRow}>
+                      <button type="button" className={s.lands}
+                              aria-label={`${k.weapon} from ${k.whoName} lands`}
+                              onClick={() => onAct({ act: "verdict", claim: k.id, lands: true })}>
+                        {verdictFor(k.toHit, ac) === "misses" ? "Lands anyway" : "Lands"}
+                      </button>
+                      <button type="button" className={s.missed}
+                              aria-label={`${k.weapon} from ${k.whoName} misses`}
+                              onClick={() => onAct({ act: "verdict", claim: k.id, lands: false })}>
+                        {verdictFor(k.toHit, ac) === "hits" ? "Misses anyway" : "Misses"}
+                      </button>
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
           {fight.phase === "rolling" && waiting.length > 0 && (
             /* Who the table is waiting on is the whole reason there is a phase
                between staging and running. Name them. */

@@ -76,3 +76,24 @@
 .waiting { margin: 0 0 var(--s-3); font-size: var(--t-aside); color: var(--ink-dim); }
 
 /* Damage in, healing with a minus — one control, because it is one gesture. */
+
+/* Swings waiting on a word. Loud, because somebody's turn is stopped here. */
+.claims { list-style: none; margin: 0 0 var(--s-4); padding: 0; display: flex; flex-direction: column; gap: var(--s-3); }
+.claim {
+  display: flex; flex-direction: column; gap: var(--s-2);
+  padding: var(--s-4) var(--s-5); border: 1px solid var(--gold-edge);
+  border-radius: var(--r-card); background: var(--gold-wash);
+}
+.claimWho { font-weight: 600; font-size: var(--t-sm); }
+.claimLine { font-family: var(--font-mono); font-size: var(--t-aside); color: var(--ink); }
+.claimRow { display: flex; gap: var(--s-3); }
+.lands {
+  min-height: var(--tap); padding: 0 var(--s-5); font-size: var(--t-sm);
+  color: var(--on-gold); background: var(--gold-fill);
+  border: 1px solid var(--gold-edge); border-radius: var(--r-control);
+}
+.missed {
+  min-height: var(--tap); padding: 0 var(--s-5); font-size: var(--t-sm);
+  color: var(--ink); background: var(--surface-1);
+  border: var(--panel-border); border-radius: var(--r-control);
+}

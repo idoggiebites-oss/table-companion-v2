@@ -1,0 +1,41 @@
+/* Saying what you rolled. Both numbers together, because that is how a table
+   says it out loud — see the note in Swing.tsx. */
+.wrap {
+  grid-column: 1 / -1;
+  display: flex; flex-wrap: wrap; gap: var(--s-3); align-items: center;
+  padding-top: var(--s-3); border-top: 1px solid var(--hairline);
+}
+
+.field { display: inline-flex; align-items: center; gap: var(--s-2); }
+
+.tag {
+  font-size: var(--t-micro); letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.num {
+  width: 4.5ch; padding: var(--s-1) var(--s-2); text-align: center;
+  appearance: textfield; -webkit-appearance: none;
+  font-family: var(--font-mono); font-size: var(--t-sm); color: var(--ink);
+  background: var(--surface-2); border: var(--panel-border); border-radius: var(--r-control);
+}
+
+.pick {
+  min-height: var(--tap); max-width: 18ch; padding: 0 var(--s-3);
+  font-size: var(--t-sm); color: var(--ink);
+  background: var(--surface-2); border: var(--panel-border); border-radius: var(--r-control);
+}
+
+.row { display: flex; gap: var(--s-3); align-items: center; margin-left: auto; }
+
+.send {
+  min-height: var(--tap); padding: 0 var(--s-5); font-size: var(--t-sm);
+  color: var(--on-gold); background: var(--gold-fill);
+  border: 1px solid var(--gold-edge); border-radius: var(--r-control);
+}
+.send:disabled { color: var(--ink-dim); background: var(--surface-2); border: var(--panel-border); }
+
+.cancel {
+  min-height: var(--tap); padding: 0 var(--s-4); font-size: var(--t-sm);
+  color: var(--ink-dim); background: none; border: none;
+}

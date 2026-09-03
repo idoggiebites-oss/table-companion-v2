@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { fightFrom, nameFor, visibleTo, showsNumbers, orderOf, awaiting, activeOf, hpOf, healthShown, DISCLOSURE, FIGHT, NO_FIGHT, type Act, type Combatant } from "./fight";
+import { verdictFor, describeVerdict, acOf, type Claim } from "./claim";
 import type { Event } from "../../core/types";
 import { CONDITIONS } from "../../rules/5e/conditions";
 
@@ -301,5 +302,77 @@ describe("the condition set", () => {
       "incapacitated", "invisible", "paralyzed", "petrified", "poisoned",
       "prone", "restrained", "stunned", "unconscious",
     ]);
+  });
+});
+
+/* Ported from V1's attackflow.ts. Its header is the design and the reason:
+   a player rolls and says what they got; the DM decides whether it lands. */
+describe("a swing is a claim, and the DM answers it", () => {
+  const staged = [ev(goblin("g1"))]; // Goblin, AC 15, max 7
+  const swing = (over: Partial<Claim> = {}): Act => ({ act: "claim", claim: {
+    id: "k1", who: "c1", whoName: "Bree", targetId: "g1",
+    weapon: "Longsword", toHit: 18, damage: 4, damageType: "slashing", ...over,
+  } });
+
+  it("arrives unanswered, changing nothing", () => {
+    const f = fightFrom([...staged, ev(swing())]);
+    expect(f.claims).toHaveLength(1);
+    expect(hpOf(f.combatants[0]!)?.hp).toBe(7);
+  });
+
+  it("lands the damage only when the DM says it lands", () => {
+    const f = fightFrom([...staged, ev(swing()), ev({ act: "verdict", claim: "k1", lands: true })]);
+    expect(f.claims).toHaveLength(0);
+    expect(hpOf(f.combatants[0]!)?.hp).toBe(3);
+  });
+
+  it("costs nothing when the DM says it misses", () => {
+    const f = fightFrom([...staged, ev(swing()), ev({ act: "verdict", claim: "k1", lands: false })]);
+    expect(f.claims).toHaveLength(0);
+    expect(hpOf(f.combatants[0]!)?.hp).toBe(7);
+  });
+
+  it("takes the same swing twice as one — a flaky socket may deliver it twice", () => {
+    const f = fightFrom([...staged, ev(swing()), ev(swing())]);
+    expect(f.claims).toHaveLength(1);
+  });
+
+  it("ignores an answer to a claim that is already gone", () => {
+    const f = fightFrom([...staged, ev(swing()),
+      ev({ act: "verdict", claim: "k1", lands: true }),
+      ev({ act: "verdict", claim: "k1", lands: true })]);
+    expect(hpOf(f.combatants[0]!)?.hp).toBe(3); // not 7 damage, not −1
+  });
+
+  it("still clamps: a huge hit cannot drive it below zero", () => {
+    const f = fightFrom([...staged, ev(swing({ damage: 999 })),
+      ev({ act: "verdict", claim: "k1", lands: true })]);
+    expect(hpOf(f.combatants[0]!)?.hp).toBe(0);
+  });
+});
+
+describe("what the DM's screen suggests, and never decides", () => {
+  it("says it hits when the roll meets the armour class", () => {
+    expect(verdictFor(15, 15)).toBe("hits");
+    expect(verdictFor(14, 15)).toBe("misses");
+  });
+
+  it("says it does not know when there is no armour class to compare", () => {
+    /* A character being swung at has theirs on their own sheet, which this
+       side does not hold. Guessing would be worse than asking. */
+    expect(verdictFor(18, undefined)).toBe("unknown");
+  });
+
+  it("reads as a sentence the DM can act on", () => {
+    expect(describeVerdict(18, 15)).toBe("18 against 15 — hits");
+    expect(describeVerdict(18, undefined)).toBe("18 to hit");
+  });
+
+  it("knows a creature's armour class and not a character's", () => {
+    const pc: Act = { act: "stage", id: "c1", name: "Bree",
+      source: { kind: "character", character: "c1" } };
+    const f = fightFrom([ev(goblin("g1")), ev(pc)]);
+    expect(acOf(f, "g1")).toBe(15);
+    expect(acOf(f, "c1")).toBeUndefined();
   });
 });

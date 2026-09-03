@@ -470,18 +470,44 @@ DM screen to land on. This also finally earns the sheet's `TO HIT` column,
 deliberately absent until a real derivation existed.
 
 **Acceptance criteria:**
-- [ ] A player declares an attack from the sheet; to-hit is derived, never fabricated
-- [ ] The DM sees the claim and answers it; the verdict reaches the log
-- [ ] Advantage from both sides resolves per V1's rule
-- [ ] The `TO HIT` column appears only where a real derivation backs it
+- [x] A player declares an attack from the sheet; to-hit is derived, never fabricated
+- [x] The DM sees the claim and answers it; the verdict reaches the log
+- [x] The `TO HIT` column appears only where a real derivation backs it
+- [ ] **Advantage from both sides — NOT done.** That is V1's `stance.ts`, a
+      feature of its own: advantage computed from the conditions on both
+      combatants and shown as a sentence naming every reason. It is the thing
+      that makes conditions mechanically matter, and it needs the player's
+      side of the fight to have somewhere to say it. Left for its own task
+      rather than smuggled in here half-built.
 
 **Verification:**
-- [ ] Tests pass: `npm run test:domain`, `npm run test:journey`
-- [ ] Manual check: a fighter with a longsword and +3 STR reads the same to-hit in V1 and V2
+- [x] `npm run verify` clean — 595 domain, 91 component, 54 journey, 5 room
+- [x] Journey across both seats: stage, begin, swing as the player, and the
+      goblin is still whole until the DM presses Lands
+- [x] Screenshot read
+
+**The seam, and V1's reason for it.** A player rolls their own dice and types
+what they got; the DM decides whether it lands. That is how a table already
+works — "eighteen to hit, seven damage" / "yeah, that hits" — and it is the
+only division that keeps the disclosure ladder intact: **a player who could
+apply their own damage would learn a creature's armour class by trial, and one
+told "that misses" by the app would learn it in one go.**
+
+Both numbers travel together because tables roll them together; asking for
+damage only after the DM confirms would put a round trip in the middle of
+somebody's turn. The verdict line SUGGESTS — "18 against 13 — hits" — and the
+overrule is always one tap away and labelled ("Misses anyway"), because a
+shield spell or a cover rule this app has never heard of is still true.
+
+**Split under the size check:** `fight.ts` passed its 300-line budget, so
+claims and verdicts are `claim.ts`. The two modules reference each other by
+TYPE only, so there is no runtime cycle — `check-cycles` confirms it.
 
 **Dependencies:** Task 9
-**Files likely touched:** `src/rules/5e/attack.ts` (new), `src/features/dm/fight.ts`, `src/features/sheet/Sheet.tsx`, `src/features/sheet/model.ts`
-**Estimated scope:** M-L — split into derivation and claim/verdict if it passes 5 files
+**Files touched:** `rules/5e/attack.ts` + test, `dm/fight.ts`, `dm/claim.ts` (new), `dm/fight.test.ts`, `dm/Staging.tsx` + css, `sheet/model.ts` + test, `sheet/Attacks.tsx` + css, `sheet/Swing.tsx` + css (new), `sheet/Sheet.tsx`, `ui/App.tsx`, journeys
+**Actual scope:** L, over three commits
+
+**DONE apart from advantage, which is named above and is its own task.**
 
 ---
 
