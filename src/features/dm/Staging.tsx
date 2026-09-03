@@ -120,7 +120,7 @@ export function Staging({ fight, party = [], nav, onAct }: {
                         act: "stage",
                         id: `${c.id}-${String(Date.now())}-${String(Math.random()).slice(2, 6)}`,
                         name: c.name,
-                        source: { kind: "creature", statblock: c.id, max: c.hp, ac: c.ac },
+                        source: { kind: "creature", statblock: c.id, max: c.hp, ac: c.ac, cr: c.cr },
                       })}>
                 <span className={s.hitName}>{c.name}</span>
                 <span className={s.hitNote}>{describe(c)}</span>

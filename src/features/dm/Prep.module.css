@@ -1,0 +1,75 @@
+/* From the mockup: a session rail beside a centre column, stacking on a phone.
+   Cards are flat with a hairline and almost no shadow — the mockup's weight. */
+.split {
+  display: grid; gap: var(--s-5);
+  padding: var(--s-5) var(--card-pad);
+  align-items: start;
+}
+
+@media (min-width: 46rem) {
+  .split { grid-template-columns: 15rem 1fr; }
+}
+
+.rail { display: flex; flex-direction: column; gap: var(--s-3); min-width: 0; }
+
+.railHead {
+  margin: 0; font-size: var(--t-note); letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--ink-dim); font-weight: 500;
+}
+
+.outline { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+
+/* Name left, count right — the mockup's rhythm, and it reads as a table of
+   contents rather than a set of buttons. */
+.line {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: var(--s-3) 0; font-size: var(--t-sm);
+  border-bottom: 1px solid var(--hairline);
+}
+.count { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ink-dim); }
+
+.main { display: flex; flex-direction: column; gap: var(--s-4); min-width: 0; }
+
+.head { display: flex; justify-content: space-between; align-items: center; gap: var(--s-4); }
+
+.title {
+  margin: 0; font-size: var(--t-note); letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--ink-dim); font-weight: 500;
+}
+
+.new {
+  min-height: var(--tap); padding: 0 var(--s-5); font-size: var(--t-sm);
+  color: var(--ink); background: var(--surface-1);
+  border: var(--panel-border); border-radius: var(--r-control);
+}
+
+.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s-3); }
+
+.card {
+  /* Stacks on a phone: side by side, the meta line wrapped mid-phrase and the
+     gold button crowded the name. */
+  display: grid; grid-template-columns: 1fr; gap: var(--s-3);
+  padding: var(--s-4) var(--s-5); background: var(--surface-1);
+  border: var(--panel-border); border-radius: var(--r-card);
+}
+
+.cardHead { display: flex; flex-direction: column; gap: var(--s-1); min-width: 0; }
+.name { font-weight: 600; font-size: var(--t-sm); font-family: var(--font-sans); }
+.meta { font-size: var(--t-aside); color: var(--ink-dim); font-family: var(--font-mono); }
+
+.actions { display: flex; gap: var(--s-3); align-items: center; }
+
+@media (min-width: 30rem) {
+  .card { grid-template-columns: 1fr auto; align-items: center; }
+}
+
+/* The one thing this screen is for. The mockup's "Send to Combat". */
+.stage {
+  min-height: var(--tap); padding: 0 var(--s-5); font-size: var(--t-sm);
+  color: var(--on-gold); background: var(--gold-fill);
+  border: 1px solid var(--gold-edge); border-radius: var(--r-control);
+}
+
+.forget { min-width: var(--tap); min-height: var(--tap); background: none; border: none; color: var(--ink-dim); }
+
+.empty { font-size: var(--t-sm); color: var(--ink-dim); margin: 0; max-width: 34em; }

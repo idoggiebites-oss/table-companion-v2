@@ -447,3 +447,40 @@ test("the DM applies a hit without leaving the party", async ({ page }) => {
   await bar(page).getByRole("button", { name: "Sheet" }).click();
   await expect(page.getByTestId("vitals")).toContainText(`${String(max)}`);
 });
+
+test("an encounter is kept, and put back on the table next week", async ({ page }) => {
+  await hub(page);
+  await bar(page).getByRole("button", { name: "Fight" }).click();
+  await expect(page.getByTestId("bestiary-search"))
+    .toHaveAttribute("placeholder", /Search/, { timeout: 30_000 });
+  await page.getByTestId("bestiary-search").fill("goblin");
+  await page.getByTestId("bestiary-row").first().click();
+  await page.getByTestId("bestiary-row").first().click();
+  await expect(page.getByTestId("staged-row")).toHaveCount(2);
+
+  /* Keep what is already staged. Asking the DM to rebuild it in a second form
+     would be asking twice for the same thing. */
+  await bar(page).getByRole("button", { name: "Prep" }).click();
+  await expect(page.getByTestId("prep-empty")).toBeVisible();
+  await page.getByRole("button", { name: "Keep what is staged" }).click();
+  await expect(page.getByTestId("encounter-card")).toHaveCount(1);
+  await expect(page.getByTestId("encounters")).toContainText("2 creatures");
+
+  /* Clear the table entirely, the way a week passing would. */
+  await bar(page).getByRole("button", { name: "Fight" }).click();
+  await page.getByRole("button", { name: "Clear the table" }).click();
+  await expect(page.getByTestId("staged-row")).toHaveCount(0);
+
+  /* And put it back. Fresh: nothing carries over from the last run. */
+  await bar(page).getByRole("button", { name: "Prep" }).click();
+  await page.getByRole("button", { name: /^Put .* on the table/ }).click();
+  await expect(page.getByTestId("staged-row")).toHaveCount(2);
+
+  await bar(page).getByRole("button", { name: "Prep" }).click();
+  await page.screenshot({ path: "shots/prep.png", fullPage: true });
+
+  /* It is in the log like everything else. */
+  await page.reload();
+  await bar(page).getByRole("button", { name: "Prep" }).click();
+  await expect(page.getByTestId("encounter-card")).toHaveCount(1);
+});

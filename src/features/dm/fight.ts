@@ -25,7 +25,16 @@ export type Source =
   /** A character. Hit points are in the log, on their own sheet. */
   | { readonly kind: "character"; readonly character: string }
   /** Anything the DM runs. Hit points live in the fight itself. */
-  | { readonly kind: "creature"; readonly statblock: string; readonly max: number; readonly ac: number };
+  | {
+      readonly kind: "creature"; readonly statblock: string;
+      readonly max: number; readonly ac: number;
+      /* Challenge rating, already a number: 0.125 rather than "1/8". Carried
+         because an encounter kept from what is staged has no other way to know
+         it, and without it every kept encounter is worth 10 XP a head — the
+         arithmetic this exists to do, wrong quietly. Optional so a fight
+         staged before this existed still replays. */
+      readonly cr?: number;
+    };
 
 export type Combatant = {
   readonly id: string;

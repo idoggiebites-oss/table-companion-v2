@@ -113,12 +113,19 @@ starts, and breaking down work three slices out is planning fiction.
 - [x] Task 15: Who may change what — `permissions.ts` ported, and the Party screen now has the control the default exists for
 
 ### Phase 5: Prep (slice 9)
-Ports `encounter.ts`, `scenes.ts`, `npc.ts`, `homebrew-item.ts`, plus V1's
-`import/fightclub.ts`. Break down when Phase 4 closes.
+- [x] Task 18: An encounter, saved and put live — built to the mockup; three of its elements deliberately absent and recorded
+- [ ] Task 19: A scene — the place, not the parts
+- [ ] Task 20: NPCs, notes first
+- [ ] Task 21: Homebrew items the app reads as items
 
 ### Phase 6: Guidance (slice 10)
-Ports `guidance.ts`, `recap.ts`, `prompts.ts`, `nudge.ts`. Break down when
-Phase 5 closes.
+- [ ] Task 22: Plain words for what numbers cannot say
+- [ ] Task 23: The recap — the log read forwards
+- [ ] Task 24: Prompts — what to do about it
+
+`nudge.ts` is already done, in Task 6. V1's `import/fightclub.ts` is NOT
+planned: V2 has its own transfer format and no evidence anyone needs Fight
+Club import. Name it if that turns out to be wrong.
 
 ### Phase 7: Cut over and retire V1
 - [ ] Task R1: Measure what V1 is still used for

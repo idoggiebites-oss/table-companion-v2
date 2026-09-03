@@ -28,6 +28,8 @@ import { tabsFor, currentOf } from "./tabs";
 import { useSeat } from "../features/room/useSeat";
 import { Party } from "../features/dm/Party";
 import { Staging } from "../features/dm/Staging";
+import { Prep } from "../features/dm/Prep";
+import { prepFrom, staging, PREP } from "../features/dm/encounter";
 import { Fight as PlayerFight } from "../features/room/Fight";
 import { scoresOf } from "../features/creation/scores";
 import { BLANK } from "../rules/5e/abilities";
@@ -46,7 +48,7 @@ export function App({ dbName }: { dbName?: string }) {
   const [room, setRoom] = useState<string | undefined>(undefined);
   const { showing: theme, flip } = useTheme();
   const { events, add, record, pushMany, undo, reset, say, clock, link, ready } = useLog(dbName, room);
-  const [mode, setMode] = useState<"hub" | "log" | "create" | "sheet" | "levelup" | "party" | "fight">("hub");
+  const [mode, setMode] = useState<"hub" | "log" | "create" | "sheet" | "levelup" | "party" | "fight" | "prep">("hub");
   const [character, setCharacter] = useState<string>("");
   const [onlyGames, setOnlyGames] = useState(true);
   // The spellbook is fetched when somebody is building, not on arrival.
@@ -87,7 +89,8 @@ export function App({ dbName }: { dbName?: string }) {
   const go = (id: string) => {
     const to = currentOf(id, tabs);
     setMode(to === "log" ? "log" : to === "sheet" ? "sheet"
-      : to === "party" ? "party" : to === "fight" ? "fight" : "hub");
+      : to === "party" ? "party" : to === "fight" ? "fight"
+      : to === "prep" ? "prep" : "hub");
     /* A player's sheet is the character they are SITTING in — the seat is what
        decides whose sheet this is, not whichever one was opened last. */
     if (to === "sheet") {
@@ -190,6 +193,56 @@ export function App({ dbName }: { dbName?: string }) {
         onBack={() => setMode("hub")}
         nav={nav("sheet")}
         onLevelUp={() => setMode("levelup")}
+      />
+    );
+  }
+
+  if (mode === "prep") {
+    return (
+      <Prep
+        encounters={prepFrom(events).encounters}
+        nav={nav("prep")}
+        onStage={(e) => {
+          /* Fresh every time: nothing carries over from the last run. The
+             fight is cleared first so putting one on the table is putting
+             THAT one on the table, not adding to whatever was left. */
+          record(FIGHT, { act: "clear" } as unknown as Record<string, unknown>);
+          for (const row of staging(e, (i) => `${e.id}-${String(i)}-${String(Date.now())}`)) {
+            record(FIGHT, {
+              act: "stage", id: row.id, name: row.name, disclosure: row.disclosure,
+              source: { kind: "creature", statblock: row.statblock, max: row.max, ac: row.ac },
+            } as unknown as Record<string, unknown>);
+          }
+          setMode("fight");
+        }}
+        onForget={(id) => record(PREP, { act: "forget", id })}
+        onNew={() => {
+          /* What is on the table now, kept. The DM has already assembled it —
+             asking them to build it again in a second form would be asking
+             twice for the same thing. */
+          const live = fight.combatants.filter((c) => c.source.kind === "creature");
+          if (live.length === 0) return;
+          const entries = live.map((c) => ({
+            statblock: c.source.kind === "creature" ? c.source.statblock : "",
+            name: c.name.replace(/ \d+$/, ""),
+            count: 1,
+            max: c.source.kind === "creature" ? c.source.max : 0,
+            ac: c.source.kind === "creature" ? c.source.ac : 0,
+            cr: c.source.kind === "creature" ? c.source.cr ?? 0 : 0,
+            disclosure: c.disclosure,
+          }));
+          /* Named for what is in it, not for how many. "2 creatures" told the
+             DM nothing they could not already see, and repeated the line
+             underneath it. */
+          const kinds = [...new Set(entries.map((x) => x.name))];
+          const name = kinds.length === 1
+            ? `${kinds[0]!}${entries.length > 1 ? ` ×${String(entries.length)}` : ""}`
+            : `${kinds[0]!} and ${String(kinds.length - 1)} more`;
+          record(PREP, { act: "keep", encounter: {
+            id: `enc${Math.random().toString(36).slice(2, 8)}`,
+            name, place: "", entries,
+          } } as unknown as Record<string, unknown>);
+        }}
       />
     );
   }

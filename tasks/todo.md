@@ -645,10 +645,175 @@ never accidentally render an event it should not have been handed.
 
 ---
 
-## Phases 5-6
+## Phase 5: Prep (slice 9)
 
-Slices 9 (prep) and 10 (guidance) — full parity is in scope.
-Named in `tasks/plan.md`, broken down when Phase 4 closes.
+*Read V1 before writing any of these. The headers carry the reasoning and it is
+not derivable from the data — `scenes.ts` in particular reframes the whole
+phase.*
+
+**The framing, from V1's `scenes.ts`:** "The app could save encounters, NPCs and
+statblocks — three kinds of thing, which is a bestiary rather than a plan. What
+a DM actually prepares is a PLACE: the cellar, with its dark and its rubble, the
+thing waiting in it, and the line they mean to read out when the door opens."
+
+So the join is the feature, not the glue. Build the thinnest whole thing first
+and thicken it, rather than three parts and an assembly step.
+
+## Task 18: An encounter, saved and put live
+
+**Description:** Staging already assembles a fight; nothing keeps one. Save a
+staged roster under a name and put it back on the table later. V1's
+`encounter.ts` is the port.
+
+**Built to Arturo's mockup** (3 Sep 2026). The palette needed no translation —
+it was drawn against these same tokens. Layout, card rhythm and the gold
+primary action are copied; three things in it are deliberately absent and each
+absence is a decision, recorded in `Prep.tsx`:
+
+  - **The outline lists only what exists.** The mockup shows Quests, Loot,
+    Random Tables, References and Locations. `tabs.ts` holds the rule this
+    follows — *what is not built is not drawn* — because a row reading
+    "Quests 2" that goes nowhere is a promise the app cannot keep.
+  - **Scenes are a drawer, not a running order.** The mockup numbers them 1-5
+    with drag handles; V1 refuses that ("not a map and not a sequence… a table
+    goes where it goes"). Reversible if a real session wants the order.
+  - **No readiness percentage or checklist.** A good idea and a NEW one —
+    nothing in V1 frames prep as a completion metric. It deserves its own
+    decision rather than arriving inside a port.
+
+**Acceptance criteria:**
+- [x] A staged roster is kept and survives reload
+- [x] Putting one back stages exactly those creatures, fresh, at the rung they were prepared at
+- [x] Totals are shown — creatures and experience — with no difficulty band
+- [x] **The band is DMG content**, so it is absent. The SRD's experience-by-challenge table is in the rules themselves and is what the totals use.
+- [x] Experience is RAW. V1's warning carried: a multiplier estimates danger and is never earned, and getting that backwards roughly doubles a party's progression over a campaign.
+
+**Verification:**
+- [x] 12 domain tests; journey keeps, clears the table, puts it back, and reloads
+- [x] `npm run verify` clean — 727 domain, 91 component, 58 journey, 5 room
+- [x] Screenshot read, and it caught a real bug
+
+**The bug the screenshot found.** The card read "200 XP" only after a fix: a
+staged combatant carried no challenge rating, so every kept encounter was worth
+10 XP a head — the arithmetic this feature exists to do, wrong quietly. `Source`
+now carries `cr`, optional so a fight staged before this still replays. The
+auto-name was also "2 creatures", duplicating the line beneath it; it is now
+derived from what is actually in it.
+
+**Dependencies:** Task 11
+**Files touched:** `dm/encounter.ts` + test (new), `dm/Prep.tsx` + css (new), `dm/fight.ts`, `dm/Staging.tsx`, `ui/tabs.ts` + test, `ui/App.tsx`, journeys
+**Actual scope:** M
+
+**DONE.**
+
+---
+
+## Task 19: A scene — the place, not the parts
+
+**Description:** V1's `scenes.ts`. A room, an encounter and a note, under a
+name, ready to go live in one press. "Deliberately not a map and not a
+sequence. Scenes are a drawer you reach into, not a track a session runs
+along — a table goes where it goes."
+
+**Acceptance criteria:**
+- [ ] A scene holds a name, a note, an optional encounter, and what the room is like
+- [ ] Putting it live stages the encounter AND sets the room in one press
+- [ ] Preparing one is behind the screen; setting it live is public (`visibility.ts` already draws that line — a player reading "Prepared the cellar · dark · a note" has been told what is coming)
+- [ ] Scenes are a drawer: no order, no next, no session track
+
+**Dependencies:** Task 18
+**Estimated scope:** M
+
+---
+
+## Task 20: NPCs, notes first
+
+**Description:** V1's `npc.ts`. "An NPC is not a statblock. Most of the ones a
+campaign accumulates never roll anything — a shopkeeper, a harbourmaster, the
+contact who knows a guy — and forcing them through a creature form would mean
+inventing an armour class for a man who sells rope."
+
+**Acceptance criteria:**
+- [ ] A record is notes-first; stats are optional and absent by default
+- [ ] Inventory hangs off a `trader` flag rather than existing on every NPC — a stock list on a record that will never sell anything is a field skipped every time the form opens
+- [ ] NPCs are behind the screen in the log
+
+**Dependencies:** Task 19
+**Estimated scope:** M
+
+---
+
+## Task 21: Homebrew items the app reads as items
+
+**Description:** V1's `homebrew-item.ts`, and its whole point: it produces the
+SAME shape the catalogue produces, not a parallel "custom item" type with its
+own half of the rules.
+
+**The test is that nothing downstream knows it exists.** Equip it and the
+armour class moves; swing it and the damage is right; give it "versatile" and
+both grips appear. None of those code paths are told about homebrew.
+
+**Acceptance criteria:**
+- [ ] A made-up item is an `Item`, indistinguishable downstream
+- [ ] Equipping one moves AC through the existing `armour.ts` path, untouched
+- [ ] An attack from one derives to-hit through the existing `attack.ts` path
+- [ ] No branch anywhere reads "is this homebrew"
+
+**Dependencies:** Task 20
+**Estimated scope:** M-L
+
+---
+
+## Phase 6: Guidance (slice 10)
+
+## Task 22: Plain words for what numbers cannot say
+
+**Description:** V1's `guidance.ts`. "d10 hit die · saves in STR and DEX tells a
+returning player what they need and a new one nothing at all. What they are
+asking is *what is this class LIKE to play* and *what does Strength even do*,
+and neither is derivable from data."
+
+**Acceptance criteria:**
+- [ ] A sentence per class and per ability, shown where the choice is made
+- [ ] **Only for the classes this app ships.** A compendium brings fifty-five more, and inventing a sentence about a homebrew class is worse than saying nothing — absent is honest, wrong is not.
+
+**Dependencies:** none (independent of Phase 5)
+**Estimated scope:** S-M
+
+---
+
+## Task 23: The recap — the log read forwards
+
+**Description:** V1's `recap.ts`. "The log has held every session in full since
+the first commit and has never been readable. Scrolling three hundred rows of
+'Kira took 7' backwards is not remembering — it is archaeology." A recap is the
+shape of a session rather than its transactions.
+
+**Acceptance criteria:**
+- [ ] Reads forwards into a shape: fights, who went down, what was gained, where the night ended
+- [ ] Per reader, like the log itself — `visibility.ts` already decides what a player may see
+- [ ] Says nothing rather than inventing a narrative it cannot stand behind
+
+**Dependencies:** Task 14
+**Estimated scope:** L
+
+---
+
+## Task 24: Prompts — what to do about it
+
+**Description:** V1's `prompts.ts`. The recap says what happened and stops; the
+table then asks what it changed. Each prompt is a fact and a screen that
+answers it.
+
+**Acceptance criteria:**
+- [ ] Each prompt names a fact and opens the screen that answers it
+- [ ] Filtered by what currently exists — V1's `PROMPT_TABS` rule; a prompt pointing at an unbuilt screen is worse than none
+- [ ] Nothing moves a player on its own
+
+**Dependencies:** Task 23
+**Estimated scope:** M-L
+
+---
 
 ---
 

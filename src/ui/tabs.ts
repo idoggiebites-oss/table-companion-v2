@@ -52,6 +52,9 @@ export function tabsFor({ dm, waiting, owed, fighting }: {
     ? [
         { id: "party", label: "Party", icon: "person", dot: owed === true },
         { id: "fight", label: "Fight", icon: "sword" },
+        /* Prep is the DM's alone: staging a fight is not a player's job, which
+           is the same line the Fight tab draws by seat. */
+        { id: "prep", label: "Prep", icon: "book" },
         ...rest,
       ]
     : [
