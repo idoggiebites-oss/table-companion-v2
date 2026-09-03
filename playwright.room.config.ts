@@ -19,10 +19,26 @@ export default defineConfig({
     trace: "on-first-retry",
     ...devices["iPhone 14"],
   },
-  webServer: {
+  /*
+   * Two servers now: the app, and the compendium beside it.
+   *
+   * The compendium is no longer shipped with the app — 13,683 files in
+   * `dist/` is what makes the worker unable to start — so every tier that
+   * renders a character has to be able to reach it. Same shape as production,
+   * where it is a published site rather than this little static server.
+   */
+  webServer: [
+    {
+      command: "node scripts/serve-content.mjs",
+      url: "http://localhost:4272/version.json",
+      reuseExistingServer: true,
+      timeout: 30_000,
+    },
+    {
     command: "npm run build && npx wrangler dev --port 8791 --local",
     url: "http://localhost:8791",
     reuseExistingServer: !!process.env["PW_REUSE"],
     timeout: 180_000,
-  },
+    },
+  ],
 });

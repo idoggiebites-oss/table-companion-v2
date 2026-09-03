@@ -39,6 +39,15 @@ export type ChoiceOption = {
   readonly level: number;
 };
 
+/**
+ * The one question that has a screen of its own.
+ *
+ * Named once because two places need it and must agree: the step that asks it,
+ * and the general "what does your class ask?" screen that must therefore NOT.
+ * A question with a dedicated screen asked in both places is asked twice.
+ */
+export const STYLE = "Fighting Style";
+
 export type ChoicePoint = {
   /** "Divine Domain", "Fighting Style", "Metamagic". */
   readonly of: string;

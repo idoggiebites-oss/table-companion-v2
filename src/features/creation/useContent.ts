@@ -4,6 +4,8 @@ import type { Entry, SpellEntry, RaceEntry, ClassEntry, BackgroundEntry } from "
 import { contentFrom, type Loaded, type Paths, type Styles, type Tool, type Armour, type Choices, type Weapon } from "./compendium";
 import { isMarked } from "../../content/source";
 import { SRD_ONLY, type CreationContent } from "./content";
+import { contentUrl } from "../../content/base";
+import { STYLE } from "../../content/choicepoints";
 
 export type ContentState = {
   readonly content: CreationContent;
@@ -33,23 +35,40 @@ export function useCreationContent(onlyGames = true, wantSpells = false): Conten
   useEffect(() => {
     let live = true;
     void (async () => {
-      const [races, classes, backgrounds, paths, styles, tools, armour, feats, choices, weapons] = await Promise.all([
+      const [races, classes, backgrounds, paths, tools, armour, feats, choices, weapons] = await Promise.all([
         loadKind<RaceEntry>("race"),
         loadKind<ClassEntry>("class"),
         loadKind<BackgroundEntry>("background"),
-        loadMap<Paths[string]>("/content/index/path.json"),
-        loadMap<Styles[string]>("/content/index/style.json"),
+        loadMap<Paths[string]>(contentUrl("index/path.json")),
         // 54 rows, 1KB. The item index it was cut from is 133KB and is never
         // loaded by the builder.
-        loadList<Tool>("/content/index/tool.json"),
-        loadList<Armour>("/content/index/armour.json"),
+        loadList<Tool>(contentUrl("index/tool.json")),
+        loadList<Armour>(contentUrl("index/armour.json")),
         // 14KB gzipped, and two steps need it: a variant human's granted feat
         // and an improvement spent on one instead of ability points.
         loadKind<Entry>("feat"),
-        loadMap<Choices[string]>("/content/index/choice.json"),
-        loadList<Weapon>("/content/index/weapon.json"),
+        loadMap<Choices[string]>(contentUrl("index/choice.json")),
+        loadList<Weapon>(contentUrl("index/weapon.json")),
       ]);
       if (!live) return;
+      /*
+       * Fighting styles are DERIVED from the class's own questions, not
+       * fetched.
+       *
+       * `choicepoints` is the one rule for everything a class asks — a
+       * subclass, a fighting style, Metamagic, a Pact Boon — and it already
+       * emits "Fighting Style" with every option. A separate `index/style.json`
+       * was the last of the special case that rule replaced: a second copy of
+       * the same answers, which the compiler no longer writes, so the request
+       * 404'd and the dedicated screen quietly vanished. The class asks; this
+       * reads the question it already asked.
+       */
+      const styles: Styles = Object.fromEntries(
+        Object.entries(choices).flatMap(([id, points]) => {
+          const p = points.find((x) => x.of === STYLE);
+          return p === undefined ? [] : [[id, { level: p.level, options: p.options }] as const];
+        }),
+      );
       setLoaded({ races, classes, backgrounds, spells: [], paths, styles, tools, armour, feats, choices, weapons });
       setReady(true);
     })();

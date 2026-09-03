@@ -1,6 +1,20 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
+import { readFileSync, existsSync } from "node:fs";
+
+/*
+ * The compendium build this app is compiled against, baked in.
+ *
+ * It is published separately, so the two halves can drift — an app that
+ * reads a field its compendium does not have yet shows blanks and fails
+ * nothing. Asking for a version in the path means this build can only ever
+ * see the compendium it was built with. "dev" is the fallback so a checkout
+ * that has not compiled one yet still builds.
+ */
+const contentVersion = existsSync("content-dist/version.json")
+  ? (JSON.parse(readFileSync("content-dist/version.json", "utf8")) as { version: string }).version
+  : "dev";
 
 export default defineConfig({
   plugins: [
@@ -39,12 +53,16 @@ export default defineConfig({
             /* Prose, one file per record and only ever fetched on asking.
                Kept long enough that re-reading a trait is instant, and capped
                because there are 7,179 of them. */
-            urlPattern: /\/content\/describe\/.*\.json$/,
+            /* Cross-origin now — the compendium is published separately — so
+               this matches the path segment rather than a leading slash. Miss
+               this and prose silently stops working offline, with nothing
+               failing loudly to say so. */
+            urlPattern: /\/describe\/.*\.json$/,
             handler: "CacheFirst",
             options: { cacheName: "prose", expiration: { maxEntries: 120 } },
           },
           {
-            urlPattern: /\/content\/index\/.*\.json$/,
+            urlPattern: /\/index\/.*\.json$/,
             handler: "StaleWhileRevalidate",
             options: { cacheName: "compendium", expiration: { maxEntries: 12 } },
           },
@@ -54,6 +72,7 @@ export default defineConfig({
       },
     }),
   ],
+  define: { __CONTENT_VERSION__: JSON.stringify(contentVersion) },
   publicDir: "public",
   build: { target: "es2023" },
 });

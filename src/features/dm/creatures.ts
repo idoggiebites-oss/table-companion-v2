@@ -1,6 +1,7 @@
 import { loadLayer, type Fetcher } from "../../content/load";
 import type { CreatureEntry } from "../../content/schema";
 import type { Option, Lair } from "../../content/legendary";
+import { contentUrl } from "../../content/base";
 
 /**
  * The bestiary, as the DM side reads it.
@@ -40,12 +41,12 @@ export type Statblock = {
 };
 
 export const bestiary = (fetcher?: Fetcher): Promise<CreatureEntry[]> =>
-  loadLayer<CreatureEntry>("content/index/creature.json", fetcher);
+  loadLayer<CreatureEntry>(contentUrl("index/creature.json"), fetcher);
 
 /** One statblock. Absent is normal — an SRD-only build ships none of these. */
 export async function statblock(id: string, fetcher: Fetcher = fetch): Promise<Statblock | null> {
   try {
-    const res = await fetcher(`content/detail/creature/${id}.json`);
+    const res = await fetcher(contentUrl(`detail/creature/${id}.json`));
     if (!res.ok) return null;
     const json: unknown = await res.json();
     return typeof json === "object" && json !== null ? (json as Statblock) : null;

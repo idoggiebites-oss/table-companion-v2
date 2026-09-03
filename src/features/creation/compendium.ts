@@ -25,6 +25,7 @@ import { ABILITIES, ABILITY_NAME } from "../../rules/5e/abilities";
 import { key } from "../../content/names";
 import { iconForClass } from "../../ui/Icon";
 import { portraitFor } from "./portraits";
+import { STYLE } from "../../content/choicepoints";
 
 /**
  * A CreationContent over the compiled compendium.
@@ -68,7 +69,7 @@ export function contentFrom(loaded: Loaded, opts: { onlyGames: boolean }): Creat
     const out: { key: string; klass: string; of: string; level: number }[] = [];
     for (const c of b.classes) {
       // Two questions already have screens of their own.
-      const own = [loaded.paths[c.id]?.grant, loaded.styles[c.id] === undefined ? undefined : "Fighting Style"];
+      const own = [loaded.paths[c.id]?.grant, loaded.styles[c.id] === undefined ? undefined : STYLE];
       for (const p of loaded.choices[c.id] ?? []) {
         if (own.includes(p.of) || p.level > c.level) continue;
         out.push({ key: `${c.id}:${p.of}`, klass: c.id, of: p.of, level: p.level });

@@ -28,12 +28,28 @@ export default defineConfig({
    * Port 4271 because 4173 is V1's preview, and a reused server serves the
    * wrong application without saying so — which is what `data-app` catches.
    */
-  webServer: {
+  /*
+   * Two servers now: the app, and the compendium beside it.
+   *
+   * The compendium is no longer shipped with the app — 13,683 files in
+   * `dist/` is what makes the worker unable to start — so every tier that
+   * renders a character has to be able to reach it. Same shape as production,
+   * where it is a published site rather than this little static server.
+   */
+  webServer: [
+    {
+      command: "node scripts/serve-content.mjs",
+      url: "http://localhost:4272/version.json",
+      reuseExistingServer: true,
+      timeout: 30_000,
+    },
+    {
     command: "npm run build && npm run preview",
     url: "http://localhost:4271",
     // Opt-in only, for iterating against an already-running worker. Safety
     // comes from the data-app assertion, not from the port being free.
     reuseExistingServer: !!process.env["PW_REUSE"],
     timeout: 180_000,
-  },
+    },
+  ],
 });

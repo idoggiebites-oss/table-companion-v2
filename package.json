@@ -14,7 +14,10 @@
     "test:journey": "playwright test",
     "verify": "node scripts/verify.mjs",
     "dev:worker": "wrangler dev --port 8791",
-    "test:room": "playwright test -c playwright.room.config.ts"
+    "test:room": "playwright test -c playwright.room.config.ts",
+    "content": "tsx scripts/compile-content.ts ../table-companion/public/content content-dist",
+    "serve:content": "node scripts/serve-content.mjs",
+    "publish:content": "node scripts/publish-content.mjs"
   },
   "dependencies": {
     "react": "^19.2.7",

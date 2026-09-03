@@ -1,5 +1,6 @@
 import { mergeById, type Thinner } from "./merge";
 import type { Entry } from "./schema";
+import { contentUrl } from "./base";
 
 /**
  * Three layers, in order: SRD, the bundled compendium, then whatever this
@@ -54,6 +55,6 @@ export async function loadKind<T extends Entry>(
   fetcher: Fetcher = fetch,
 ): Promise<T[]> {
   const srd = await loadLayer<T>(`/srd/${kind}.json`, fetcher);
-  const bundled = await loadLayer<T>(`/content/index/${kind}.json`, fetcher);
+  const bundled = await loadLayer<T>(contentUrl(`index/${kind}.json`), fetcher);
   return mergeById(mergeById(srd, bundled), imported);
 }

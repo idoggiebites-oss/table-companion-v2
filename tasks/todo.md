@@ -497,3 +497,79 @@ port's reference for anything Phases 4-6 left thin.
 ### Checkpoint: Complete
 - [ ] All acceptance criteria met
 - [ ] V1 archived, V2 serving, no module unaccounted for
+
+---
+
+## Task 12: Publish the compendium separately, with a version in the path
+
+*Sits before Tasks 5 and 6 — Phase 2 is verified by `npm run test:room`, which
+could not start a local worker until this landed.*
+
+**Description:** The compendium was shipped as part of the app: 13,683 files
+against the app's own 51. `wrangler dev` enumerates every asset before it
+answers, so it never started, and the room tier had never run. It also walked
+towards Cloudflare's hard 20,000-asset deploy limit as the corpus grows. Now
+the compendium is compiled to `content-dist/<version>/`, served on its own
+port locally, and published to a Pages site in production.
+
+**Why the version is in the path.** Two separately-deployed halves drift: push
+an app that reads a new field and forget to push the compendium that has it,
+and every row reads blank while nothing fails loudly. Worse, the halves are
+cached independently and for different lengths — the host sets its own, and
+this app's service worker keeps prose cache-first — so even two correct pushes
+seconds apart leave a window. A version in the path removes the window instead
+of narrowing it: a build can only see the compendium it was compiled against.
+The version is a hash of the corpus AND the compiler, since either changes the
+shape of the output.
+
+**Acceptance criteria:**
+- [x] `dist/` holds 51 files, down from 13,683 — `wrangler dev` boots in ~4s
+- [x] Every content fetch goes through one `contentUrl()`; no path is built by hand
+- [x] The version is baked into the build and cannot be set wrong by hand
+- [x] Local dev and every test tier reach the compendium the same way production does
+- [x] A published version is immutable — `publish-content.mjs` refuses to overwrite one
+
+**Verification:**
+- [x] `npm run verify` — **clean, all four tiers**: typecheck, tier 4 (10 checks), 542 domain, 91 component, 50 journey, and **the room, 5 passed** — the first time that suite has run
+- [x] `wrangler dev` boots and answers: `/` 200, `/room/BCDFGH` 426, `/room/AEIOU1` 400, a deep link 200
+- [x] Publish script staged 13,631 files, then correctly refused to restage
+
+**Measured, since the old note said the file count had been ruled out:**
+
+| files in `dist/` | `wrangler dev` |
+|---|---|
+| 51 | 4s |
+| 6,771 (58MB) | 4s |
+| 7,044 (39MB) | 4s |
+| 10,283 | never |
+| 13,683 | never (5+ min) |
+
+Not size — 58MB in 6,771 files is fine. Purely count, with the cliff between
+~7,000 and ~10,300. `.assetsignore` was tried first and is not honoured: the
+read count went *up* by one, the file itself.
+
+**A bug this uncovered, and a file I deleted.** `index/style.json` fed the
+dedicated "How do you fight?" step. **The committed compiler has never written
+it** — it existed only in the generated tree, which I removed. But it was a
+second copy of data `choicepoints` already emits: `choice.json` carries
+`{ of: "Fighting Style", level: 1, options: [41] }` for the fighter, and
+`compendium.ts` already knew the literal. Fighting styles are now DERIVED from
+the class's own questions, which is the "one rule" the port was meant to
+establish, and `STYLE` is named once in `choicepoints.ts` for the two places
+that must agree. So the file is not needed rather than merely restored — but
+it was a generated file the repo could not rebuild, and I should have checked
+that before deleting it.
+
+Without the fix the fighter was still asked, on the general "what does your
+class ask?" screen instead of its own — degraded quietly, which is exactly how
+it got past 49 of 50 journeys.
+
+**Left for Arturo:** the Pages site itself. `publish-content.mjs` stages into a
+checkout and prints the git commands rather than pushing to an account on its
+own initiative. Production needs `VITE_CONTENT_BASE` set to the Pages URL.
+
+**Dependencies:** Task 1
+**Files touched:** `src/content/base.ts` (new), `load.ts`, `useContent.ts`, `useProse.ts`, `useFeatures.ts`, `useCatalogue.ts`, `creatures.ts`, `compendium.ts`, `choicepoints.ts`, `compile-content.ts`, `vite.config.ts`, both playwright configs, `package.json`, `.gitignore`, plus `serve-content.mjs` and `publish-content.mjs` (new)
+**Actual scope:** L
+
+**DONE.**

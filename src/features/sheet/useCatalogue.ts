@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { loadList } from "../../content/load";
 import type { Item } from "../../rules/5e/items";
+import { contentUrl } from "../../content/base";
 
 /**
  * The item catalogue, fetched when the Inventory tab opens and not before.
@@ -18,7 +19,7 @@ export function useCatalogue(want: boolean): { items: readonly Item[]; loading: 
     if (!want || items.length > 0) return;
     let live = true;
     setLoading(true);
-    void loadList<Item>("/content/index/item.json").then((rows) => {
+    void loadList<Item>(contentUrl("index/item.json")).then((rows) => {
       if (live) { setItems(rows); setLoading(false); }
     });
     return () => { live = false; };

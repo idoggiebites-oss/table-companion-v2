@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { loadList } from "../../content/load";
 import type { StepId } from "../../rules/5e/steps";
+import { contentUrl } from "../../content/base";
 
 /** One passage of a record's prose: a trait, a feat, a spell. */
 export type Block = { readonly name: string; readonly text: string };
@@ -49,7 +50,7 @@ export function useProse(step: StepId, id: string | null): {
     if (had !== undefined) { setBlocks(had); return; }
     let live = true;
     setLoading(true);
-    void loadList<Block>(`/content/describe/${key}.json`).then((rows) => {
+    void loadList<Block>(contentUrl(`describe/${key}.json`)).then((rows) => {
       seen.set(key, rows);
       if (live) { setBlocks(rows); setLoading(false); }
     });

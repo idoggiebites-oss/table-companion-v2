@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { loadList } from "../../content/load";
 import { ownFeatures, type ClassFeature } from "../../content/choicepoints";
 import type { Build } from "../creation/model";
+import { contentUrl } from "../../content/base";
 
 /**
  * The features this character has gained, level by level.
@@ -25,7 +26,7 @@ export function useFeatures(build: Build): { level: number; names: readonly stri
     let live = true;
     void Promise.all(
       ids.split(",").map(async (id) =>
-        [id, await loadList<ClassFeature>(`/content/index/feature/${id}.json`)] as const),
+        [id, await loadList<ClassFeature>(contentUrl(`index/feature/${id}.json`))] as const),
     ).then((pairs) => {
       if (live) setRows(Object.fromEntries(pairs));
     });

@@ -11,7 +11,9 @@
  *
  *   npx vite-node scripts/compile-content.ts <corpus dir> <out dir>
  */
-import { readFileSync, writeFileSync, mkdirSync, existsSync, statSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync, statSync, readdirSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import { gzipSync } from "node:zlib";
 import { provenanceOf } from "../src/content/source";
@@ -34,8 +36,30 @@ import { budget as legendaryBudget, options as legendaryOptions, lair as lairOf 
 
 type Row = { properties?: string[]; twoHanded?: string; cost?: number; weight?: number; prerequisite?: string; weaponCategory?: string; weaponRange?: string; damage?: string; damageType?: string; wealth?: string; slots?: number[][]; category?: string; strMinimum?: number; stealthDisadvantage?: boolean; armorCategory?: string; baseAc?: number; dexBonus?: boolean; maxDex?: number; magic?: boolean; detail?: string; id?: string; name?: string; text?: string; description?: string; level?: number; school?: string; classes?: string[]; skills?: string[]; traits?: { name?: string; text?: string }[]; abilityBonuses?: Record<string, number>; speed?: number; size?: string; features?: { level?: number; name?: string; text?: string }[] };
 
-const [, , corpus, outDir = "public/content"] = process.argv;
-if (!corpus || !existsSync(corpus)) { console.error("usage: compile-content.ts <corpus dir> [out dir]"); process.exit(2); }
+const [, , corpus, outRoot = "content-dist"] = process.argv;
+if (!corpus || !existsSync(corpus)) { console.error("usage: compile-content.ts <corpus dir> [out root]"); process.exit(2); }
+
+/*
+ * The compendium is published separately from the app, so the two can drift:
+ * an app that reads a field its compendium does not have yet shows blanks and
+ * fails nothing. The version in the path removes that window rather than
+ * narrowing it — a build asks for exactly the compendium it was compiled
+ * against, and older builds go on asking for theirs.
+ *
+ * Hashed from the corpus AND this compiler, because either can change the
+ * shape of what comes out. Same inputs, same version: rebuilding does not
+ * orphan the copy already published.
+ */
+const version = (() => {
+  const h = createHash("sha256");
+  h.update(readFileSync(fileURLToPath(import.meta.url)));
+  for (const f of readdirSync(corpus).sort()) {
+    const p = join(corpus, f);
+    if (statSync(p).isFile()) { h.update(f); h.update(readFileSync(p)); }
+  }
+  return h.digest("hex").slice(0, 12);
+})();
+const outDir = join(outRoot, version);
 
 const textOf = (o: Row) => [o.text, o.description, (o.traits ?? []).map((t) => t?.text).join("\n")].filter(Boolean).join("\n");
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -479,6 +503,9 @@ if (existsSync(creaturePath)) {
 }
 
 writeFileSync(join(outDir, "index.json"), JSON.stringify({ builtAt: Date.now(), report }, null, 1));
+/* What the app build reads to bake the version in. See src/content/base.ts. */
+writeFileSync(join(outRoot, "version.json"), JSON.stringify({ version, builtAt: Date.now() }, null, 1));
+console.log(`\ncompendium version ${version} -> ${outDir}`);
 
 console.log("kind         rows      index   index gz       detail  detail gz");
 for (const [k, r] of Object.entries(report)) {
