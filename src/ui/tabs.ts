@@ -27,7 +27,7 @@ import type { IconName } from "./Icon";
  */
 export type Tab = { readonly id: string; readonly label: string; readonly icon: IconName; readonly dot?: boolean };
 
-export function tabsFor({ dm, waiting, owed }: {
+export function tabsFor({ dm, waiting, owed, fighting }: {
   /**
    * Sitting as the DM rather than in a character.
    *
@@ -41,6 +41,8 @@ export function tabsFor({ dm, waiting, owed }: {
   waiting?: boolean;
   /** Somebody in the party owes something. */
   owed?: boolean;
+  /** A fight is actually running. */
+  fighting?: boolean;
 }): readonly Tab[] {
   const rest: readonly Tab[] = [
     { id: "characters", label: "Characters", icon: "shield" },
@@ -52,7 +54,14 @@ export function tabsFor({ dm, waiting, owed }: {
         { id: "fight", label: "Fight", icon: "sword" },
         ...rest,
       ]
-    : [{ id: "sheet", label: "Sheet", icon: "person", dot: waiting === true }, ...rest];
+    : [
+        { id: "sheet", label: "Sheet", icon: "person", dot: waiting === true },
+        /* V1's playerTabs carry Combat: a fight IS a player's business, even
+           though staging it is not. The has-content rule decides when — a tab
+           reading "no fight yet" is the dead screen V1 refuses to draw. */
+        ...(fighting === true ? [{ id: "fight", label: "Fight", icon: "sword" as const }] : []),
+        ...rest,
+      ];
 }
 
 /**

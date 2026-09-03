@@ -518,17 +518,44 @@ what just happened. `tabsFor` already turns on the seat; this fills the screen
 it offers.
 
 **Acceptance criteria:**
-- [ ] A player sees the fight without seeing what disclosure hides
-- [ ] The turn bar is not drawn twice — a second copy is a door into a room you are standing in
-- [ ] Only a fight starting moves a player off their page on its own
+- [x] A player sees the fight without seeing what disclosure hides — hidden is absent, vague is a WORD, exact is figures, and the active combatant is not named either
+- [x] The turn bar is not drawn twice — swinging MOVED to this screen rather than being copied here; the sheet keeps the list, the fight is where you act
+- [x] Only a fight starting puts the tab there at all; nothing navigates on its own
 
 **Verification:**
-- [ ] Tests pass: `npm run test:journey` — a two-device journey, DM and player
-- [ ] Manual check: screenshot both seats at 390x844; footer pinned, nothing under 44px
+- [x] `npm run verify` clean — 597 domain, 91 component, 55 journey, 5 room
+- [x] Journeys across both seats: the waiting state, the ladder, and a full
+      claim → verdict → damage round trip
+- [x] Screenshot read — and it earned its keep, see below
+
+**V1's design, kept: this is TWO screens, not one.** "Almost all of a fight is
+spent NOT acting, and the two states want opposite things. Waiting is one
+enormous number read across the table with nothing to tap, because tapping is
+not what that moment is for. Acting is twenty seconds where it becomes a tool."
+
+**A disclosure leak the screenshot found.** The order already filtered hidden
+creatures out — but the ACTIVE combatant was named in the largest text on the
+screen, so a hidden goblin announced itself the moment its turn came round.
+Every test passed. Now a hidden combatant reads "Someone else", and two domain
+tests plus a journey hold it.
+
+**A gap this task exposed:** the party could not be put into a fight at all.
+The model has supported character combatants since Task 8, but `Staging` only
+offered the bestiary — so a player could never be in the order and it could
+never be their turn. The DM can now put the table's own characters in. Their
+hit points are NOT copied in; they stay on the sheet, which is V1's `Source`
+union and the reason the party screen and the fight cannot disagree.
+
+**A belief corrected:** the test "a player is not offered the fight, because it
+is not their job" encoded something false. STAGING is not their job; the fight
+is, and V1's `playerTabs` carry Combat. Renamed, and the rule is now the
+has-content one.
 
 **Dependencies:** Task 10
-**Files likely touched:** `src/ui/tabs.ts`, `src/features/dm/fight.ts`, one new `src/features/room/Fight.tsx` + module CSS
-**Estimated scope:** M
+**Files touched:** `room/Fight.tsx` + css (new), `ui/tabs.ts`, `ui/App.tsx`, `dm/Staging.tsx` + css, `dm/fight.test.ts`, `sheet/Attacks.tsx`, `sheet/Sheet.tsx`, journeys
+**Actual scope:** M-L
+
+**DONE.**
 
 ---
 

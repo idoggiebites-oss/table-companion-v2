@@ -26,6 +26,9 @@ import { tabsFor, currentOf } from "./tabs";
 import { useSeat } from "../features/room/useSeat";
 import { Party } from "../features/dm/Party";
 import { Staging } from "../features/dm/Staging";
+import { Fight as PlayerFight } from "../features/room/Fight";
+import { scoresOf } from "../features/creation/scores";
+import { BLANK } from "../rules/5e/abilities";
 import { fightFrom, FIGHT, type Act } from "../features/dm/fight";
 import { SeatControl } from "../features/room/SeatControl";
 import { membersIn } from "../features/dm/members";
@@ -70,10 +73,12 @@ export function App({ dbName }: { dbName?: string }) {
   const { seat, sit, claim, mine } = useSeat(roster.map((r) => r.id));
   const dm = seat.kind === "dm";
   const vitals = current === undefined ? null : vitalsFrom(events, character, current);
+  const fight = fightFrom(events);
   const tabs = tabsFor({
     dm,
     waiting: vitals !== null && waitingOn(vitals).length > 0,
     owed: dm && membersIn(events).some((m) => m.waiting.length > 0),
+    fighting: fight.phase === "active",
   });
   const go = (id: string) => {
     const to = currentOf(id, tabs);
@@ -181,21 +186,28 @@ export function App({ dbName }: { dbName?: string }) {
         onBack={() => setMode("hub")}
         nav={nav("sheet")}
         onLevelUp={() => setMode("levelup")}
-        /* The fight, so a swing can name what it is swung at. A player attacks
-           IN a fight; the sheet is where they keep what they attack with. */
-        fight={fightFrom(events)}
-        onFight={(a: Act) => record(FIGHT, a as unknown as Record<string, unknown>)}
-        character={character}
       />
     );
   }
 
   if (mode === "fight") {
+    /*
+     * One bar, contents by seat — V1's rule. The DM's fight is the table being
+     * assembled and run; a player's is their own two-state view of it. Same
+     * tab, different room, because they are not doing the same job.
+     */
+    const act = (a: Act) => record(FIGHT, a as unknown as Record<string, unknown>);
+    if (dm) return <Staging fight={fight} party={membersIn(events)} nav={nav("fight")} onAct={act} />;
+    const build = current;
     return (
-      <Staging
-        fight={fightFrom(events)}
+      <PlayerFight
+        state={fight}
+        me={character}
+        attacks={build === null ? [] : vitalsFrom(events, character, build).attacks}
+        scores={build === null ? BLANK : scoresOf(build)}
+        level={build?.level ?? 1}
         nav={nav("fight")}
-        onAct={(a: Act) => record(FIGHT, a as unknown as Record<string, unknown>)}
+        onAct={act}
       />
     );
   }

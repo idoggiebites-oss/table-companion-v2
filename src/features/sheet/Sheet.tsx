@@ -16,7 +16,6 @@ import { Overview } from "./Overview";
 import { Inventory } from "./Inventory";
 import { Attacks } from "./Attacks";
 import { stacksOf } from "./carried";
-import type { Fight, Act as FightAct } from "../dm/fight";
 import { diceLeft, type Vital, type Vitals } from "./model";
 import { waitingOn } from "./waiting";
 import type { Build } from "../creation/model";
@@ -33,17 +32,13 @@ type Asking = { kind: "damage" } | { kind: "heal" } | { kind: "hitdie"; die: num
  */
 export function Sheet({
   build, vitals, name, onAct, onBack, onLevelUp, nav, features = [],
-  catalogue = [], catalogueLoading = false, onChoose, fight, onFight, character,
+  catalogue = [], catalogueLoading = false, onChoose,
 }: {
   build: Build;
   vitals: Vitals;
   name: string;
   onAct: (v: Vital) => void;
   onBack: () => void;
-  /** The running fight, when there is one — a swing needs something to swing at. */
-  fight?: Fight;
-  onFight?: (a: FightAct) => void;
-  character?: string;
   /** The one navigation, computed by whoever knows the state. See `TabBar`. */
   nav?: ReactNode;
   /** The item catalogue, loaded by the screen above when this tab opens. */
@@ -143,10 +138,7 @@ export function Sheet({
       )}
       {tab === "combat" && (
         <Attacks attacks={vitals.attacks} scores={scoresOf(build)} level={build.level}
-                 catalogue={catalogue} carried={stacksOf(build, catalogue).map((x) => x.itemId)} onAct={onAct}
-                 {...(fight === undefined || onFight === undefined ? {} : {
-                   fight, onFight, who: character ?? "", whoName: name,
-                 })} />
+                 catalogue={catalogue} carried={stacksOf(build, catalogue).map((x) => x.itemId)} onAct={onAct} />
       )}
       {tab === "notes" && (
         <p className={s.note} data-testid="soon">

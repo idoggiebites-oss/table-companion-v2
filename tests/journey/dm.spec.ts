@@ -117,10 +117,14 @@ test("a fight is assembled before anybody sees it", async ({ page }) => {
     .toHaveAttribute("aria-checked", "true");
 });
 
-test("a player is not offered the fight, because it is not their job", async ({ page }) => {
+test("a player is not offered the fight until there is one", async ({ page }) => {
   await hub(page);
   await make(page, "Wren Aldermere");
-  /* Making a character sits this device in it. The bar turns with the seat. */
+  /* Making a character sits this device in it. The bar turns with the seat.
+     Staging a fight is not a player's job — but a running fight IS their
+     business, and V1's playerTabs carry Combat. The has-content rule decides
+     which: no fight, no tab, because a tab reading "no fight yet" is the dead
+     screen V1 refuses to draw. */
   await expect(bar(page).getByRole("button", { name: "Fight" })).toHaveCount(0);
 });
 
@@ -267,9 +271,16 @@ test("a player claims a hit, and nothing lands until the DM says so", async ({ p
   await row.getByRole("spinbutton", { name: /^Initiative/ }).fill("10");
   /* Visible, or a player cannot swing at what they are not allowed to know. */
   await row.getByTestId("step-present").click();
+
+  /* The party goes in the order too, or a fight is monsters taking turns at
+     each other. Bree rolls higher, so the first turn is hers. */
+  await page.getByRole("button", { name: /^Put Bree Thorn in the fight/ }).click();
+  const bree = page.getByTestId("staged-row").filter({ hasText: "Bree Thorn" });
+  await bree.getByRole("spinbutton", { name: /^Initiative/ }).fill("20");
   await page.getByRole("button", { name: "Begin", exact: true }).click();
 
-  /* Now as the player, with something to swing. */
+  /* Now as the player. The sheet is where you keep what you swing; the fight
+     is where you swing it — two doors into one room would be one too many. */
   await bar(page).getByRole("button", { name: "Characters" }).click();
   await page.getByTestId("seat").selectOption({ label: "Bree Thorn" });
   await bar(page).getByRole("button", { name: "Sheet" }).click();
@@ -277,7 +288,8 @@ test("a player claims a hit, and nothing lands until the DM says so", async ({ p
   await page.getByRole("button", { name: "Add an attack" }).click();
   await page.getByRole("group", { name: "Add an attack" }).getByRole("button").first().click();
 
-  const attack = page.getByTestId("attack").first();
+  await bar(page).getByRole("button", { name: "Fight" }).click();
+  const attack = page.getByTestId("my-attacks").locator("li").first();
   await attack.getByRole("button", { name: /^Swing/ }).click();
   await page.getByRole("spinbutton", { name: /rolled to hit/ }).fill("18");
   await page.getByRole("spinbutton", { name: /damage you rolled/ }).fill("4");
@@ -288,7 +300,10 @@ test("a player claims a hit, and nothing lands until the DM says so", async ({ p
   await page.getByTestId("seat").selectOption({ value: "dm" });
   await bar(page).getByRole("button", { name: "Fight" }).click();
   await expect(page.getByTestId("claim")).toHaveCount(1);
-  await expect(page.getByTestId("staged-row").first().locator('[class*="rowNote"]'))
+  /* Bree is first in the order now, so name the goblin rather than take the
+     first row — the order is the thing under test elsewhere. */
+  const goblin = page.getByTestId("staged-row").filter({ hasNotText: "Bree Thorn" }).first();
+  await expect(goblin.locator('[class*="rowNote"]'))
     .toContainText(`${String(max)}/${String(max)}`);
 
   /* The line suggests; it does not decide. */
@@ -297,6 +312,59 @@ test("a player claims a hit, and nothing lands until the DM says so", async ({ p
 
   await page.getByRole("button", { name: /lands$/ }).click();
   await expect(page.getByTestId("claim")).toHaveCount(0);
-  await expect(page.getByTestId("staged-row").first().locator('[class*="rowNote"]'))
+  await expect(goblin.locator('[class*="rowNote"]'))
     .toContainText(`${String(max - 4)}/${String(max)}`);
+});
+
+test("a player's fight is two screens, and shows only what the ladder allows", async ({ page }) => {
+  await hub(page);
+  await make(page, "Bree Thorn");
+
+  await bar(page).getByRole("button", { name: "Characters" }).click();
+  await page.getByTestId("seat").selectOption({ value: "dm" });
+
+  /* No fight yet, so a player is offered none — a tab reading "no fight yet"
+     is the dead screen V1 refuses to draw. */
+  await bar(page).getByRole("button", { name: "Characters" }).click();
+  await page.getByTestId("seat").selectOption({ label: "Bree Thorn" });
+  await expect(bar(page).getByRole("button", { name: "Fight" })).toHaveCount(0);
+
+  await bar(page).getByRole("button", { name: "Characters" }).click();
+  await page.getByTestId("seat").selectOption({ value: "dm" });
+  await bar(page).getByRole("button", { name: "Fight" }).click();
+  await expect(page.getByTestId("bestiary-search"))
+    .toHaveAttribute("placeholder", /Search/, { timeout: 30_000 });
+  await page.getByTestId("bestiary-search").fill("goblin");
+  await page.getByTestId("bestiary-row").first().click();
+  await page.getByTestId("bestiary-row").nth(1).click();
+
+  const rows = page.getByTestId("staged-row");
+  await rows.nth(0).getByRole("spinbutton", { name: /^Initiative/ }).fill("5");
+  await rows.nth(1).getByRole("spinbutton", { name: /^Initiative/ }).fill("4");
+  /* One stays hidden; the other is shown as a word, never a number. */
+  await rows.nth(1).getByTestId("step-vague").click();
+
+  await page.getByRole("button", { name: /^Put Bree Thorn in the fight/ }).click();
+  await page.getByTestId("staged-row").filter({ hasText: "Bree Thorn" })
+    .getByRole("spinbutton", { name: /^Initiative/ }).fill("1");
+  await page.getByRole("button", { name: "Begin", exact: true }).click();
+
+  await bar(page).getByRole("button", { name: "Characters" }).click();
+  await page.getByTestId("seat").selectOption({ label: "Bree Thorn" });
+  await bar(page).getByRole("button", { name: "Fight" }).click();
+
+  /* Waiting: whose go it is, and nothing to press. Bree rolled lowest.
+     The active one is HIDDEN, so it is not named — announcing it in the
+     biggest text on the screen would undo the ladder from the one place
+     nobody thought to check. */
+  await expect(page.getByTestId("whose-turn")).toHaveText("Someone else");
+  await expect(page.getByTestId("my-attacks")).toHaveCount(0);
+
+  /* The hidden one is not on the list at all — knowing it is there is the
+     thing the ladder protects. The vague one is a WORD, never a number. */
+  const order = page.getByTestId("order-row");
+  await expect(order).toHaveCount(2);
+  await expect(page.getByTestId("order")).not.toContainText("/");
+
+  await page.screenshot({ path: "shots/player-fight.png", fullPage: true });
 });

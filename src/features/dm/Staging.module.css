@@ -97,3 +97,11 @@
   color: var(--ink); background: var(--surface-1);
   border: var(--panel-border); border-radius: var(--r-control);
 }
+
+/* The table's own, put in the order beside what they are fighting. */
+.party { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+.join {
+  min-height: var(--tap); padding: 0 var(--s-4); font-size: var(--t-sm);
+  color: var(--ink); background: var(--surface-2);
+  border: var(--panel-border); border-radius: var(--r-pill);
+}

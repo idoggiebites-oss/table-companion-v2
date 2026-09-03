@@ -19,8 +19,10 @@ import s from "./Staging.module.css";
  * Tablet-first: the bestiary and the table sit side by side where there is
  * room, and stack on a phone. The DM side has to work on both.
  */
-export function Staging({ fight, nav, onAct }: {
+export function Staging({ fight, party = [], nav, onAct }: {
   fight: Fight;
+  /** The table's own characters, so they can be put in the order too. */
+  party?: readonly { id: string; name: string }[];
   nav?: ReactNode;
   onAct: (a: Act) => void;
 }) {
@@ -76,6 +78,27 @@ export function Staging({ fight, nav, onAct }: {
     >
       <div className={`${s.split} ${fight.phase === "active" ? s.running : ""}`}>
         <section className={s.pane} aria-label="The bestiary">
+          {party.length > 0 && (
+            /*
+             * The party goes in the order too, or a fight is monsters taking
+             * turns at each other. A character's hit points are NOT copied in
+             * — they stay on their own sheet, which is V1's `Source` union and
+             * the reason the party screen and the fight cannot disagree.
+             */
+            <div className={s.party} data-testid="party-to-stage">
+              {party.filter((m) => !fight.combatants.some((c) => c.id === m.id)).map((m) => (
+                <button key={m.id} type="button" className={s.join}
+                        aria-label={`Put ${m.name} in the fight`}
+                        onClick={() => onAct({
+                          act: "stage", id: m.id, name: m.name,
+                          source: { kind: "character", character: m.id },
+                          /* A character is never hidden from the table: the
+                             ladder is for what the DM is running. */
+                          disclosure: "exact",
+                        })}>{m.name}</button>
+              ))}
+            </div>
+          )}
           <input
             className={s.search}
             type="search"

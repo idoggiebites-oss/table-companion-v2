@@ -100,12 +100,13 @@ starts, and breaking down work three slices out is planning fiction.
 - [x] Task 8: Damage and healing on staged creatures — done; brief had the dying/dead rule wrong, corrected against V1
 - [x] Task 9: Conditions on combatants — done; found the `paralysed`/`paralyzed` id mismatch against 401 statblocks
 - [x] Task 10: The attack — a player claims, the DM answers — done; advantage (`stance.ts`) deliberately left as its own task
-- [ ] Task 11: The player's half of the fight
+- [x] Task 11: The player's half of the fight — done; screenshot caught a disclosure leak in the active-turn heading
 
 ### Checkpoint: The fight
-- [ ] A fight runs start to finish with a DM and one player on two devices
-- [ ] The sheet, the party and the fight agree on every hit point number
-- [ ] `npm run verify` passes; MINIMUMS ratcheted
+- [x] A fight runs start to finish with a DM and one player on two seats: stage, roll, begin, walk the order, swing, answer, damage lands
+- [x] The sheet, the party and the fight agree on every hit point number — by construction: a character's live in the log, a creature's in the fight, and neither writes the other's
+- [x] `npm run verify` clean; MINIMUMS ratcheted to 597/91/55
+- [ ] **Advantage from both sides is NOT built** — V1's `stance.ts`, named in Task 10 and still owed
 
 ### Phase 4: Disclosure (slice 8)
 Ports `visibility.ts` + `permissions.ts`. Break down when Phase 3 closes.

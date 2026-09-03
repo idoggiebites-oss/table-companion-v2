@@ -376,3 +376,25 @@ describe("what the DM's screen suggests, and never decides", () => {
     expect(acOf(f, "c1")).toBeUndefined();
   });
 });
+
+describe("what a player is told about whose turn it is", () => {
+  /* The order already filters hidden creatures out. The ACTIVE one is the
+     place that leaked: it was named in the largest text on the screen. */
+  const staged = [ev(goblin("g1")), ev(goblin("g2")),
+    ev({ act: "disclose", id: "g2", to: "present" }),
+    ev({ act: "roll", id: "g1", value: 20 }), ev({ act: "roll", id: "g2", value: 5 }),
+    ev({ act: "begin" })];
+
+  it("does not let a hidden combatant be named by being active", () => {
+    const f = fightFrom(staged);
+    const active = activeOf(f);
+    expect(active?.id).toBe("g1");
+    expect(visibleTo(false, active!)).toBe(false);
+    expect(visibleTo(true, active!)).toBe(true); // the DM still sees it
+  });
+
+  it("keeps a hidden combatant out of the order a player reads", () => {
+    const f = fightFrom(staged);
+    expect(orderOf(f).filter((c) => visibleTo(false, c)).map((c) => c.id)).toEqual(["g2"]);
+  });
+});
