@@ -34,7 +34,7 @@ import { key } from "../src/content/names";
 import { traitsOf } from "../src/content/traits";
 import { budget as legendaryBudget, options as legendaryOptions, lair as lairOf } from "../src/content/legendary";
 
-type Row = { properties?: string[]; twoHanded?: string; cost?: number; weight?: number; prerequisite?: string; weaponCategory?: string; weaponRange?: string; damage?: string; damageType?: string; wealth?: string; slots?: number[][]; category?: string; strMinimum?: number; stealthDisadvantage?: boolean; armorCategory?: string; baseAc?: number; dexBonus?: boolean; maxDex?: number; magic?: boolean; detail?: string; id?: string; name?: string; text?: string; description?: string; level?: number; school?: string; classes?: string[]; skills?: string[]; traits?: { name?: string; text?: string }[]; abilityBonuses?: Record<string, number>; speed?: number; size?: string; features?: { level?: number; name?: string; text?: string }[] };
+type Row = { properties?: string[]; twoHanded?: string; cost?: number; weight?: number; prerequisite?: string; weaponCategory?: string; weaponRange?: string; range?: { normal: number; long?: number }; damage?: string; damageType?: string; wealth?: string; slots?: number[][]; category?: string; strMinimum?: number; stealthDisadvantage?: boolean; armorCategory?: string; baseAc?: number; dexBonus?: boolean; maxDex?: number; magic?: boolean; detail?: string; id?: string; name?: string; text?: string; description?: string; level?: number; school?: string; classes?: string[]; skills?: string[]; traits?: { name?: string; text?: string }[]; abilityBonuses?: Record<string, number>; speed?: number; size?: string; features?: { level?: number; name?: string; text?: string }[] };
 
 const [, , corpus, outRoot = "content-dist"] = process.argv;
 if (!corpus || !existsSync(corpus)) { console.error("usage: compile-content.ts <corpus dir> [out root]"); process.exit(2); }
@@ -156,6 +156,10 @@ for (const kind of KINDS) {
         ...(o.properties === undefined ? {} : { properties: o.properties }),
         ...(o.weaponCategory === undefined ? {} : { weaponCategory: o.weaponCategory }),
         ...(o.weaponRange === undefined ? {} : { weaponRange: o.weaponRange }),
+        /* How far it throws. V1's item card prints "150/600 ft" and V2's
+           silently did not, because the index dropped the field while
+           `detail` kept it — so every ranged weapon lost its range line. */
+        ...(o.range === undefined ? {} : { range: o.range }),
         ...(o.armorCategory === undefined ? {} : { armorCategory: o.armorCategory }),
         ...(o.baseAc === undefined ? {} : { baseAc: o.baseAc }),
         ...(o.dexBonus === undefined ? {} : { dexBonus: o.dexBonus }),

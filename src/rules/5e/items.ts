@@ -32,6 +32,8 @@ export type Item = {
   readonly weaponCategory?: "Simple" | "Martial";
   readonly damage?: string;
   readonly damageType?: string;
+  /** How far it throws or shoots, in feet. Normal, then long if it has one. */
+  readonly range?: { readonly normal: number; readonly long?: number };
   /** Versatile: the die when it is swung in two hands. */
   readonly twoHanded?: string;
   readonly properties?: readonly WeaponProperty[];
@@ -100,6 +102,12 @@ export function itemFacts(i: Item): readonly string[] {
       + (i.twoHanded === undefined ? "" : `, or ${i.twoHanded} in two hands`));
     if (i.weaponCategory !== undefined) {
       out.push(`${i.weaponCategory} ${i.weaponRange?.toLowerCase() ?? ""} weapon`.trim());
+    }
+    /* V1 prints this and V2 had dropped it. A longbow that says "martial
+       ranged weapon" and never says 150/600 has withheld the one number that
+       decides whether the shot is possible. */
+    if (i.range !== undefined) {
+      out.push(`range ${String(i.range.normal)}${i.range.long === undefined ? "" : `/${String(i.range.long)}`} ft`);
     }
   }
   if (i.properties !== undefined && i.properties.length > 0) out.push(i.properties.join(", "));
