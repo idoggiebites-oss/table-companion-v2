@@ -91,9 +91,9 @@ starts, and breaking down work three slices out is planning fiction.
 - [x] Task 6: Port web push — built and deployed; the on-device check is the one thing left and needs Arturo's phone
 
 ### Checkpoint: The room
-- [ ] `npm run test:room` passes against `npm run dev:worker`
-- [ ] An unauthenticated device is challenged; a configured device is not
-- [ ] With no passphrase set, the gate fails open
+- [x] `npm run test:room` passes — 5 tests, ~10s
+- [x] An unauthenticated device is challenged; a configured one is not — verified against the live deployment
+- [x] With no passphrase set, the gate fails open
 
 ### Phase 3: The fight, end to end (completes slice 7)
 - [x] Task 7: Initiative and turn order — done; order derived, not stored. Four bugs found only by the screenshot.
@@ -106,7 +106,7 @@ starts, and breaking down work three slices out is planning fiction.
 - [x] A fight runs start to finish with a DM and one player on two seats: stage, roll, begin, walk the order, swing, answer, damage lands
 - [x] The sheet, the party and the fight agree on every hit point number — by construction: a character's live in the log, a creature's in the fight, and neither writes the other's
 - [x] `npm run verify` clean; MINIMUMS ratcheted to 597/91/55
-- [ ] **Advantage from both sides is NOT built** — V1's `stance.ts`, named in Task 10 and still owed
+- [x] Advantage from both sides — Task 16, `stance.ts` ported; conditions now change the dice and say why
 
 ### Phase 4: Disclosure (slice 8)
 - [x] Task 14: The log reads differently per person — `visibility.ts` ported; the ladder can no longer be read around via the Log tab
