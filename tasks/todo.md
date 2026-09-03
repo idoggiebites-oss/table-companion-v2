@@ -645,6 +645,73 @@ never accidentally render an event it should not have been handed.
 
 ---
 
+## Task 16: Advantage, and why
+
+*Belongs to Phase 3 — it is the last thing Task 10 left owed, and the piece
+that turns conditions from labels into rules.*
+
+**Description:** V1's `stance.ts`. Advantage is the most-used mechanic in the
+game and the one an app is usually quietest about: the conditions are on one
+person's screen, the rule is in a book, and the person who needs both is the
+one who has played twice.
+
+**Acceptance criteria:**
+- [x] Computed from what the app already knows, and said as a sentence naming every source — "Advantage: the goblin is prone" teaches the rule while you use it; "Advantage" alone teaches nothing
+- [x] **Any number of advantages and any number of disadvantages cancel to a straight roll.** Not a tally, not a net. When they cancel the line says so and names both sides, so a missing advantage is not a mystery.
+- [x] Prone cuts both ways: advantage in melee, disadvantage at range
+- [x] Shown on the swing form, at the moment the dice are about to be picked up
+
+**Task 9's id fix is what makes it work.** `TARGET_GIVES_ADVANTAGE` contains
+`paralyzed` with a z; V2 spelled it `paralysed` until that was corrected, and a
+near-miss drops the condition from the rule silently. A test asserts exactly
+that.
+
+**Named as absent rather than silently missing:** light and darkvision (no
+senses on a combatant), the room's effects (slice 9), and the per-turn tags —
+helped, dodging, hidden — which belong to the turn economy. V1 also refuses
+reach, cover and line of sight: those need positions, and this table keeps its
+positions on the table.
+
+**Verification:** 15 domain tests; `npm run verify` clean.
+**Files touched:** `rules/5e/stance.ts` + test (new), `sheet/Swing.tsx` + css, `room/Fight.tsx`, `ui/App.tsx`, journeys
+**Actual scope:** M
+
+**DONE** — commit `10af48d`.
+
+---
+
+## Task 17: Tests for four untested modules
+
+*Cross-cutting. Belongs to no slice — it is maintenance, and it is recorded
+because it found a bug, not because it added coverage.*
+
+**Description:** `content/books.ts`, `content/marks.ts`, `rules/5e/items.ts`
+and `rules/5e/progression.ts` had no sibling test file. Delegated to Sonnet
+with one instruction that made it worth doing: **V1 is the specification, not
+V2** — do not encode present behaviour, and report disagreements rather than
+fixing them.
+
+**Acceptance criteria:**
+- [x] 66 tests across the four modules
+- [x] Written against V1 as the spec; disagreements reported, not silently fixed
+- [x] `npm run verify` clean
+
+**The bug it found.** V1's `Item` carries `range?: { normal, long? }` and its
+card prints "range 150/600 ft". V2's type had no such field, `itemFacts` had no
+branch, and the compiled **index** dropped it while `detail` kept it — which is
+why the data looked present. **2,038 index rows were missing it.** Every ranged
+weapon said "Martial ranged weapon" and never how far it reached. Restored
+through the compiler, the type and the fact line, with three tests. New
+compendium version `722d5a038844`.
+
+**Two findings left for a decision, not a fix:**
+- `owes()` in `progression.ts` is dead — `features/progression/model.ts` reimplements the same check inline.
+- `BOOKS` is in publication order within each block, but adventures are appended after hardcovers, so a 2015 adventure sorts after a 2023 one. Possibly a deliberate two-tier ordering; it contradicts the "publication, not the alphabet" framing used elsewhere.
+
+**DONE** — commit `ebe815b`.
+
+---
+
 ## Phase 5: Prep (slice 9)
 
 *Read V1 before writing any of these. The headers carry the reasoning and it is

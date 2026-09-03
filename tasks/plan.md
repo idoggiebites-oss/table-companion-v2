@@ -100,6 +100,7 @@ starts, and breaking down work three slices out is planning fiction.
 - [x] Task 8: Damage and healing on staged creatures — done; brief had the dying/dead rule wrong, corrected against V1
 - [x] Task 9: Conditions on combatants — done; found the `paralysed`/`paralyzed` id mismatch against 401 statblocks
 - [x] Task 10: The attack — a player claims, the DM answers — done; advantage (`stance.ts`) deliberately left as its own task
+- [x] Task 16: Advantage, and why — the last thing Task 10 left owed
 - [x] Task 11: The player's half of the fight — done; screenshot caught a disclosure leak in the active-turn heading
 
 ### Checkpoint: The fight
@@ -107,6 +108,13 @@ starts, and breaking down work three slices out is planning fiction.
 - [x] The sheet, the party and the fight agree on every hit point number — by construction: a character's live in the log, a creature's in the fight, and neither writes the other's
 - [x] `npm run verify` clean; MINIMUMS ratcheted to 597/91/55
 - [x] Advantage from both sides — Task 16, `stance.ts` ported; conditions now change the dice and say why
+
+### Outside the phases
+- [x] Task 17: Tests for four untested modules — maintenance, recorded because it found the missing weapon `range` across 2,038 rows
+
+*There is no Task 13. The number was floated for the claim seam and then folded
+into Task 10 rather than used, and renumbering afterwards would have broken the
+commit messages that already cite these ids.*
 
 ### Phase 4: Disclosure (slice 8)
 - [x] Task 14: The log reads differently per person — `visibility.ts` ported; the ladder can no longer be read around via the Log tab
