@@ -27,6 +27,8 @@ export type Weapon = {
   readonly weapon: "Simple" | "Martial";
   readonly range?: "Melee" | "Ranged";
   readonly damage: string;
+  /** "finesse", "versatile", "thrown"… lowercase, as the corpus writes them. */
+  readonly properties: readonly string[];
 };
 
 /** The 54 things a proficiency can name. */

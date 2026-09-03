@@ -316,6 +316,15 @@ if (existsSync(itemPath)) {
       weapon: i.weaponCategory,
       range: i.weaponRange,
       damage: [i.damage, i.damageType].filter(Boolean).join(" "),
+      /*
+       * The properties, because an attack cannot be derived without them.
+       * Finesse takes the BETTER of Strength and Dexterity, so a rapier
+       * cannot be stored as one ability — and dropping the field here is why
+       * a dex fighter's rapier would have read from Strength. Versatile and
+       * thrown matter for the same reason: they change what the number is,
+       * not just what the weapon is called.
+       */
+      properties: i.properties ?? [],
     }));
   /*
    * The FILE'S order, not alphabetical.
