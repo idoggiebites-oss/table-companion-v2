@@ -44,7 +44,7 @@ export default defineConfig({
       timeout: 30_000,
     },
     {
-    command: "npm run build && npm run preview",
+    command: "VITE_CONTENT_BASE=http://localhost:4272 npm run build && npm run preview",
     url: "http://localhost:4271",
     // Opt-in only, for iterating against an already-running worker. Safety
     // comes from the data-app assertion, not from the port being free.

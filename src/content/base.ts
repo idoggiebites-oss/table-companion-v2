@@ -30,12 +30,18 @@ export const CONTENT_VERSION: string =
   typeof __CONTENT_VERSION__ === "string" ? __CONTENT_VERSION__ : "dev";
 
 /**
- * No trailing slash. Local dev and the test tiers point at the little static
- * server in `scripts/serve-content.mjs`; a deployed build points at the
- * published site.
+ * No trailing slash.
+ *
+ * The DEFAULT is the published site, deliberately. The dangerous direction is
+ * a production build that quietly points at a machine on somebody's desk: it
+ * would pass every check here and serve nothing to anybody else. Dev and the
+ * test tiers opt IN to the local server by setting the variable, so the
+ * failure mode of forgetting it is a slow test run against the real site
+ * rather than a shipped app with no compendium.
  */
 export const CONTENT_BASE: string =
-  (import.meta.env["VITE_CONTENT_BASE"] as string | undefined) ?? "http://localhost:4272";
+  (import.meta.env["VITE_CONTENT_BASE"] as string | undefined) ??
+  "https://idoggiebites-oss.github.io/table-companion-content";
 
 /**
  * `path` is relative to one compendium build — `index/spell.json`,

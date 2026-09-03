@@ -35,7 +35,7 @@ export default defineConfig({
       timeout: 30_000,
     },
     {
-    command: "npm run build && npx wrangler dev --port 8791 --local",
+    command: "VITE_CONTENT_BASE=http://localhost:4272 npm run build && npx wrangler dev --port 8791 --local",
     url: "http://localhost:8791",
     reuseExistingServer: !!process.env["PW_REUSE"],
     timeout: 180_000,
