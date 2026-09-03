@@ -81,9 +81,9 @@ script so a bad match aborted before touching disk.
 ---
 
 ### Checkpoint: Safety net
-- [ ] Root commit exists, working tree clean
-- [ ] Zero import cycles
-- [ ] `npm run verify` passes all four tiers
+- [x] Root commit exists, working tree clean
+- [x] Zero runtime import cycles, guarded by tier-4 `check-cycles`
+- [~] `npm run verify`: typecheck, tier 4 (10), tier 1 (531), tier 2 (91), tier 3 journey (49) pass. Tier 3 "the room" cannot run — see Task 4's asset-count finding.
 
 ---
 
@@ -154,29 +154,50 @@ before deciding the fix.
 not. Task 6's web push is the likely consumer.
 
 **Acceptance criteria:**
-- [ ] A deliberate decision is recorded on the worker name: either V2 deploys under its own name until cutover, or the overwrite is accepted and guarded
-- [ ] Whatever is decided, an accidental `wrangler deploy` from V2 cannot silently replace V1 — a guard, a distinct name, or a documented deploy command
-- [ ] The DO migration question is answered with evidence: either V2 reuses V1's namespaces safely, or it declares its own class/tag so it starts clean
-- [ ] `env.ASSETS` is either bound in `wrangler.jsonc` or no longer referenced in `worker/index.ts`
-- [ ] `nodejs_compat` present if Task 6 needs it, absent if it does not — not copied by cargo cult
+- [x] **Worker name decided: V2 deploys as `table-companion-v2` until cutover.** The name is the guard — a stray `wrangler deploy` from here now lands on a different workers.dev subdomain and V1 keeps serving. Verified: `wrangler deploy --dry-run --outdir` writes *'the worker "table-companion-v2"'*, exit 0.
+- [x] An accidental deploy cannot silently replace V1 — see above.
+- [x] **DO question answered with evidence, and the answer is that reuse would break.** Both classes are named `Room`, both declare migration tag `v1`, and both create a table called `events` with *incompatible* schemas — V1 `(seq INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT UNIQUE, payload TEXT)`, V2 `(id TEXT PRIMARY KEY, seq INTEGER, body TEXT)`. `CREATE TABLE IF NOT EXISTS` finds V1's table and leaves it, after which every `SELECT body` and `INSERT ... body` fails — only in rooms that existed under V1. The distinct worker name gives V2 its own DO namespaces, so this cannot arise.
+- [x] **`env.ASSETS` was live-broken, not merely unreachable** — now bound. Measured both ways on a booted worker: without the binding a SPA deep link answered **500**; with it, **200**. Room routes were unaffected either way (426 upgrade-required / 400 bad code).
+- [x] `nodejs_compat` deliberately absent — nothing here imports a node builtin yet. Web push (Task 6) is the likely first caller; add it with the thing that needs it, not by cargo cult.
 
 **Verification:**
-- [ ] **Arturo runs `! npx wrangler dev --port 8791 --local` in his own terminal** and probes `/`, `/room/BCDFGH`, `/room/AEIOU1` and an unknown path — this is the step that decides whether `env.ASSETS` is live-broken or merely unreachable
-- [ ] `npx wrangler deploy --dry-run` from V2 names the expected worker
-- [ ] Typecheck passes: `npm run typecheck`
-- [ ] Manual check: a staged room still resolves after whatever DO decision is taken
+- [x] ~~Arturo runs wrangler in his own terminal~~ — **not needed. The premise was wrong.** V1's `wrangler dev` boots from this shell in 3s (200), so the environment was never the problem. See the finding below.
+- [x] `npx wrangler deploy --dry-run` names the expected worker — confirmed, exit 0
+- [x] Typecheck passes: `npm run typecheck` exit 0; tier 4 clean (10 checks)
+- [x] Manual check: on a booted worker, `/` 200, `/room/BCDFGH` 426 (WebSocket upgrade expected), `/room/AEIOU1` 400 (bad code), `/deep/link` 200 (SPA fallback). Both bindings listed.
+
+**THE REAL CAUSE OF THE WRANGLER HANG — and it is not the shell.** Bisected:
+
+| assets in `dist/` | `wrangler dev` |
+|---|---|
+| 51 (content moved aside) | boots in **3s**, answers 200 |
+| 13,683 (normal build) | **never answered in 5+ minutes** |
+
+V1's `dist` holds 28 files; V2's holds 13,683, because V2 compiles the compendium
+to one file per record (7,179 prose + 6,633 statblocks). Wrangler enumerates and
+hashes every asset at startup. The old note recording that the file count had been
+"ruled out by test" is **wrong** and is corrected.
+
+This blocks `npm run test:room` outright — its `webServer` timeout is 180s — and
+therefore blocks Phase 2's checkpoint. Production deploy is *not* blocked: 13,683
+is under Cloudflare's 20,000-asset limit and `deploy --dry-run` reads them fine.
+Recorded as an open question in `plan.md`; the fix is a content-delivery decision
+(serve the compendium from R2/KV, or exclude it from the dev build), which is
+Arturo's call, not mine.
 
 **Dependencies:** Task 1
-**Files likely touched:** `wrangler.jsonc`, `worker/index.ts`, `package.json`
-**Estimated scope:** S-M — the investigation is most of it
+**Files touched:** `wrangler.jsonc`
+**Actual scope:** S to change, and the investigation was indeed most of it
+
+**DONE.**
 
 ---
 
 ### Checkpoint: Storage and deployment
-- [ ] V2 opens cleanly on an origin holding V1's database
-- [ ] V1's data survives untouched
-- [ ] V2 cannot replace V1 by accident
-- [ ] `npm run verify` passes
+- [x] V2 opens cleanly on an origin holding V1's database — proved in a live browser
+- [x] V1's data survives untouched (`upgraded: false`, marker intact)
+- [x] V2 cannot replace V1 by accident — deploys as `table-companion-v2`, confirmed by dry-run
+- [~] `npm run verify` — as above; the room tier is blocked on the asset count, not on anything in Phase 1
 
 ---
 

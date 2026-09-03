@@ -76,16 +76,18 @@ starts, and breaking down work three slices out is planning fiction.
 
 ### Phase 1: V2 survives on V1's origin
 - [x] Task 3: Namespace V2's IndexedDB away from V1's — done, verified against real IndexedDB and a live browser; surfaced the service-worker risk above
-- [ ] Task 4: Separate V2's deployment identity from V1's
+- [x] Task 4: Separate V2's deployment identity from V1's — done; V2 deploys as `table-companion-v2`, `env.ASSETS` bound, DO inheritance ruled out
 
 ### Checkpoint: Storage and deployment
-- [ ] V2 opens cleanly on an origin that already holds V1's database
-- [ ] V1, if loaded again, still finds its own data intact
-- [ ] V2 cannot replace V1 by accident
-- [ ] `npm run verify` passes
+- [x] V2 opens cleanly on an origin that already holds V1's database
+- [x] V1, if loaded again, still finds its own data intact
+- [x] V2 cannot replace V1 by accident
+- [~] `npm run verify` — the room tier cannot run until the asset-count question below is answered
 
 ### Phase 2: Lift the Worker pieces V2 lacks
 *Safe to parallelize with Phase 3 — no shared files.*
+**Blocked** until the asset-count question is answered: both tasks here are
+verified by `npm run test:room`, which cannot start a local worker today.
 - [ ] Task 5: Port the passphrase gate
 - [ ] Task 6: Port web push
 
@@ -139,6 +141,7 @@ Phase 5 closes.
 | **Same DO class (`Room`) and same migration tag (`v1`) in both.** V2's `Room.ts` would inherit Durable Objects holding room state written by V1's class; the differing binding name (`ROOM` vs `ROOMS`) does not isolate them. | **High** | Task 4 answers it with evidence — reuse safely, or declare a distinct class/tag. |
 | **The cutover is not reversible by parallel running.** One origin serves one app, so V2 replacing V1 is a switch, not a gradual migration. | **High** | Task R2 writes the rollback *before* R3 cuts over: V1 stays deployable and one command restores it. |
 | **V2's `worker/index.ts:20` calls `env.ASSETS.fetch` but no `ASSETS` binding is declared** — confirmed from wrangler's own bindings table, which lists only `env.ROOMS`. V1 declares both `assets.binding` and `run_worker_first`. Runtime impact unverified: V2's `wrangler dev` on 8791 answers nothing from the Claude Code shell. | Medium | Task 4 — Arturo probes it from his own terminal, then the fix follows the evidence. |
+| **`dist/` holds 13,683 assets and `wrangler dev` cannot start.** V2 compiles the compendium to one file per record (7,179 prose + 6,633 statblocks); V1's `dist` holds 28 files. Measured: 51 assets boot in 3s, 13,683 never answered in 5+ minutes. `test:room` times out at 180s, so Phase 2 cannot be verified. Production deploy is unaffected — under Cloudflare's 20,000 limit, and `deploy --dry-run` reads them fine. | **High** | Needs a decision (see Open Questions). Not a code fix to make unilaterally. |
 | **V1 runs a service worker (`vite-plugin-pwa`) at the same scope V2 will occupy.** Verified 2 Sep 2026 in a real browser: swapping the backend server alone did not surface V2 — the page kept rendering V1's cached UI until the SW was explicitly unregistered. A device that has V1 installed will keep running it after R3's cutover until its service worker is superseded, on Workbox's own update timing, not ours. | **High** | New: confirm `vite-plugin-pwa`'s update strategy (`registerType`) in both configs before R3. R2's rollback plan and R3's cutover both need to account for this — a "cut over" that half the table doesn't see for an unknown number of reloads is not a clean switch. |
 | **Three runtime import cycles in `features/creation/`**, all caused by `model.ts` re-exporting its own dependents. This is the mechanism behind the `EMPTY.heritage === undefined` bug already fixed once at the symbol level. | Medium | Task 2, before porting anything through that core. |
 | `src/ui/Combat.tsx` fails AST parse at line 581 — 11 of ~1,602 lines extracted. V1's combat is under-represented in the graph, so Phase 3 sizing is a floor. | Medium | Read `Combat.tsx` directly when starting Task 6; do not trust the graph's sizing there. |
@@ -147,6 +150,20 @@ Phase 5 closes.
 
 ## Open Questions
 
+- **How should the compendium reach the browser, now that it blocks local dev?**
+  13,683 static assets is what makes `wrangler dev` unusable and `test:room`
+  impossible. Options, none of them free:
+  1. **Serve the compendium from R2 or KV** rather than as worker assets. Keeps
+     the per-record fetch design intact (which was measured and chosen on
+     payload grounds — bulk chunks cost 270KB gz against a 62KB creation chunk),
+     but adds a storage binding and a fetch path.
+  2. **Exclude `dist/content` from the dev build only**, so the worker boots
+     locally and the room tests run. Cheapest, but local dev then has no
+     compendium, and anything content-shaped has to be tested another way.
+  3. **Accept it** and verify the room only against a deployed preview. Slowest
+     feedback loop, and it leaves a red tier in `npm run verify` permanently.
+  My reading is (2) unblocks Phase 2 this week and (1) is the real answer, but
+  the trade is a design call, not mine to make.
 - **Is the kit-or-gold switch in scope?** Recorded on Review today but never
   offered as a mode; V1's `money.ts` is unported and nothing in slices 7-10
   needs it.

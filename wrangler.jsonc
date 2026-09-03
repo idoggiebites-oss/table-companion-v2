@@ -1,11 +1,61 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "table-companion",
+
+  /*
+   * Its own name until cutover, deliberately NOT V1's `table-companion`.
+   *
+   * Both repos declared that name, so `wrangler deploy` from here replaced the
+   * live V1 on the same workers.dev subdomain — no plan step, no warning, just
+   * a deploy. The name IS the guard: a stray deploy now lands on a different
+   * subdomain and V1 keeps serving.
+   *
+   * It also settles the Durable Object question. A different worker name means
+   * different DO namespaces, so V2's `Room` can never open storage that V1's
+   * `Room` wrote. That matters because both classes are called `Room`, both
+   * declare migration tag `v1`, and both create a table called `events` — with
+   * incompatible schemas:
+   *
+   *   V1: events (seq INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT UNIQUE, payload TEXT)
+   *   V2: events (id TEXT PRIMARY KEY, seq INTEGER, body TEXT)
+   *
+   * `CREATE TABLE IF NOT EXISTS` would find V1's table and leave it alone, and
+   * then every `SELECT body` and every `INSERT ... body` in this file's Room
+   * fails — for exactly the rooms that already existed, and nowhere else.
+   *
+   * Cutover (Task R3) is therefore a deliberate act, not a default: either
+   * point a custom domain at this worker, or rename it and accept that rooms
+   * created under V1 are gone. Do not rename it back casually.
+   */
+  "name": "table-companion-v2",
+
   "main": "worker/index.ts",
   "compatibility_date": "2026-08-01",
-  "assets": { "directory": "./dist", "not_found_handling": "single-page-application" },
+
+  /*
+   * `binding` is not optional here: `worker/index.ts` calls `env.ASSETS.fetch`
+   * for anything that is not a room route, and without the binding that is
+   * `undefined`. Measured, not assumed — every SPA deep link answered 500
+   * before this line existed, and 200 after.
+   *
+   * No `run_worker_first`: assets are served without waking the worker, and
+   * the room route reaches it regardless. V1 sets it because its passphrase
+   * gate has to see asset requests too; add it with the gate (Task 5), not
+   * before.
+   */
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application",
+    "binding": "ASSETS"
+  },
+
   "durable_objects": {
     "bindings": [{ "name": "ROOMS", "class_name": "Room" }]
   },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Room"] }]
+
+  /*
+   * No `compatibility_flags: ["nodejs_compat"]`. V1 sets it, but nothing here
+   * imports a node builtin yet. Web push (Task 6) is the likely first caller —
+   * add it then, with the thing that needs it.
+   */
 }
