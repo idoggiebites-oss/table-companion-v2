@@ -566,10 +566,68 @@ has-content one.
 
 ---
 
-## Phases 4-6
+## Phase 4: Disclosure (slice 8)
 
-Slices 8 (disclosure), 9 (prep), 10 (guidance) — full parity is in scope.
-Named in `tasks/plan.md`, broken down when the preceding phase closes.
+## Task 14: The log reads differently per person
+
+**Description:** `App.tsx` hands the raw event list to `LogView`, and the Log
+tab is on every seat's bar. So a player taps Log and reads the DM's prep —
+every `stage` naming a hidden creature, every `disclose`, every point of damage
+a creature quietly took. **This undoes the disclosure ladder from behind**, and
+it is now live on a URL rather than theoretical.
+
+V1's `visibility.ts` is the port, and its rule is the thing to carry: *"The rule
+is about the AUDIENCE, not the actor: a thing the table would see happen is
+public, and a thing the DM did alone is not. Damage a player dealt is public
+because they rolled it out loud; a creature quietly losing hit points is not."*
+
+`LogView`'s own comment already admits what it is — "Slice 1's debug view, and
+nothing else."
+
+**Acceptance criteria:**
+- [x] A player's log omits staging, unstaging, the ladder, damage to a creature, conditions put on one
+- [x] A player's log keeps initiative rolled, the fight beginning, turns passing, a claim made and answered
+- [x] The DM's log is unchanged
+- [x] Undo follows the same rule — the DM may take anything back; a player only what their own device did, so there is no button on somebody else's
+- [x] Filtering is by event KIND, not by reading each creature's rung at render time
+
+**Verification:**
+- [x] `npm run verify` clean — 611 domain, 91 component, 56 journey, 5 room
+- [x] 14 domain tests; journey compares the two seats against the same log
+- [x] Screenshot read
+
+**Why by kind and not by the ladder.** A filter that asked "is this creature
+hidden *now*" would answer differently once the DM slid the rung up — so an
+event a player was never meant to see would appear retroactively, and a fresh
+device replaying the log would disagree with the one that was there. **The
+audience of an event is fixed when it happens.**
+
+**A whitelist, not a blacklist.** Only the acts the table watches happen are
+public; anything unrecognised is private, because a new fight act is far
+likelier to be prep than narration and the failure that matters is the one that
+shows too much. `BEHIND_THE_SCREEN` documents the known-private ones rather than
+deciding, and a test holds the two in agreement so the list cannot rot into a
+comment.
+
+**Caught while writing it:** the first version read
+`BEHIND_THE_SCREEN.has(act) || true`, which is always true — the set was dead
+logic dressed as a rule. Rewritten to say what it means.
+
+**Filtering happens before the screen**, in `visibility.ts`, so a component can
+never accidentally render an event it should not have been handed.
+
+**Dependencies:** Task 11
+**Files touched:** `features/room/visibility.ts` + test (new), `ui/LogView.tsx`, `ui/App.tsx`, `tests/journey/dm.spec.ts`, `scripts/verify.mjs`
+**Actual scope:** M
+
+**DONE.**
+
+---
+
+## Phases 5-6
+
+Slices 9 (prep) and 10 (guidance) — full parity is in scope.
+Named in `tasks/plan.md`, broken down when Phase 4 closes.
 
 ---
 

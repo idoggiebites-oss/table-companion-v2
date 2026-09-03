@@ -109,7 +109,8 @@ starts, and breaking down work three slices out is planning fiction.
 - [ ] **Advantage from both sides is NOT built** — V1's `stance.ts`, named in Task 10 and still owed
 
 ### Phase 4: Disclosure (slice 8)
-Ports `visibility.ts` + `permissions.ts`. Break down when Phase 3 closes.
+- [x] Task 14: The log reads differently per person — `visibility.ts` ported; the ladder can no longer be read around via the Log tab
+- [ ] `permissions.ts` — the rest of the ladder beyond the log
 
 ### Phase 5: Prep (slice 9)
 Ports `encounter.ts`, `scenes.ts`, `npc.ts`, `homebrew-item.ts`, plus V1's

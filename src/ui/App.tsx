@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { Shell } from "./Shell";
 import { Button, ButtonRow } from "./Button";
 import { LogView } from "./LogView";
+import { logFor, mayRevert } from "../features/room/visibility";
 import { useFeatures } from "../features/progression/useFeatures";
 import { useCatalogue } from "../features/sheet/useCatalogue";
 import { useLog } from "./useLog";
@@ -274,7 +275,15 @@ export function App({ dbName }: { dbName?: string }) {
       }
     >
       {ready ? (
-        <LogView events={events} onUndo={undo} />
+        /*
+         * The log READS differently per person, though every device replays the
+         * same events — that is what makes undo work across a table. A player
+         * was being shown the DM's prep here, which undid the disclosure ladder
+         * from behind: the fight screen can hide a creature as carefully as it
+         * likes while this tab names it.
+         */
+        <LogView events={logFor(events, dm)} onUndo={undo}
+                 mayUndo={(e) => mayRevert(e, dm, clock.device)} />
       ) : (
         <p data-testid="loading">Opening the log…</p>
       )}

@@ -368,3 +368,41 @@ test("a player's fight is two screens, and shows only what the ladder allows", a
 
   await page.screenshot({ path: "shots/player-fight.png", fullPage: true });
 });
+
+test("the log reads differently per person", async ({ page }) => {
+  await hub(page);
+  await make(page, "Bree Thorn");
+
+  await bar(page).getByRole("button", { name: "Characters" }).click();
+  await page.getByTestId("seat").selectOption({ value: "dm" });
+  await bar(page).getByRole("button", { name: "Fight" }).click();
+  await expect(page.getByTestId("bestiary-search"))
+    .toHaveAttribute("placeholder", /Search/, { timeout: 30_000 });
+  await page.getByTestId("bestiary-search").fill("goblin");
+  await page.getByTestId("bestiary-row").first().click();
+
+  /* Hurt it and slide the ladder — all of it behind the screen. */
+  const row = page.getByTestId("staged-row").first();
+  await row.getByRole("spinbutton", { name: /^Damage/ }).fill("3");
+  await row.getByRole("button", { name: /^Apply to/ }).click();
+  await row.getByTestId("step-vague").click();
+
+  /* The DM sees the lot. */
+  await bar(page).getByRole("button", { name: "Log" }).click();
+  const dmRows = await page.getByTestId("event").count();
+  expect(dmRows).toBeGreaterThan(0);
+  const dmText = await page.getByTestId("rows").innerText();
+  expect(dmText).toContain("fight.act");
+
+  /* The player does not. Staging, damage and the ladder are all prep — and
+     the fight screen hiding a creature is worth nothing if this names it. */
+  /* The Log screen's own nav is not inside the tab bar — see hub(). */
+  await page.getByRole("button", { name: "Characters" }).click();
+  await page.getByTestId("seat").selectOption({ label: "Bree Thorn" });
+  await bar(page).getByRole("button", { name: "Log" }).click();
+  const playerText = await page.getByTestId("rows").innerText().catch(() => "");
+  expect(playerText).not.toContain("fight.act");
+  expect(await page.getByTestId("event").count()).toBeLessThan(dmRows);
+
+  await page.screenshot({ path: "shots/log-player.png", fullPage: true });
+});

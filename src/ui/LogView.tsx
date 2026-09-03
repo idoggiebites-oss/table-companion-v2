@@ -3,16 +3,30 @@ import type { Event, EventId } from "../core/types";
 import s from "./LogView.module.css";
 
 /**
- * Slice 1's debug view, and nothing else. It shows the whole log — including
- * what has been taken back, because "undo is not deletion" is only credible if
- * you can see the event still sitting there.
+ * The log, as this seat may read it.
+ *
+ * It shows what it is given — including what has been taken back, because
+ * "undo is not deletion" is only credible if you can see the event still
+ * sitting there. What it is NOT given is the DM's prep: the filtering happens
+ * before this, in `features/room/visibility.ts`, so that a screen can never
+ * accidentally render an event it should not have received in the first place.
+ *
+ * It was Slice 1's debug view and said so, which was true until the app went
+ * on a URL a player could open.
  */
 export function LogView({
   events,
   onUndo,
+  mayUndo = () => true,
 }: {
   events: readonly Event[];
   onUndo: (id: EventId) => void;
+  /**
+   * Whether this seat may take a given event back. The DM may undo anything;
+   * a player may undo what their own device did. Undoing somebody else's
+   * action is a conversation, not a button — so there is no button.
+   */
+  mayUndo?: (e: Event) => boolean;
 }) {
   if (events.length === 0) {
     return <p className={s.empty}>The log is empty. Append something.</p>;
@@ -36,7 +50,7 @@ export function LogView({
               {isSkip(e) ? <span className={s.mark}>undo of {String(e.data["target"])}</span> : e.kind}
               {undone && <span className={s.mark}> taken back</span>}
             </span>
-            {isSkip(e) ? (
+            {isSkip(e) || !mayUndo(e) ? (
               <span className={s.by}>{e.by}</span>
             ) : (
               <button
