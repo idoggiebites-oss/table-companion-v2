@@ -1,0 +1,80 @@
+.scrim {
+  position: fixed;
+  inset: 0;
+  background: rgb(0 0 0 / .45);
+  display: flex;
+  align-items: flex-end;
+  animation: fade var(--m-state) var(--m-ease-out);
+}
+
+/* Pinned to the bottom, not placed in the page: anywhere in the document flow
+   makes the distance between what you tapped and where you answer depend on
+   where you happened to be scrolled. */
+.pad {
+  width: 100%;
+  background: var(--surface-1);
+  border-top-left-radius: var(--r-card);
+  border-top-right-radius: var(--r-card);
+  border-top: 1px solid var(--hairline);
+  padding: var(--card-pad);
+  padding-bottom: calc(var(--card-pad) + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: var(--row-gap);
+  animation: rise var(--m-sheet) var(--m-ease-out);
+}
+
+.head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--row-gap); }
+
+.title { font-size: var(--t-sm); font-weight: 500; }
+.mod { font-family: var(--font-mono); color: var(--gold-ink); }
+.ask { margin: 0; font-size: var(--t-note); color: var(--ink-dim); }
+
+.close {
+  min-height: var(--tap);
+  min-width: var(--tap);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-control);
+  background: var(--surface-2);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: var(--t-note);
+  cursor: pointer;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--s-3);
+}
+
+.face {
+  min-height: var(--tap);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-control);
+  background: var(--surface-1);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--t-11);
+  cursor: pointer;
+}
+
+.face:active { background: var(--surface-2); }
+.held { background: var(--gold-wash); border-color: var(--gold-fill); color: var(--gold-ink); }
+
+.modes { display: flex; gap: var(--s-3); }
+
+.mode {
+  flex: 1;
+  min-height: var(--tap);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-control);
+  background: var(--surface-1);
+  color: var(--ink-dim);
+  font-family: var(--font-sans);
+  font-size: var(--t-note);
+  cursor: pointer;
+}
+
+.on { background: var(--gold-fill); border-color: var(--gold-edge); color: var(--on-gold); font-weight: 500; }

@@ -1,0 +1,120 @@
+.list { display: flex; flex-direction: column; gap: var(--row-gap); }
+
+/* Near-imperceptible on purpose: these are tapped tens of times per character,
+   and anything more than a hint becomes a tax. */
+.row:active, .pick:active { transform: scale(0.985); }
+
+@media (prefers-reduced-motion: reduce) {
+  .row, .pick { transition: none; }
+  .row:active, .pick:active { transform: none; }
+}
+
+.row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--row-gap);
+  min-height: var(--tap);
+  padding: var(--s-5) var(--s-6);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-card);
+  background: var(--surface-1);
+  box-shadow: var(--lift-1);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+}
+
+/* Selection is gold; the forward control is ink. One scarce colour, one job. */
+.picked { border-color: var(--gold-fill); background: var(--gold-wash); }
+.picked .badge { background: var(--gold-fill); color: var(--on-gold); }
+
+.tick { color: var(--gold-ink); flex: none; }
+
+.name { font-size: var(--t-sm); font-weight: 500; }
+
+/* The icon sits in its own well, so a row reads as icon / words / state. */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: var(--r-control);
+  background: var(--surface-2);
+  color: var(--ink-dim);
+}
+.role { font-size: var(--t-note); color: var(--ink-dim); }
+.stack { display: flex; flex-direction: column; gap: var(--s-1); min-width: 0; }
+
+.chips { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-2); }
+
+.chip {
+  font-size: var(--t-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  background: var(--surface-2);
+  border-radius: var(--r-pill);
+  padding: var(--s-1) var(--s-3);
+}
+
+.value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--t-sm);
+}
+
+.mark { font-size: var(--t-micro); letter-spacing: 0.08em; text-transform: uppercase; color: var(--steel); }
+
+
+/* Three weapons side by side, as drawn: name, dice, properties. */
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-3); }
+
+.pick {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: var(--s-5) var(--s-4);
+  min-height: var(--tap);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-card);
+  background: var(--surface-1);
+  box-shadow: var(--lift-1);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+}
+
+.pickName { font-size: var(--t-note); font-weight: 600; line-height: 1.2; }
+.pickNote { font-size: var(--t-aside); color: var(--ink-dim); line-height: 1.3; }
+
+
+/* A book, and what it printed. */
+.group { display: flex; flex-direction: column; gap: var(--row-gap); }
+
+.groupName {
+  font-size: var(--t-label);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  padding-top: var(--s-3);
+}
+
+/* Already held: shown so the choice is informed, not pressable so it cannot
+   be spent twice. */
+.granted { opacity: 0.62; cursor: default; }
+.granted:active { transform: none; }
+
+.groupNote { font-weight: 400; letter-spacing: 0.04em; text-transform: none; }
+
+/* A held row must not raise the copy/define callout, and must not select its
+   own text under the finger. Both are what a long press looks like otherwise. */
+.row, .card, .pick {
+  -webkit-touch-callout: none;
+  user-select: none;
+}

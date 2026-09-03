@@ -1,0 +1,61 @@
+.icon {
+  min-height: var(--tap);
+  min-width: var(--tap);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: none;
+  color: var(--ink-dim);
+  font-size: var(--t-card);
+  font-family: var(--font-sans);
+  cursor: pointer;
+}
+
+/* The most important thing on the screen should not simply be there. */
+.waiting {
+  animation: arrive var(--m-state) var(--m-ease-out) both;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: var(--s-6);
+  border-radius: var(--r-card);
+  background: var(--gold-wash);
+  border: 1px solid var(--gold-edge);
+}
+
+.waitingLabel {
+  font-size: var(--t-label);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold-ink);
+}
+
+.record { display: flex; flex-direction: column; gap: var(--row-gap); }
+.row { display: flex; flex-wrap: wrap; gap: var(--s-3); }
+.note { font-size: var(--t-note); color: var(--ink-dim); margin: 0; }
+
+.chip {
+  min-height: var(--tap);
+  min-width: var(--tap);
+  padding: 0 var(--s-6);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--hairline);
+  background: var(--surface-1);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: var(--t-note);
+  cursor: pointer;
+}
+
+.chip:disabled { opacity: 0.45; cursor: default; }
+.on { border-color: var(--damage); color: var(--damage); }
+
+@media (prefers-reduced-motion: reduce) {
+  .waiting { animation-name: appear; }
+}
+

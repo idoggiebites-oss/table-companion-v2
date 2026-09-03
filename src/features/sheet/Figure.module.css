@@ -1,0 +1,100 @@
+.label {
+  font-size: var(--t-label);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.stack { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+
+.detail { font-size: var(--t-micro); color: var(--ink-dim); }
+
+.thumb {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  color: var(--ink-dim);
+  background: var(--surface-2);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-card);
+}
+
+/* ── The figure ────────────────────────────────────────────────────── */
+
+.slots {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s-2);
+  margin-top: var(--s-3);
+}
+
+.slot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: 44px;
+  padding: var(--s-3);
+  text-align: left;
+  background: var(--surface-1);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-card);
+  transition: transform var(--m-press) var(--m-ease-out);
+}
+
+.slot:active:not(:disabled) { transform: scale(0.985); }
+.slot:disabled { cursor: default; }
+
+@media (prefers-reduced-motion: reduce) {
+  .slot { transition: none; }
+  .slot:active { transform: none; }
+}
+
+.thumb {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  color: var(--ink-dim);
+  background: var(--surface-2);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-card);
+}
+
+.stack { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+
+/* An equipped thing is named in gold: it is the answer to the slot's label. */
+.itemName {
+  font-family: var(--font-display);
+  font-size: var(--t-sm);
+  color: var(--gold-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.emptySlot { font-size: var(--t-micro); color: var(--ink-dim); }
+.detail { font-size: var(--t-micro); color: var(--ink-dim); }
+
+/*
+ * Rarity as a RIM, never a fill. Red already means damage here, green means
+ * healing and violet means concentration, so rarity cannot have a hue of its
+ * own without teaching the wrong thing.
+ */
+.rare {
+  position: absolute;
+  top: var(--s-2);
+  right: var(--s-2);
+  width: 7px;
+  height: 7px;
+  border: 1px solid var(--gold-edge);
+  transform: rotate(45deg);
+}
+
+.elsewhere { font-size: var(--t-sm); color: var(--ink-dim); padding: var(--s-3) 0 0; }

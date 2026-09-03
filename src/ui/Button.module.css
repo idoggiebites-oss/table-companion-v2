@@ -1,0 +1,47 @@
+.btn {
+  min-height: var(--tap);
+  min-width: var(--tap);
+  padding: 0 var(--s-7);
+  border-radius: var(--r-control);
+  border: 1px solid var(--hairline);
+  background: var(--surface-1);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: var(--t-body);
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform var(--m-press) var(--m-ease-out);
+}
+
+.btn:active { transform: scale(0.98); }
+
+.btn:disabled { opacity: 0.45; cursor: default; }
+.btn:disabled:active { transform: none; }
+
+.gold {
+  background: var(--gold-fill);
+  color: var(--on-gold);
+  border-color: var(--gold-edge);
+}
+
+.ink {
+  background: var(--ink);
+  color: var(--surface-1);
+  border-color: var(--ink);
+}
+
+/*
+ * The row wraps.
+ *
+ * Five buttons in a non-wrapping flex row on a 412px phone overflow their
+ * container and sit on top of each other: "Characters" was intercepting the
+ * clicks meant for "Append", and nothing about it looked wrong.
+ */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--row-gap);
+}
+
+/* Grow to share the row, but never shrink below a thumb. */
+.row > .btn { flex: 1 1 auto; min-width: calc(var(--tap) * 2); }

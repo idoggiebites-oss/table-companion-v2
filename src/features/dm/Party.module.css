@@ -1,0 +1,96 @@
+.empty {
+  color: var(--ink-dim);
+  font-size: var(--t-sm);
+  padding: var(--s-6) var(--card-pad);
+  max-width: 34em;
+}
+
+/* Tablet-first: as many columns as fit, one on a phone. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: var(--s-4);
+  padding: var(--s-5) var(--card-pad);
+}
+
+.row {
+  display: grid;
+  gap: var(--s-2);
+  text-align: start;
+  padding: var(--card-pad);
+  border: var(--panel-border);
+  border-radius: var(--r-card);
+  background: var(--surface-1);
+  box-shadow: var(--lift-1);
+  cursor: pointer;
+  min-height: var(--tap);
+  font-family: var(--font-sans);
+  color: var(--ink);
+}
+
+.head { display: flex; align-items: baseline; gap: var(--s-4); }
+.name { font-size: var(--t-card); font-weight: 600; flex: 1; min-width: 0; }
+
+.ac {
+  font-family: var(--font-mono);
+  font-size: var(--t-note);
+  color: var(--ink-dim);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-pill);
+  padding: 0 var(--s-3);
+}
+
+.kind { font-size: var(--t-aside); color: var(--ink-dim); }
+
+.hp { display: flex; align-items: center; gap: var(--s-4); }
+
+.bar {
+  flex: 1;
+  height: 6px;
+  border-radius: var(--r-pill);
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.fill { display: block; block-size: 100%; background: var(--heal); }
+
+.count {
+  font-family: var(--font-mono);
+  font-size: var(--t-note);
+  font-variant-numeric: tabular-nums;
+}
+
+.temp { color: var(--steel); }
+
+.state {
+  font-size: var(--t-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+/* Luminance, not hue: the row that needs attention is the brighter one, which
+   survives being read by somebody who cannot separate red from green. */
+.row[data-step="injured"] .fill { background: var(--injured); }
+.row[data-step="bloodied"] .fill { background: var(--bloodied); }
+.row[data-step="near"] .fill { background: var(--damage); }
+.row[data-step="near"] .state { color: var(--damage); font-weight: 600; }
+
+.tags { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+
+.tag {
+  font-size: var(--t-micro);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--concentration);
+  border: 1px solid var(--concentration);
+  border-radius: var(--r-pill);
+  padding: 0 var(--s-3);
+}
+
+.owed {
+  font-size: var(--t-aside);
+  color: var(--gold-ink);
+  border-top: 1px solid var(--hairline);
+  padding-top: var(--s-3);
+}

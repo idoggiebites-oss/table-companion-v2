@@ -1,0 +1,80 @@
+/* Declared bands. A grid sized for the children it had when written will
+   silently push the next one onto an implicit row. */
+.shell {
+  display: grid;
+  grid-template-rows: auto auto 1fr auto auto;
+  height: 100dvh;
+  background: var(--canvas);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-5);
+  min-height: var(--tap);
+  padding: 0 var(--s-6);
+  border-bottom: 1px solid var(--hairline);
+  background: var(--surface-1);
+}
+
+/* Reserved either side so the title centres on the HEADER, not on the space
+   the lead button leaves behind. Width is the tap target the buttons already
+   claim, so an empty slot costs nothing that was not already spent. */
+.slot {
+  flex: 0 0 var(--tap);
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.slotEnd { justify-content: flex-end; }
+
+.title {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  font-size: var(--t-label);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.band { min-height: 0; }
+
+.scroll {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--card-pad);
+  display: flex;
+  flex-direction: column;
+  gap: var(--row-gap);
+}
+
+/*
+ * Nothing in the scroller shrinks below its own content.
+ *
+ * A flex column lets its children shrink when it overflows, and a child with
+ * `overflow: hidden` shrinks all the way: the stat strip rendered 2px tall
+ * with 88px of content inside it, clipped and invisible.
+ */
+.scroll > * { flex: none; }
+
+.foot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  padding: var(--s-6) var(--card-pad);
+  padding-bottom: calc(var(--s-6) + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--hairline);
+  background: var(--surface-1);
+}
+
+.counter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  font-size: var(--t-note);
+  color: var(--ink-dim);
+  font-family: var(--font-mono);
+}

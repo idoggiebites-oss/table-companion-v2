@@ -1,0 +1,60 @@
+/* The hero card: art bleeds to the edge, the name sits beside it. */
+.hero {
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr);
+  align-items: stretch;
+  width: 100%;
+  padding: 0;
+  overflow: hidden;
+  background: var(--surface-1);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-card);
+  box-shadow: var(--lift-1);
+  text-align: left;
+  cursor: pointer;
+}
+
+.heroArt {
+  display: block;
+  width: 104px;
+  height: 100%;
+  min-height: 132px;
+  object-fit: cover;
+  object-position: 25% 20%;
+  background: var(--surface-2);
+}
+
+.heroBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  padding: var(--s-6);
+  min-width: 0;
+}
+
+.heroTop { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-4); }
+.heroWho { display: flex; flex-direction: column; gap: var(--s-1); min-width: 0; }
+
+.heroName {
+  font-family: var(--font-display);
+  font-size: var(--t-d1);
+  line-height: 1.1;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.heroKind { font-size: var(--t-note); color: var(--ink-dim); }
+.heroLevel { display: flex; flex-direction: column; align-items: center; flex: none; }
+.levelLabel { font-size: var(--t-micro); letter-spacing: 0.1em; color: var(--ink-dim); text-align: center; }
+
+.vitals { display: grid; grid-template-columns: 1fr auto 1fr; gap: var(--s-5); align-items: end; }
+.vital { display: flex; flex-direction: column; gap: var(--s-2); }
+.vitalLabel { font-size: var(--t-micro); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-dim); }
+.vitalValue { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--t-11); }
+.of { color: var(--ink-dim); font-size: var(--t-note); }
+
+.meter { height: 4px; border-radius: var(--r-pill); background: var(--surface-2); overflow: hidden; }
+.fill { height: 100%; transition: width var(--m-state) var(--m-ease-out); }
+.hp { background: var(--heal); }
+.xp { background: var(--gold-fill); }
+

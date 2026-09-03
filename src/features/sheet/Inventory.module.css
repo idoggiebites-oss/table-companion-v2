@@ -1,0 +1,92 @@
+/*
+ * Read off the concept: white cards on the parchment ground, a hairline
+ * between every band, gold reserved for the thing you are carrying and the
+ * one action that matters. No card inside a card inside a card — the slot
+ * grid and the pack are two frames, not five.
+ */
+
+/*
+ * These three left with the figure when it was split out and were still
+ * referenced here, so every row in the pack lost its layout: the name and its
+ * detail ran together on one line and the thumbnail sized itself.
+ */
+.stack { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+
+.detail { font-size: var(--t-micro); color: var(--ink-dim); }
+
+.thumb {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  color: var(--ink-dim);
+  background: var(--surface-2);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-card);
+}
+
+.label {
+  font-size: var(--t-label);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+/* ── What you are carrying, against what you can ───────────────────── */
+
+.carry {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  background: var(--surface-1);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-card);
+  padding: var(--s-4);
+}
+
+.carryHead, .carryBody { display: flex; justify-content: space-between; align-items: baseline; }
+
+.weight {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--t-card);
+  color: var(--ink);
+}
+
+.of { color: var(--ink-dim); font-size: var(--t-sm); }
+
+/* The armour class in its shield, as drawn. */
+.shield {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--t-card);
+  color: var(--gold-ink);
+  border: 1px solid var(--gold-edge);
+  border-radius: var(--r-card);
+  background: var(--surface-2);
+}
+
+.track { height: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; }
+
+.fill {
+  display: block;
+  height: 100%;
+  background: var(--gold-fill);
+  transition: width var(--m-expand) var(--m-ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) { .fill { transition: none; } }
+
+.from { font-size: var(--t-micro); color: var(--ink-dim); }
+
+.cost { font-size: var(--t-micro); color: var(--damage); }
+
+.note { font-size: var(--t-sm); color: var(--ink-dim); padding: var(--s-3); }

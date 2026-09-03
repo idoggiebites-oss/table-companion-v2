@@ -1,0 +1,144 @@
+.segmented {
+  display: flex;
+  gap: var(--s-2);
+  padding: var(--s-2);
+  background: var(--surface-2);
+  border-radius: var(--r-control);
+}
+
+.segment {
+  flex: 1;
+  min-height: var(--tap);
+  border: 0;
+  border-radius: var(--r-control);
+  background: transparent;
+  color: var(--ink-dim);
+  font-family: var(--font-sans);
+  font-size: var(--t-note);
+  cursor: pointer;
+}
+
+/* Selection is gold. Continue is ink — see CREATION.md. */
+.on {
+  background: var(--gold-fill);
+  color: var(--on-gold);
+  font-weight: 500;
+}
+
+.stepper {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto auto;
+  align-items: center;
+  gap: var(--row-gap);
+  min-height: var(--tap);
+}
+
+.name { font-size: var(--t-sm); }
+
+.score, .mod {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.score { font-size: var(--t-card); min-width: 2.2ch; text-align: right; }
+.mod { font-size: var(--t-note); color: var(--ink-dim); min-width: 3ch; }
+
+.bump {
+  min-height: var(--tap);
+  min-width: var(--tap);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-control);
+  background: var(--surface-1);
+  color: var(--ink);
+  font-size: var(--t-card);
+  font-family: var(--font-mono);
+  cursor: pointer;
+}
+
+.bump:disabled { color: var(--ink-dim); opacity: 0.5; cursor: default; }
+
+.detail {
+  background: var(--surface-1);
+  border: var(--panel-border);
+  border-radius: var(--r-card);
+  box-shadow: var(--lift-1);
+  padding: var(--card-pad);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+
+.detailHead {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+}
+
+.detailClose {
+  min-width: var(--tap);
+  min-height: var(--tap);
+  /* Pulled into the card's own padding so a 44px tap target does not make the
+     label row 44px tall. */
+  margin: calc(var(--tap) / -4) calc(var(--tap) / -4) calc(var(--tap) / -4) auto;
+  border: 0;
+  background: none;
+  color: var(--ink-dim);
+  font-size: var(--t-card);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.detailLabel {
+  font-size: var(--t-label);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.lines { display: flex; flex-direction: column; gap: var(--s-2); }
+.line { font-size: var(--t-note); color: var(--ink-dim); }
+.lead { color: var(--ink); font-size: var(--t-sm); }
+
+
+/* The prose behind "What does this give you?" — V1's control and its wording.
+   A long press is no affordance at all; this one is visible, focusable and
+   reachable by a screen reader. */
+.prose { margin-top: var(--s-2); }
+
+/*
+ * Bounded, with its own scroll.
+ *
+ * An ancestry's description runs to several paragraphs, and letting the card
+ * grow to fit pushed the list 3,800px off the screen — the step's own height
+ * budget is 1.25 screens with the actions pinned, and a card that can outgrow
+ * it takes the list with it.
+ */
+details[open] > .proseBody {
+  max-height: 40vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.proseOpen {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  font-size: var(--t-sm);
+  color: var(--gold-ink);
+  cursor: pointer;
+  list-style: none;
+}
+
+.proseOpen::-webkit-details-marker { display: none; }
+.proseOpen::after { content: " ▾"; }
+details[open] > .proseOpen::after { content: " ▴"; }
+
+.proseBlock {
+  font-size: var(--t-note);
+  line-height: 1.5;
+  color: var(--ink-dim);
+  margin: 0 0 var(--s-2);
+}
+
+.proseBlock b { color: var(--ink); }

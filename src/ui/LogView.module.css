@@ -1,0 +1,63 @@
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--row-gap);
+  min-height: var(--tap);
+  padding: 0 var(--s-6);
+  background: var(--surface-1);
+  border: var(--panel-border);
+  border-radius: var(--r-control);
+  box-shadow: var(--lift-1);
+}
+
+.seq {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--t-note);
+  color: var(--ink-dim);
+}
+
+.kind { font-size: var(--t-sm); }
+
+.by {
+  font-family: var(--font-mono);
+  font-size: var(--t-aside);
+  color: var(--ink-dim);
+}
+
+/* Undone is stated, not implied: the event is still there. */
+.undone { color: var(--ink-dim); }
+.undone .kind { text-decoration: line-through; }
+
+.mark {
+  font-size: var(--t-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--steel);
+}
+
+.empty {
+  color: var(--ink-dim);
+  font-size: var(--t-note);
+  padding: var(--s-7) 0;
+}
+
+.undo {
+  min-height: var(--tap);
+  min-width: var(--tap);
+  padding: 0 var(--s-5);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-control);
+  background: var(--surface-2);
+  color: var(--ink);
+  font-size: var(--t-note);
+  font-family: var(--font-sans);
+  cursor: pointer;
+}

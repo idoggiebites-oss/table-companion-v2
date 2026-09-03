@@ -1,0 +1,85 @@
+/* The illustrated two-up grid: ancestry and lineage. */
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--row-gap);
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  min-height: var(--tap);
+  padding: var(--s-2);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-card);
+  background: var(--surface-1);
+  box-shadow: var(--lift-1);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+}
+
+.card, .row, .pick { transition: transform var(--m-press) var(--m-ease-out); }
+/* The check sits on the art, top right. `tick` is styled in Choices;
+   this only places it. */
+.card > svg:last-child { position: absolute; top: var(--s-4); right: var(--s-4); }
+
+.frame {
+  position: relative;
+  display: block;
+  border-radius: var(--r-control);
+  overflow: hidden;
+  background: var(--surface-2);
+}
+
+.portrait {
+  width: 100%;
+  height: auto;
+  display: block;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+}
+
+/* Dark enough for white text at any art, light enough to see the face. */
+.caption {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: var(--s-6) var(--s-5) var(--s-4);
+  background: linear-gradient(to top, rgb(0 0 0 / .78), rgb(0 0 0 / 0));
+  color: #FFFFFF;
+  font-size: var(--t-sm);
+  font-weight: 500;
+  text-align: left;
+}
+
+
+
+@media (prefers-reduced-motion: reduce) {
+  .card { transition: none; }
+  .card:active { transform: none; }
+}
+
+/*
+ * iOS does TWO things to an image held under a finger, and they need
+ * different answers. `-webkit-touch-callout: none` stops the first: the
+ * copy/save sheet. It does nothing about the second — the drag LIFT, which
+ * tears the portrait out of its card and leaves it floating over the grid,
+ * translucent, following the finger. That is what a long press on Elf did.
+ *
+ * `-webkit-user-drag: none` is the one that stops the lift, and
+ * `pointer-events: none` is the belt to its braces: the art is decorative and
+ * aria-hidden, so letting the finger land on the button underneath costs
+ * nothing and leaves iOS no draggable image to find.
+ */
+.card, .portrait { -webkit-touch-callout: none; user-select: none; }
+
+.card, .portrait, .frame {
+  -webkit-user-drag: none;
+  user-drag: none;
+}
+
+.portrait { pointer-events: none; }

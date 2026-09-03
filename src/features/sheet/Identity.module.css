@@ -1,0 +1,31 @@
+.card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--s-6);
+  padding: var(--card-pad);
+  background: var(--surface-1);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-card);
+  box-shadow: var(--lift-1);
+}
+
+.portrait {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--r-pill);
+  object-fit: cover;
+  object-position: 25% 20%;
+  border: 2px solid var(--gold-edge);
+  background: var(--surface-2);
+}
+
+.who { display: flex; flex-direction: column; gap: var(--s-2); min-width: 0; }
+.name { font-family: var(--font-display); font-size: var(--t-d2); line-height: 1.05; }
+.kind { font-size: var(--t-note); color: var(--ink-dim); }
+.align { display: inline-flex; align-items: center; gap: var(--s-3); font-size: var(--t-note); color: var(--gold-ink); }
+
+.level { display: flex; flex-direction: column; align-items: center; gap: var(--s-1); }
+.levelLabel { font-size: var(--t-micro); letter-spacing: 0.1em; color: var(--ink-dim); }
+.xpLabel { font-size: var(--t-micro); letter-spacing: 0.1em; color: var(--ink-dim); }
+.xp { font-family: var(--font-mono); font-size: var(--t-aside); color: var(--ink-dim); }

@@ -1,0 +1,142 @@
+.progress {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--s-6) var(--card-pad) var(--s-5);
+  background: var(--surface-1);
+}
+
+/* One rule behind, dots on top — the run of steps reads as a path rather
+   than as a set of bars. */
+.progress::before {
+  content: "";
+  position: absolute;
+  left: var(--card-pad);
+  right: var(--card-pad);
+  height: 2px;
+  background: var(--hairline);
+}
+
+.dot {
+  position: relative;
+  width: 9px;
+  height: 9px;
+  border-radius: var(--r-pill);
+  background: var(--hairline);
+  box-shadow: 0 0 0 4px var(--surface-1);
+}
+
+.done { background: var(--gold-edge); }
+
+.here {
+  background: var(--gold-fill);
+  width: 11px;
+  height: 11px;
+  box-shadow: 0 0 0 4px var(--surface-1), 0 0 0 6px var(--gold-wash);
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+/*
+ * One step replacing another.
+ *
+ * Transform and opacity only — a step change must not cost a layout pass on a
+ * phone. The offset is 32px rather than a full width: at a full width this is
+ * a carousel, and a person answering eight questions does not want to watch
+ * eight carousels.
+ *
+ * Keyframes rather than a transition because the node is new each time: the
+ * step is keyed, so there is no previous value to retarget from.
+ */
+.enter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--row-gap);
+  animation: forward var(--m-expand) var(--m-ease-out) both;
+}
+
+.enter[data-dir="back"] { animation-name: backward; }
+
+@keyframes forward {
+  from { opacity: 0; transform: translateX(32px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes backward {
+  from { opacity: 0; transform: translateX(-32px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Fewer and gentler, not none: the fade still says a step changed, and the
+   movement — the part that causes trouble — goes. */
+@media (prefers-reduced-motion: reduce) {
+  .enter, .enter[data-dir="back"] { animation: appear var(--m-state) var(--m-ease-out) both; }
+}
+
+.question {
+  font-family: var(--font-display);
+  font-size: var(--t-d2);
+  line-height: 1.15;
+  margin: 0;
+}
+
+.sub {
+  font-size: var(--t-note);
+  color: var(--ink-dim);
+  margin: 0;
+}
+
+.back, .help {
+  min-height: var(--tap);
+  min-width: var(--tap);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: none;
+  color: var(--ink-dim);
+  font-size: var(--t-card);
+  font-family: var(--font-sans);
+  cursor: pointer;
+}
+
+.count {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.over { color: var(--damage); }
+
+/* An arrival is announced rather than silently redrawn — and announcing it
+   instantly is still silent. Delayed a beat so it lands after the step has
+   settled, rather than riding in with it. */
+.arrived {
+  animation: arrive var(--m-state) var(--m-ease-out) 60ms both;
+  display: flex;
+  gap: var(--s-4);
+  padding: var(--s-5) var(--s-6);
+  border-radius: var(--r-control);
+  background: var(--gold-wash);
+  border: 1px solid var(--gold-edge);
+  font-size: var(--t-note);
+}
+
+
+/* The count itself, inside the pinned foot. */
+.counterRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: var(--t-note);
+  color: var(--ink-dim);
+  font-family: var(--font-mono);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arrived { animation-name: appear; }
+}

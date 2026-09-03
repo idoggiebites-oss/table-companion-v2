@@ -1,0 +1,102 @@
+.stack { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+
+.detail { font-size: var(--t-micro); color: var(--ink-dim); }
+
+.thumb {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  color: var(--ink-dim);
+  background: var(--surface-2);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-card);
+}
+
+/* ── The pack ──────────────────────────────────────────────────────── */
+
+.pack {
+  margin-top: var(--s-3);
+  background: var(--surface-1);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-card);
+  overflow: hidden;
+}
+
+.tabs { display: flex; border-bottom: 1px solid var(--hairline); }
+
+.tab {
+  flex: 1 1 0;
+  min-height: 44px;
+  /* A bare <button> arrives with the browser's own grey fill and border, and
+     there is no global reset here — every control states its own. */
+  appearance: none;
+  background: transparent;
+  border: none;
+  padding: var(--s-2) var(--s-1);
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  border-bottom: 2px solid transparent;
+  transition: color var(--m-state) var(--m-ease-out),
+              border-color var(--m-state) var(--m-ease-out);
+}
+
+.on { color: var(--ink); border-bottom-color: var(--gold-fill); }
+
+@media (prefers-reduced-motion: reduce) { .tab { transition: none; } }
+
+.rows { display: flex; flex-direction: column; }
+
+.row {
+  display: grid;
+  grid-template-columns: 40px 1fr auto auto;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.rows > .row:last-child { border-bottom: none; }
+
+.rowName { font-family: var(--font-display); font-size: var(--t-sm); color: var(--ink); }
+.qty { font-family: var(--font-mono); color: var(--ink-dim); }
+
+.pair { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--t-sm); color: var(--ink); }
+.micro { font-size: var(--t-micro); letter-spacing: 0.08em; color: var(--ink-dim); }
+
+.equip {
+  min-height: 44px;
+  padding: 0 var(--s-3);
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold-ink);
+  background: transparent;
+  border: 1px solid var(--gold-edge);
+  /* A rounded rect, not a circle: `--r-pill` on a five-letter label rounds
+     all the way and "EQUIP" came out as a coin. */
+  border-radius: var(--r-card);
+  min-width: 84px;
+  transition: transform var(--m-press) var(--m-ease-out);
+}
+
+.equip:active { transform: scale(0.97); }
+
+/* Worn is the one place green belongs: it is the same "this is true now" the
+   sheet uses for a trained skill. */
+.worn { color: var(--heal); border-color: var(--heal); }
+
+@media (prefers-reduced-motion: reduce) {
+  .equip { transition: none; }
+  .equip:active { transform: none; }
+}
+
+.note { font-size: var(--t-sm); color: var(--ink-dim); padding: var(--s-3); }
+

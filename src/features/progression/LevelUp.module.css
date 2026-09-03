@@ -1,0 +1,49 @@
+.card {
+  background: var(--surface-1);
+  border: var(--panel-border);
+  border-radius: var(--r-card);
+  box-shadow: var(--lift-1);
+  padding: var(--card-pad);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+
+.label {
+  font-size: var(--t-label);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.row { display: flex; flex-wrap: wrap; gap: var(--row-gap); }
+
+.chip {
+  min-height: var(--tap);
+  min-width: var(--tap);
+  padding: 0 var(--s-6);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--hairline);
+  background: var(--surface-2);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: var(--t-note);
+  cursor: pointer;
+}
+
+.on { border-color: var(--gold-fill); background: var(--gold-wash); color: var(--gold-ink); }
+
+/* Why this level cannot be taken. Stated, not hidden behind a disabled
+   button — "you need Intelligence 13" is actionable and a dead button is not. */
+.blocked {
+  color: var(--damage);
+  font-size: var(--t-sm);
+  padding: var(--s-3);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-card);
+  background: var(--surface-1);
+}

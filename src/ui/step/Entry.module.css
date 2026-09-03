@@ -1,0 +1,94 @@
+/* Entering a number: typed when you know it, a slot when it comes from a
+   pool. See DESIGN.md, "Entering a number". */
+
+/* A score you already know is typed, not stepped. */
+.entry {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: var(--row-gap);
+  min-height: var(--tap);
+}
+
+.field {
+  min-height: var(--tap);
+  width: 3.5em;
+  padding: 0 var(--s-4);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-control);
+  background: var(--surface-1);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--t-card);
+  text-align: center;
+}
+
+.field:focus-visible { outline: 2px solid var(--gold-edge); outline-offset: 1px; }
+
+/* Refused, not corrected silently: the number stays where it was and the
+   field says why. */
+.refused { border-color: var(--damage); }
+.why {
+  grid-column: 1 / -1;
+  font-size: var(--t-note);
+  color: var(--damage);
+  margin: 0;
+  animation: arrive var(--m-state) var(--m-ease-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .why { animation-name: appear; }
+}
+
+
+/* An ability waiting for a value from the pool. */
+.slot {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: var(--row-gap);
+  min-height: var(--tap);
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+}
+
+.box {
+  min-width: 3.5em;
+  min-height: var(--tap);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-control);
+  background: var(--surface-1);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--t-card);
+}
+
+/* Empty and waiting reads differently from empty and finished. */
+.waiting { border-style: dashed; color: var(--ink-dim); }
+.filled { border-color: var(--gold-fill); background: var(--gold-wash); color: var(--gold-ink); font-weight: 600; }
+
+/*
+ * The ability's name and its modifier. Both were referenced by the component
+ * and defined nowhere, so they had been rendering with no styling at all —
+ * caught by `check-styles`, not by a test or the build.
+ */
+.name { font-size: var(--t-sm); color: var(--ink); }
+
+.mod {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--t-sm);
+  color: var(--ink-dim);
+  min-width: 3ch;
+  text-align: right;
+}

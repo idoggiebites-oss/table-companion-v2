@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.verify/
+test-results/
+playwright-report/
+public/content/
+.vitest-attachments/
+__screenshots__/
+test-results/
+shots/
+graphify-out/
+.wrangler/

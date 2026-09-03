@@ -1,0 +1,51 @@
+/* Recent activity: a line with dots on it, entries hanging off. */
+.card {
+  background: var(--surface-1);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-card);
+  box-shadow: var(--lift-1);
+  padding: var(--card-pad);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+}
+
+.cardHead { display: flex; align-items: baseline; justify-content: space-between; }
+
+.label {
+  font-size: var(--t-label);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.more { color: var(--gold-ink); font-size: var(--t-note); background: none; border: 0; cursor: pointer; }
+
+.line { position: relative; display: flex; flex-direction: column; gap: var(--s-5); padding-left: var(--s-7); }
+
+.line::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 6px;
+  bottom: 6px;
+  width: 1px;
+  background: var(--hairline);
+}
+
+.entry { display: flex; align-items: baseline; justify-content: space-between; gap: var(--row-gap); }
+
+.entry::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 7px;
+  height: 7px;
+  margin-top: 6px;
+  border-radius: var(--r-pill);
+  background: var(--gold-fill);
+}
+
+.what { font-size: var(--t-note); color: var(--ink); }
+.when { font-size: var(--t-aside); color: var(--ink-dim); flex: none; }

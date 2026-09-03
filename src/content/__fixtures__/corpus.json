@@ -1,0 +1,255 @@
+[
+ {
+  "kind": "race",
+  "name": "Dragonborn",
+  "source": "Player's Handbook (2014) p. 32"
+ },
+ {
+  "kind": "race",
+  "name": "Dwarf, Hill",
+  "source": "Player's Handbook (2014) p. 20"
+ },
+ {
+  "kind": "race",
+  "name": "Dwarf, Mountain",
+  "source": "Player's Handbook (2014) p. 20"
+ },
+ {
+  "kind": "race",
+  "name": "Elf, Drow / Dark",
+  "source": "Player's Handbook (2014) p. 24"
+ },
+ {
+  "kind": "race",
+  "name": "Elf, High",
+  "source": "Player's Handbook (2014) p. 23"
+ },
+ {
+  "kind": "race",
+  "name": "Erina, Spiritfarer (TP)",
+  "source": "Book of Ebon Tides p. 35 (Homebrew)"
+ },
+ {
+  "kind": "race",
+  "name": "Shade, Stygian (TP)",
+  "source": "Book of Ebon Tides p. 36 (Homebrew)"
+ },
+ {
+  "kind": "race",
+  "name": "Mousefolk, Softpaw (HB)",
+  "source": "DnDBeyond Unearthed Arcana (Homebrew),"
+ },
+ {
+  "kind": "race",
+  "name": "Mousefolk, Meadowguard (HB)",
+  "source": "DnDBeyond Unearthed Arcana (Homebrew),"
+ },
+ {
+  "kind": "background",
+  "name": "Acolyte",
+  "source": "Player's Handbook (2014) p. 127"
+ },
+ {
+  "kind": "background",
+  "name": "Charlatan",
+  "source": "Player's Handbook (2014) p. 128"
+ },
+ {
+  "kind": "feat",
+  "name": "Athlete (Dexterity)",
+  "source": "Player's Handbook (2014) p. 165"
+ },
+ {
+  "kind": "feat",
+  "name": "Athlete (Strength)",
+  "source": "Player's Handbook (2014) p. 165"
+ },
+ {
+  "kind": "feat",
+  "name": "Elemental Adept (Acid)",
+  "source": "Player's Handbook (2014) p. 166"
+ },
+ {
+  "kind": "feat",
+  "name": "Elemental Adept (Cold)",
+  "source": "Player's Handbook (2014) p. 166"
+ },
+ {
+  "kind": "feat",
+  "name": "Artificer Initiate",
+  "source": "Tasha's Cauldron of Everything p. 79"
+ },
+ {
+  "kind": "feat",
+  "name": "Chef (Constitution)",
+  "source": "Tasha's Cauldron of Everything p. 79"
+ },
+ {
+  "kind": "feat",
+  "name": "Aereni Halflife (Intelligence) (TP)",
+  "source": "Exploring Eberron p. 212 (Third Party)"
+ },
+ {
+  "kind": "feat",
+  "name": "Aereni Halflife (Wisdom) (TP)",
+  "source": "Exploring Eberron p. 212 (Third Party)"
+ },
+ {
+  "kind": "feat",
+  "name": "Fighting Style: Archery",
+  "source": "Player's Handbook (2014) p. 72"
+ },
+ {
+  "kind": "feat",
+  "name": "Fighting Style: Defense",
+  "source": "Player's Handbook (2014) p. 72"
+ },
+ {
+  "kind": "spell",
+  "name": "Acid Splash",
+  "source": "Player's Handbook (2014) p. 211",
+  "level": 0,
+  "school": "conjuration"
+ },
+ {
+  "kind": "spell",
+  "name": "Aid",
+  "source": "Player's Handbook (2014) p. 211",
+  "level": 2,
+  "school": "abjuration"
+ },
+ {
+  "kind": "spell",
+  "name": "Alarm",
+  "source": "Player's Handbook (2014) p. 211",
+  "level": 1,
+  "school": "abjuration"
+ },
+ {
+  "kind": "spell",
+  "name": "Elemental Discipline: Breath of Winter",
+  "source": "Player's Handbook (2014) p. 81",
+  "level": 0,
+  "school": "evocation"
+ },
+ {
+  "kind": "spell",
+  "name": "Elemental Discipline: Clench of the North Wind",
+  "source": "Player's Handbook (2014) p. 81",
+  "level": 0,
+  "school": "enchantment"
+ },
+ {
+  "kind": "spell",
+  "name": "Invocation: Agonizing Blast",
+  "source": "Player's Handbook (2014) p. 110",
+  "level": 0,
+  "school": ""
+ },
+ {
+  "kind": "spell",
+  "name": "Invocation: Armor of Shadows",
+  "source": "Player's Handbook (2014) p. 110",
+  "level": 0,
+  "school": ""
+ },
+ {
+  "kind": "spell",
+  "name": "Invocation: Ascendant Step",
+  "source": "Player's Handbook (2014) p. 110",
+  "level": 0,
+  "school": ""
+ },
+ {
+  "kind": "spell",
+  "name": "Invocation: Beast Speech",
+  "source": "Player's Handbook (2014) p. 110",
+  "level": 0,
+  "school": ""
+ },
+ {
+  "kind": "spell",
+  "name": "Maneuver: Commander's Strike",
+  "source": "Player's Handbook (2014) p. 74",
+  "level": 0,
+  "school": ""
+ },
+ {
+  "kind": "spell",
+  "name": "Maneuver: Disarming Attack",
+  "source": "Player's Handbook (2014) p. 74",
+  "level": 0,
+  "school": ""
+ },
+ {
+  "kind": "spell",
+  "name": "Maneuver: Distracting Strike",
+  "source": "Player's Handbook (2014) p. 74",
+  "level": 0,
+  "school": ""
+ },
+ {
+  "kind": "spell",
+  "name": "Invocation: Aspect of the Moon",
+  "source": "Xanathar's Guide to Everything p. 56",
+  "level": 0,
+  "school": ""
+ },
+ {
+  "kind": "spell",
+  "name": "Invocation: Cloak of Flies",
+  "source": "Xanathar's Guide to Everything p. 56",
+  "level": 0,
+  "school": ""
+ },
+ {
+  "kind": "item",
+  "name": "Arrows (20)",
+  "source": ""
+ },
+ {
+  "kind": "item",
+  "name": "Blowgun Needles (50)",
+  "source": ""
+ },
+ {
+  "kind": "item",
+  "name": "Crossbow Bolts (20)",
+  "source": ""
+ },
+ {
+  "kind": "item",
+  "name": "Sling Bullets (20)",
+  "source": ""
+ },
+ {
+  "kind": "item",
+  "name": "Silvered Arrows (20)",
+  "source": ""
+ },
+ {
+  "kind": "item",
+  "name": "Jaw Breakers Chakrams (Rare) (Grim Hollow)",
+  "source": ""
+ },
+ {
+  "kind": "item",
+  "name": "Jaw Breakers Claws (Rare) (Heliana)",
+  "source": ""
+ },
+ {
+  "kind": "item",
+  "name": "Jaw Breakers Kamas (Rare) (Valda)",
+  "source": ""
+ },
+ {
+  "kind": "item",
+  "name": "Arrow",
+  "source": ""
+ },
+ {
+  "kind": "item",
+  "name": "Battleaxe",
+  "source": ""
+ }
+]

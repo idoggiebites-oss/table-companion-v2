@@ -1,0 +1,42 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  background: var(--surface-1);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-card);
+  padding: var(--s-4);
+}
+
+.label {
+  font-size: var(--t-label);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.row { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+
+.chip {
+  flex: 1 1 auto;
+  min-height: 44px;
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-pill);
+  background: var(--surface-2);
+  color: var(--ink);
+  font-size: var(--t-sm);
+  transition: background var(--m-press) var(--m-ease-out), color var(--m-press) var(--m-ease-out);
+}
+
+.chip:active { transform: scale(0.985); }
+
+.on { background: var(--gold-fill); color: var(--on-gold); border-color: var(--gold-edge); }
+
+.twice { font-weight: 700; }
+
+@media (prefers-reduced-motion: reduce) {
+  .chip { transition: none; }
+  .chip:active { transform: none; }
+}

@@ -1,0 +1,178 @@
+/* Tokens. Every value here is measured — see DESIGN.md.
+   Two real themes. The dark block appears twice, and check-css asserts the
+   two copies are identical: a toggle that works while system-dark does not
+   is the classic way this file rots. */
+
+:root {
+  color-scheme: light dark;
+
+  /* Surfaces — parchment, not paper. The neutrals are warm all the way
+     through; a cool grey next to this gold reads as a screenshot of a
+     spreadsheet. */
+  --canvas: #FAF7F2;      /* parchment */
+  --surface-1: #FFFFFF;
+  --surface-2: #F1EDE4;   /* cream */
+  --hairline: #E6E2DA;    /* stone */
+
+  /* ink */
+  --ink: #1E1F22;         /* charcoal — 15.42:1 on parchment */
+  --ink-dim: #6B6F76;     /* slate — 4.72:1 */
+
+  /* Gold — four tokens, because one gold cannot do four jobs on a light
+     ground. The supplied #C8A04D is 2.29:1 as text and 2.44:1 under white,
+     so it fills and outlines but never writes. */
+  --gold-fill: #C8A04D;
+  --on-gold: #1E1F22;     /* 6.74:1 */
+  --gold-ink: #8C6C2B;    /* 4.58:1 */
+  --gold-edge: #B18937;   /* 3.02:1 */
+  --gold-wash: #FAF3E4;
+
+  /* semantics */
+  --damage: #B03A3A;      /* ruby — 5.98:1 */
+  --heal: #2E7D64;        /* forest — 4.96:1 */
+  --injured: #7A6A2E;
+  --bloodied: #8C6C2B;
+  --concentration: #6B5BA8;
+  --steel: #4F6E86;
+
+  /* elevation is shadow on light */
+  --lift-1: 0 1px 2px rgb(0 0 0 / .04), 0 1px 3px rgb(0 0 0 / .06);
+  --lift-2: 0 4px 6px rgb(0 0 0 / .04), 0 10px 20px rgb(0 0 0 / .08);
+  --panel-border: 1px solid transparent;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --canvas: #131416;
+    --surface-1: #1E1F22;
+    --surface-2: #26282C;
+    --hairline: #33363B;
+    --ink: #F1EDE4;
+    --ink-dim: #9BA1A9;
+    --gold-fill: #C8A04D;
+    --on-gold: #1E1F22;
+    --gold-ink: #D5B570;
+    --gold-edge: #C8A04D;
+    --gold-wash: #241F16;
+    --damage: #E0706B;
+    --heal: #5FBE97;
+    --injured: #A9B872;
+    --bloodied: #D8AE5E;
+    --concentration: #A899DA;
+    --steel: #7FA3BE;
+    --lift-1: none;
+    --lift-2: none;
+    --panel-border: 1px solid var(--hairline);
+  }
+}
+
+:root[data-theme="dark"] {
+  --canvas: #131416;
+  --surface-1: #1E1F22;
+  --surface-2: #26282C;
+  --hairline: #33363B;
+  --ink: #F1EDE4;
+  --ink-dim: #9BA1A9;
+  --gold-fill: #C8A04D;
+  --on-gold: #1E1F22;
+  --gold-ink: #D5B570;
+  --gold-edge: #C8A04D;
+  --gold-wash: #241F16;
+  --damage: #E0706B;
+  --heal: #5FBE97;
+  --injured: #A9B872;
+  --bloodied: #D8AE5E;
+  --concentration: #A899DA;
+  --steel: #7FA3BE;
+  --lift-1: none;
+  --lift-2: none;
+  --panel-border: 1px solid var(--hairline);
+}
+
+:root {
+  /* type — three families, one job each */
+  --font-display: "Iowan Old Style", "Hoefler Text", Palatino, Georgia, serif;
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* twelve steps and nothing between them */
+  --t-micro: 0.54rem;  --t-2: 0.60rem;   --t-label: 0.66rem; --t-4: 0.72rem;
+  --t-5: 0.78rem;      --t-aside: 0.80rem; --t-note: 0.84rem; --t-8: 0.88rem;
+  --t-sm: 0.94rem;     --t-body: 1.00rem; --t-11: 1.10rem;   --t-card: 1.20rem;
+  --t-d1: 1.4rem; --t-d2: 1.5rem; --t-d3: 1.6rem;
+  --t-d4: 2rem;   --t-d5: 3rem;   --t-d6: 3.2rem;
+
+  /* eight spacing steps */
+  --s-1: 2px; --s-2: 4px; --s-3: 6px;  --s-4: 8px;
+  --s-5: 10px; --s-6: 12px; --s-7: 16px; --s-8: 18px;
+  --card-pad: 16px;
+  --row-gap: 10px;
+  --tap: 44px;
+
+  --r-card: 12px;
+  --r-control: 8px;
+  --r-pill: 999px;
+
+  /* motion — every duration is a token so a test can set it to zero */
+  --motion-scale: 1;
+  --m-press: calc(100ms * var(--motion-scale));
+  --m-state: calc(180ms * var(--motion-scale));
+  --m-expand: calc(240ms * var(--motion-scale));
+  --m-sheet: calc(320ms * var(--motion-scale));
+  --m-ease-out: cubic-bezier(.2, 0, 0, 1);
+  --m-ease-in-out: cubic-bezier(.4, 0, .2, 1);
+}
+
+/*
+ * Reduced motion means fewer and gentler, not none: a fade still says a thing
+ * changed, and it is the movement that causes trouble. Each animation drops
+ * its transform in its own reduced-motion block; durations stay.
+ *
+ * `data-motion="off"` is the hard switch, and only tests throw it.
+ */
+:root[data-motion="off"] { --motion-scale: 0; }
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; }
+
+body {
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: var(--t-body);
+  line-height: 1.45;
+  -webkit-text-size-adjust: 100%;
+  /* icons are SVG; this is belt-and-braces for the text glyphs that remain */
+  font-variant-emoji: text;
+}
+
+#root { min-height: 100dvh; }
+
+
+/*
+ * Shared motion, defined once.
+ *
+ * CSS Modules scope the keyframe names they define, so three components each
+ * declaring `arrive` were three separate animations that happened to agree.
+ * Declared here, in the one global sheet, they are one.
+ */
+@keyframes arrive {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes appear {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(8%); }
+  to { opacity: 1; transform: none; }
+}

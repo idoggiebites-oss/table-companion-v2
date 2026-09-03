@@ -1,0 +1,125 @@
+import { test, expect, type Page } from "@playwright/test";
+import { walkTo, finish } from "./build";
+
+const hub = async (page: Page) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Log", exact: true }).click();
+  await page.getByRole("button", { name: "Clear" }).click();
+  await page.getByRole("button", { name: "Characters" }).click();
+};
+
+const make = async (page: Page, name: string) => {
+  await page.getByRole("button", { name: "Guided creation" }).click();
+  await walkTo(page, "Who is your character", 30);
+  await finish(page, name);
+};
+
+const bar = (page: Page) => page.getByTestId("tabbar");
+
+test("the seat decides the bar, and it stays one bar", async ({ page }) => {
+  await hub(page);
+
+  /* A fresh device is the DM — right when it is the only one in the house. */
+  await expect(bar(page).getByRole("button", { name: "Party" })).toBeVisible();
+  await expect(bar(page).getByRole("button", { name: "Sheet" })).toHaveCount(0);
+
+  /* Making a character CLAIMS it, and sits in it — V1's rule, and the reason
+     the DM default is safe. So finishing one swaps the bar rather than adding
+     to it: a player has no Party because looking after the table is not their
+     job. */
+  await make(page, "Wren Aldermere");
+  await expect(bar(page).getByRole("button", { name: "Sheet" })).toBeVisible();
+  await expect(bar(page).getByRole("button", { name: "Party" })).toHaveCount(0);
+
+  await page.getByTestId("seat").selectOption({ value: "dm" });
+  await expect(bar(page).getByRole("button", { name: "Party" })).toBeVisible();
+  await expect(bar(page).getByRole("button", { name: "Sheet" })).toHaveCount(0);
+});
+
+test("the party is the DM's reading of the same log", async ({ page }) => {
+  await hub(page);
+  await make(page, "Wren Aldermere");
+  await make(page, "Brom Stonebeard");
+
+  /* Building the table's characters leaves this device sitting in the last
+     one. Back behind the screen to look at them all. */
+  await page.getByTestId("seat").selectOption({ value: "dm" });
+  await bar(page).getByRole("button", { name: "Party" }).click();
+  await expect(page.getByTestId("party-row")).toHaveCount(2);
+  await expect(page.getByTestId("party")).toContainText("Wren Aldermere");
+  await expect(page.getByTestId("party")).toContainText("Brom Stonebeard");
+
+  /* Nothing here is stored: damage recorded on a sheet is the same event the
+     party row reads, or the DM's screen would be a second source of truth for
+     the one number that must never have two. */
+  await page.getByTestId("party-row").first().click();
+  const full = Number((await page.getByTestId("vitals").textContent())?.match(/(\d+)\s*\//)?.[1] ?? 0);
+  await page.getByRole("button", { name: "Damage" }).click();
+  await page.getByTestId("pad").getByRole("button", { name: "3", exact: true }).click();
+
+  /* Back to the DM's chair. The seat control lives on Characters — one place,
+     not a control repeated on every screen. */
+  await bar(page).getByRole("button", { name: "Characters" }).click();
+  await page.getByTestId("seat").selectOption({ value: "dm" });
+  await bar(page).getByRole("button", { name: "Party" }).click();
+  await expect(page.getByTestId("party")).toContainText(`${String(full - 3)} / ${String(full)}`);
+});
+
+test("the party says what to do when there is nobody in it", async ({ page }) => {
+  await hub(page);
+  await bar(page).getByRole("button", { name: "Party" }).click();
+  /* Not "no characters" — say what happens next. */
+  await expect(page.getByTestId("party-empty")).toContainText("will appear here");
+});
+
+test("a fight is assembled before anybody sees it", async ({ page }) => {
+  await hub(page);
+  await bar(page).getByRole("button", { name: "Fight" }).click();
+
+  /* Not "no creatures": say what to do, and say what staging means. */
+  await expect(page.getByTestId("table-empty")).toContainText("hidden");
+
+  await page.getByTestId("bestiary-search").fill("adult black dragon");
+  const hit = page.getByTestId("bestiary-row").first();
+
+  /* The two facts that change how a DM runs a creature, said BEFORE it is
+     staged rather than discovered mid-fight. */
+  await expect(hit).toContainText("CR 14");
+  await expect(hit).toContainText("legendary");
+  await expect(hit).toContainText("lair");
+  await hit.click();
+
+  /* Three goblins are three rows with their own hit points, not one row with
+     a count: a count cannot say that one of them is nearly down. */
+  await page.getByTestId("bestiary-search").fill("goblin");
+  await page.getByTestId("bestiary-row").first().click();
+  await page.getByTestId("bestiary-row").first().click();
+  await expect(page.getByTestId("staged-row")).toHaveCount(3);
+  await expect(page.getByTestId("staged")).toContainText("Goblin 2");
+
+  /* Staged is hidden. Putting a creature on the table is preparation, not
+     narration — it has not been shown to anybody yet. */
+  const dragon = page.getByTestId("staged-row").first();
+  await expect(dragon.getByTestId("step-hidden")).toHaveAttribute("aria-checked", "true");
+
+  /* And the ladder moves per creature, so the dragon can stay a rumour while
+     the goblins are an open book. */
+  await dragon.getByTestId("step-vague").click();
+  await expect(dragon.getByTestId("step-vague")).toHaveAttribute("aria-checked", "true");
+  await expect(page.getByTestId("staged-row").nth(1).getByTestId("step-hidden"))
+    .toHaveAttribute("aria-checked", "true");
+
+  /* It is in the log, so it survives the DM's phone locking. */
+  await page.reload();
+  await bar(page).getByRole("button", { name: "Fight" }).click();
+  await expect(page.getByTestId("staged-row")).toHaveCount(3);
+  await expect(page.getByTestId("staged-row").first().getByTestId("step-vague"))
+    .toHaveAttribute("aria-checked", "true");
+});
+
+test("a player is not offered the fight, because it is not their job", async ({ page }) => {
+  await hub(page);
+  await make(page, "Wren Aldermere");
+  /* Making a character sits this device in it. The bar turns with the seat. */
+  await expect(bar(page).getByRole("button", { name: "Fight" })).toHaveCount(0);
+});
