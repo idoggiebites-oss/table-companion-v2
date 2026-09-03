@@ -277,19 +277,46 @@ read `Combat.tsx` directly, the graph under-represents it.*
 reads it. Roll it, order the combatants, advance the round.
 
 **Acceptance criteria:**
-- [ ] The DM rolls initiative for staged creatures; `null` stays null until rolled
-- [ ] Combatants sort by initiative, ties resolved by V1's rule
-- [ ] Round advances and the current turn is visible
-- [ ] Order is derived from the log, never stored as a second source of truth
+- [x] The DM rolls initiative for staged creatures; `null` stays null until rolled — the box is blank, never 0, because a 0 asserts "rolled badly" when the fact is "has not rolled"
+- [x] Combatants sort by initiative, ties resolved by V1's rule — higher first, **unrolled last rather than as a zero**, ties by staged order so every device computes the same order
+- [x] Round advances and the current turn is visible
+- [x] Order is derived from the log (`orderOf`), never stored. V1 stores `order` and has to re-anchor the pointer whenever the roster changes; V2 stores only `turn`, which is real information, and computes the rest.
 
 **Verification:**
-- [ ] Tests pass: `npm run test:domain` (`src/features/dm/fight.test.ts`)
-- [ ] Tests pass: `npm run test:component`
-- [ ] Manual check: screenshot `Staging.tsx` with a mixed order and read the PNG — a CSS-module `s.foo` is `any` and only a screenshot catches an unstyled class
+- [x] `npm run test:domain` — 542/542 (11 new in `fight.test.ts`), exit 0
+- [x] `npm run test:component` — 91/91, exit 0
+- [x] `npx playwright test` — 50/50 including a new DM journey that rolls, reorders, begins, walks the order, wraps into round 2, **and reloads** to prove the turn survives in the log
+- [x] `npm run typecheck` exit 0; tier 4 clean (10 checks)
+- [x] **Screenshot taken and read.** It earned its place four times over — see below.
+
+**Ported from V1 `combat.ts`:** `sortOrder`, `beginCombat` (which drops anyone
+who never rolled, with V1's reason: a fight starting with somebody at a made-up
+position is worse than one starting without them), and `advance`'s `from` guard.
+That guard is the interesting one — `advance` carries the turn the presser could
+see, so a DM and a player both ending the same turn cannot skip anybody. In a
+log-shaped app both events are individually valid and nothing else would catch it.
+
+**Four bugs only the screenshot found**, every one of which passed typecheck,
+tier 4, 542 domain tests, 91 component tests and 50 journeys:
+
+1. **The whole roster was below the fold on a phone.** The bestiary pane filled
+   the viewport; the round, the initiative boxes and the current-turn marker were
+   a full screen down. The fight is the glance posture — a fight you scroll to
+   see is not one. The roster now comes first while the fight runs.
+2. **"ROUND 1 2"** — the roster count sat beside the round number and read as
+   nonsense. It belongs to the roster, so it shows while there is a roster.
+3. **The initiative box clipped two digits**: `3.5ch` plus the number spinners
+   rendered 11 as "1". A DM reading 1 for 11 is a real misread at the table.
+4. **`hidden={phase === "active"}` on the ladder did nothing** — `.ladder` sets
+   `display: flex`, which overrides the attribute. Removing it was the right fix
+   rather than making it work: DM.md has the ladder slid up *as the fight
+   develops*, so hiding it mid-fight contradicted the control's whole purpose.
 
 **Dependencies:** Task 2
-**Files likely touched:** `src/features/dm/fight.ts`, `fight.test.ts`, `Staging.tsx`, `Staging.module.css`
-**Estimated scope:** M
+**Files touched:** `fight.ts`, `fight.test.ts`, `Staging.tsx`, `Staging.module.css`, `tests/journey/dm.spec.ts`, `scripts/verify.mjs`
+**Actual scope:** M
+
+**DONE.** MINIMUMS ratcheted 493/91/47 → 542/91/50.
 
 ---
 

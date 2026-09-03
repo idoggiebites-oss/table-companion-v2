@@ -97,7 +97,7 @@ verified by `npm run test:room`, which cannot start a local worker today.
 - [ ] With no passphrase set, the gate fails open
 
 ### Phase 3: The fight, end to end (completes slice 7)
-- [ ] Task 7: Initiative and turn order
+- [x] Task 7: Initiative and turn order — done; order derived, not stored. Four bugs found only by the screenshot.
 - [ ] Task 8: Damage and healing on staged creatures
 - [ ] Task 9: Conditions on combatants
 - [ ] Task 10: The attack — a player claims, the DM answers

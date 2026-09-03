@@ -13,15 +13,16 @@
 .pane { display: flex; flex-direction: column; gap: var(--s-4); min-width: 0; }
 
 .search {
-  min-height: var(--tap);
-  padding: 0 var(--s-5);
-  border: 1px solid var(--hairline);
-  border-radius: var(--r-pill);
-  background: var(--surface-1);
-  color: var(--ink);
-  font-family: var(--font-sans);
-  font-size: var(--t-body);
+  min-height: var(--tap); padding: 0 var(--s-5); border: 1px solid var(--hairline);
+  border-radius: var(--r-pill); background: var(--surface-1); color: var(--ink);
+  font-family: var(--font-sans); font-size: var(--t-body);
 }
+
+/* Once it runs, the order is what the DM needs at a glance, and on a phone the
+   bestiary was burying it a whole screen down. Searching is for building a
+   fight, not for playing one — so the roster goes first while it is running.
+   Only a screenshot showed this; every test passed with it off-screen. */
+.running .roster { order: -1; }
 
 .more { font-size: var(--t-aside); color: var(--ink-dim); margin: 0; }
 .empty { font-size: var(--t-sm); color: var(--ink-dim); margin: 0; max-width: 32em; }
@@ -58,35 +59,19 @@
 }
 
 .heading {
-  display: flex;
-  align-items: center;
-  gap: var(--s-4);
-  margin: 0;
-  font-size: var(--t-note);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink-dim);
-  font-weight: 500;
+  display: flex; align-items: center; gap: var(--s-4); margin: 0;
+  font-size: var(--t-note); letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink-dim); font-weight: 500;
 }
 
-.count {
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  color: var(--ink);
-}
+.count { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ink); }
 
 .staged { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s-3); }
 
 .row {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: var(--s-3);
-  align-items: center;
-  padding: var(--s-4) var(--s-5);
-  border: var(--panel-border);
-  border-radius: var(--r-card);
-  background: var(--surface-1);
-  box-shadow: var(--lift-1);
+  display: grid; grid-template-columns: 1fr auto; gap: var(--s-3); align-items: center;
+  padding: var(--s-4) var(--s-5); border: var(--panel-border); border-radius: var(--r-card);
+  background: var(--surface-1); box-shadow: var(--lift-1);
 }
 
 .rowHead { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
@@ -147,3 +132,18 @@
   line-height: 1;
   cursor: pointer;
 }
+
+/* Whose go it is. A left edge rather than a fill: the row is read at a glance
+   across the table, and a filled row loses its own text. */
+.now { border-color: var(--gold-edge); box-shadow: inset 3px 0 0 0 var(--gold-edge), var(--lift-1); }
+
+/* Blank until rolled, never 0 — see the note at the input. Monospace so the
+   column lines up while the table is still rolling. */
+.init {
+  width: 4.5ch; padding: var(--s-1) var(--s-2); text-align: center;
+  appearance: textfield; -webkit-appearance: none; /* spinners ate the second digit */
+  font-family: var(--font-mono); font-size: var(--t-sm); color: var(--ink);
+  background: var(--surface-2); border: var(--panel-border); border-radius: var(--r-control);
+}
+
+.waiting { margin: 0 0 var(--s-3); font-size: var(--t-aside); color: var(--ink-dim); }

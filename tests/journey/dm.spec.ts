@@ -123,3 +123,55 @@ test("a player is not offered the fight, because it is not their job", async ({ 
   /* Making a character sits this device in it. The bar turns with the seat. */
   await expect(bar(page).getByRole("button", { name: "Fight" })).toHaveCount(0);
 });
+
+test("the order settles, then the fight walks down it", async ({ page }) => {
+  await hub(page);
+  await bar(page).getByRole("button", { name: "Fight" }).click();
+
+  await page.getByTestId("bestiary-search").fill("goblin");
+  await page.getByTestId("bestiary-row").first().click();
+  await page.getByTestId("bestiary-row").first().click();
+  await expect(page.getByTestId("staged-row")).toHaveCount(2);
+
+  /* Assert on the numbers in row order, not on names: searching "goblin"
+     turns up "Chaos-spawn Goblin" first, and the subject here is the sort. */
+  const rolls = () => page.getByTestId("initiative").evaluateAll(
+    (els) => els.map((e) => (e as HTMLInputElement).value));
+
+  /* Nobody has rolled: blank boxes, not zeroes, and Begin is not offered. */
+  await expect(page.getByTestId("initiative").first()).toHaveValue("");
+  await expect(page.getByRole("button", { name: /^Begin/ })).toBeDisabled();
+
+  /* One roll: the rolled one rises, the unrolled one sorts LAST, not as a 0. */
+  await page.getByTestId("initiative").nth(1).fill("19");
+  await expect.poll(rolls).toEqual(["19", ""]);
+  await expect(page.getByTestId("waiting")).toBeVisible();
+  await expect(page.getByRole("button", { name: /Begin without 1/ })).toBeEnabled();
+
+  /* A low roll still beats not having rolled. */
+  await page.getByTestId("initiative").nth(0).fill("4");
+  await expect.poll(rolls).toEqual(["4", ""]);
+
+  /* Everyone in: the waiting line goes and the order is by the numbers. */
+  await page.getByTestId("initiative").nth(1).fill("11");
+  await expect.poll(rolls).toEqual(["11", "4"]);
+  await expect(page.getByTestId("waiting")).toHaveCount(0);
+
+  await page.getByRole("button", { name: "Begin", exact: true }).click();
+  await expect(page.getByRole("heading", { name: /Round 1/ })).toBeVisible();
+  await expect(page.getByTestId("staged-row").first()).toHaveAttribute("aria-current", "true");
+
+  await page.screenshot({ path: "shots/fight-round-1.png", fullPage: true });
+
+  /* Down the order, then over the top into round two. */
+  await page.getByRole("button", { name: /^Next/ }).click();
+  await expect(page.getByTestId("staged-row").nth(1)).toHaveAttribute("aria-current", "true");
+  await page.getByRole("button", { name: /^Next/ }).click();
+  await expect(page.getByRole("heading", { name: /Round 2/ })).toBeVisible();
+  await expect(page.getByTestId("staged-row").first()).toHaveAttribute("aria-current", "true");
+
+  /* And it survives a reload, because the turn is in the log like everything else. */
+  await page.reload();
+  await bar(page).getByRole("button", { name: "Fight" }).click();
+  await expect(page.getByRole("heading", { name: /Round 2/ })).toBeVisible();
+});

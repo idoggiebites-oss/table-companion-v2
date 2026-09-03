@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Shell } from "../../ui/Shell";
 import { Button, ButtonRow } from "../../ui/Button";
 import { bestiary, describe, crName } from "./creatures";
-import { DISCLOSURE, type Act, type Combatant, type Fight } from "./fight";
+import { DISCLOSURE, orderOf, awaiting, activeOf, type Act, type Combatant, type Fight } from "./fight";
 import type { CreatureEntry } from "../../content/schema";
 import type { ReactNode } from "react";
 import s from "./Staging.module.css";
@@ -44,17 +44,35 @@ export function Staging({ fight, nav, onAct }: {
 
   const total = q.trim() === "" ? 0 : all.filter((c) => c.name.toLowerCase().includes(q.trim().toLowerCase())).length;
 
+  /* The order is derived, never stored — see `orderOf`. Before anyone has
+     rolled it is simply the staged order, which is what it should be. */
+  const order = orderOf(fight);
+  const waiting = awaiting(fight);
+  const rolled = fight.combatants.length - waiting.length;
+  const active = activeOf(fight);
+
   return (
     <Shell
       title="The fight"
       below={nav}
       actions={fight.combatants.length === 0 ? undefined : (
         <ButtonRow>
+          {fight.phase === "active" ? (
+            <Button onClick={() => onAct({ act: "advance", from: fight.turn })}>
+              {/* Says whose go it becomes, not just "next" — the DM is looking
+                  at the table, not the screen, when they press it. */}
+              Next: {orderOf(fight)[(fight.turn + 1) % fight.combatants.length]?.name ?? "—"}
+            </Button>
+          ) : (
+            <Button disabled={rolled === 0} onClick={() => onAct({ act: "begin" })}>
+              {waiting.length === 0 ? "Begin" : `Begin without ${String(waiting.length)}`}
+            </Button>
+          )}
           <Button onClick={() => onAct({ act: "clear" })}>Clear the table</Button>
         </ButtonRow>
       )}
     >
-      <div className={s.split}>
+      <div className={`${s.split} ${fight.phase === "active" ? s.running : ""}`}>
         <section className={s.pane} aria-label="The bestiary">
           <input
             className={s.search}
@@ -94,11 +112,20 @@ export function Staging({ fight, nav, onAct }: {
           </div>
         </section>
 
-        <section className={s.pane} aria-label="On the table">
+        <section className={`${s.pane} ${s.roster}`} aria-label="On the table">
           <h2 className={s.heading}>
-            On the table
-            <span className={s.count}>{fight.combatants.length}</span>
+            {fight.phase === "active" ? `Round ${String(fight.round)}` : "On the table"}
+            {/* A bare count beside "Round 1" reads as "Round 1 2". It belongs
+                to the roster, so it is shown while there is a roster. */}
+            {fight.phase !== "active" && <span className={s.count}>{fight.combatants.length}</span>}
           </h2>
+          {fight.phase === "rolling" && waiting.length > 0 && (
+            /* Who the table is waiting on is the whole reason there is a phase
+               between staging and running. Name them. */
+            <p className={s.waiting} data-testid="waiting">
+              Waiting on {waiting.map((c) => c.name).join(", ")}
+            </p>
+          )}
           {fight.combatants.length === 0 ? (
             <p className={s.empty} data-testid="table-empty">
               Nothing yet. Search for a creature to put one here — staged is
@@ -106,7 +133,9 @@ export function Staging({ fight, nav, onAct }: {
             </p>
           ) : (
             <ul className={s.staged} data-testid="staged">
-              {fight.combatants.map((c) => <Staged key={c.id} c={c} onAct={onAct} />)}
+              {order.map((c) => (
+                <Staged key={c.id} c={c} onAct={onAct} now={active?.id === c.id} />
+              ))}
             </ul>
           )}
         </section>
@@ -116,11 +145,33 @@ export function Staging({ fight, nav, onAct }: {
 }
 
 /** How much of this one the table can see, and a way off the table. */
-function Staged({ c, onAct }: { c: Combatant; onAct: (a: Act) => void }) {
+function Staged({ c, onAct, now }: {
+  c: Combatant; onAct: (a: Act) => void; now: boolean;
+}) {
   return (
-    <li className={s.row} data-testid="staged-row">
+    <li className={`${s.row} ${now ? s.now : ""}`} data-testid="staged-row"
+        aria-current={now ? "true" : undefined}>
       <span className={s.rowHead}>
         <span className={s.rowName}>{c.name}</span>
+        {/*
+          * Null until rolled, and shown as blank rather than 0 — "has not
+          * rolled" and "rolled badly" are different facts, and a 0 in the box
+          * would assert the second.
+          */}
+        <input
+          className={s.init}
+          type="number"
+          inputMode="numeric"
+          value={c.initiative ?? ""}
+          placeholder="—"
+          aria-label={`Initiative for ${c.name}`}
+          data-testid="initiative"
+          onChange={(e) => {
+            const v = e.target.value.trim();
+            if (v === "") return;
+            onAct({ act: "roll", id: c.id, value: Number(v) });
+          }}
+        />
         {c.source.kind === "creature" && (
           <span className={s.rowNote}>AC {c.source.ac} · {c.source.max} hp</span>
         )}

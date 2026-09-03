@@ -46,10 +46,18 @@ export type Fight = {
   /** A fight exists before it runs. */
   readonly phase: "staging" | "rolling" | "active";
   readonly round: number;
+  /**
+   * Whose go it is, as a position in the DERIVED order — not a stored order.
+   *
+   * The turn is real information and has to be kept; the order is not, because
+   * it is a function of the initiative values every device already has. V1
+   * stored both and had to re-anchor the pointer whenever the roster changed.
+   */
+  readonly turn: number;
   readonly combatants: readonly Combatant[];
 };
 
-export const NO_FIGHT: Fight = { phase: "staging", round: 0, combatants: [] };
+export const NO_FIGHT: Fight = { phase: "staging", round: 0, turn: 0, combatants: [] };
 
 /** What the DM does to a fight while assembling it. */
 export type Act =
@@ -57,6 +65,15 @@ export type Act =
       readonly source: Source; readonly disclosure?: Disclosure }
   | { readonly act: "unstage"; readonly id: string }
   | { readonly act: "disclose"; readonly id: string; readonly to: Disclosure }
+  | { readonly act: "roll"; readonly id: string; readonly value: number }
+  | { readonly act: "begin" }
+  /**
+   * `from` is the turn the presser could see. Without it a DM and a player
+   * both ending the same turn advance it twice and somebody's go vanishes —
+   * and in a log-shaped app the two events are both perfectly valid, so
+   * nothing else would catch it.
+   */
+  | { readonly act: "advance"; readonly from: number }
   | { readonly act: "clear" };
 
 const asAct = (e: Event): Act | null =>
@@ -96,9 +113,70 @@ function reduce(f: Fight, e: Event): Fight {
       return { ...f, combatants: f.combatants.filter((c) => c.id !== a.id) };
     case "disclose":
       return { ...f, combatants: f.combatants.map((c) => c.id === a.id ? { ...c, disclosure: a.to } : c) };
+    case "roll":
+      return {
+        ...f,
+        /* Rolling is its own moment at the table — the DM says "roll for
+           initiative" and then waits. Leaving it in `staging` would make
+           `awaiting` meaningless, which is the thing the phase is for. */
+        phase: f.phase === "staging" ? "rolling" : f.phase,
+        combatants: f.combatants.map((c) => c.id === a.id ? { ...c, initiative: a.value } : c),
+      };
+    case "begin":
+      /* Anyone who never rolled is dropped rather than placed arbitrarily.
+         V1's reason, kept: a fight that starts with somebody at a made-up
+         position is worse than one that starts without them, and they can be
+         staged again. */
+      return { ...f, phase: "active", round: 1, turn: 0,
+        combatants: f.combatants.filter((c) => c.initiative !== null) };
+    case "advance": {
+      if (f.phase !== "active") return f;
+      if (f.combatants.length === 0) return f;
+      if (a.from !== f.turn) return f; // a turn already ended by somebody else
+      const next = f.turn + 1;
+      return next >= f.combatants.length
+        ? { ...f, turn: 0, round: f.round + 1 }
+        : { ...f, turn: next };
+    }
     case "clear":
       return NO_FIGHT;
   }
+}
+
+/**
+ * Higher initiative first; anyone who has not rolled last; ties by the order
+ * the DM staged them.
+ *
+ * Ported from V1's `sortOrder`, including its reason: the tie-break consults
+ * only the staged order, so the same fight resolves the same way on every
+ * device. A sort that reached for anything device-local would desynchronise
+ * the table.
+ *
+ * Not-yet-rolled sorts LAST rather than as a zero, so a half-rolled order
+ * still reads correctly while the table waits.
+ */
+export function orderOf(f: Fight): readonly Combatant[] {
+  return f.combatants
+    .map((c, i) => ({ c, i }))
+    .sort((a, b) => {
+      const ai = a.c.initiative;
+      const bi = b.c.initiative;
+      if (ai === null && bi === null) return a.i - b.i;
+      if (ai === null) return 1;
+      if (bi === null) return -1;
+      return bi - ai || a.i - b.i;
+    })
+    .map(({ c }) => c);
+}
+
+/** Who the table is still waiting on. */
+export const awaiting = (f: Fight): readonly Combatant[] =>
+  f.combatants.filter((c) => c.initiative === null);
+
+/** Whose go it is, or null before the fight runs. */
+export function activeOf(f: Fight): Combatant | null {
+  if (f.phase !== "active") return null;
+  return orderOf(f)[f.turn] ?? null;
 }
 
 export const fightFrom = (events: readonly Event[]): Fight => fold(events, reduce, NO_FIGHT);
