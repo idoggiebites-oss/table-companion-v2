@@ -39,3 +39,12 @@
   min-height: var(--tap); padding: 0 var(--s-4); font-size: var(--t-sm);
   color: var(--ink-dim); background: none; border: none;
 }
+
+/* How to roll, and why. Reads as a sentence because it is teaching a rule,
+   not labelling a state. */
+.how {
+  grid-column: 1 / -1; flex-basis: 100%; margin: 0;
+  font-size: var(--t-aside); color: var(--ink-dim);
+}
+.how[data-stance="advantage"] { color: var(--gold-ink); }
+.how[data-stance="disadvantage"] { color: var(--damage); }

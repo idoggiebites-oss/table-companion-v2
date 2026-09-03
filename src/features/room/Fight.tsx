@@ -25,13 +25,15 @@ import s from "./Fight.module.css";
  * a name, a vague one is a WORD — "bloodied", never a bar, because a bar is a
  * number wearing a disguise — and only at exact are there figures.
  */
-export function Fight({ state, me, attacks, scores, level, nav, onAct }: {
+export function Fight({ state, me, attacks, scores, level, conditions = [], nav, onAct }: {
   state: State;
   /** This device's combatant id in the fight, if it is in it at all. */
   me: string | null;
   attacks: readonly Attack[];
   scores: Scores;
   level: number;
+  /** What is on the person swinging — half of what decides the dice. */
+  conditions?: readonly string[];
   nav?: ReactNode;
   onAct: (a: Act) => void;
 }) {
@@ -101,7 +103,7 @@ export function Fight({ state, me, attacks, scores, level, nav, onAct }: {
                     </button>
                   )}
                   {swinging === a.name && (
-                    <Swing attack={r} targets={targets} onCancel={() => setSwinging(null)}
+                    <Swing attack={r} targets={targets} mine={conditions} onCancel={() => setSwinging(null)}
                            onClaim={(targetId, toHit, damage) => {
                              onAct({ act: "claim", claim: {
                                id: `${me ?? ""}-${a.name}-${String(Date.now())}`,

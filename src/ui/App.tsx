@@ -208,6 +208,7 @@ export function App({ dbName }: { dbName?: string }) {
         attacks={build === null ? [] : vitalsFrom(events, character, build).attacks}
         scores={build === null ? BLANK : scoresOf(build)}
         level={build?.level ?? 1}
+        conditions={build === null ? [] : vitalsFrom(events, character, build).conditions}
         nav={nav("fight")}
         onAct={act}
       />

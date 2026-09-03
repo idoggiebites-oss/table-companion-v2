@@ -291,6 +291,12 @@ test("a player claims a hit, and nothing lands until the DM says so", async ({ p
   await bar(page).getByRole("button", { name: "Fight" }).click();
   const attack = page.getByTestId("my-attacks").locator("li").first();
   await attack.getByRole("button", { name: /^Swing/ }).click();
+
+  /* How to roll, and WHY — said at the moment the dice are picked up.
+     "Advantage" alone teaches nothing; naming the reason teaches the rule
+     while it is being used. Nothing is on either side here, so it is straight. */
+  await expect(page.getByTestId("stance")).toHaveAttribute("data-stance", "straight");
+
   await page.getByRole("spinbutton", { name: /rolled to hit/ }).fill("18");
   await page.getByRole("spinbutton", { name: /damage you rolled/ }).fill("4");
   await page.getByRole("button", { name: "Tell the DM" }).click();

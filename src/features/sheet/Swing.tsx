@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { ResolvedAttack } from "../../rules/5e/attack";
 import type { Combatant } from "../dm/fight";
+import { stanceFor, describeReasons } from "../../rules/5e/stance";
 import s from "./Swing.module.css";
 
 /**
@@ -20,9 +21,11 @@ import s from "./Swing.module.css";
  * because the player is about to add their d20 to it and a box that already
  * contained a guess at the whole answer would be one they had to correct.
  */
-export function Swing({ attack, targets, onClaim, onCancel }: {
+export function Swing({ attack, targets, mine = [], onClaim, onCancel }: {
   attack: ResolvedAttack;
   targets: readonly Combatant[];
+  /** The conditions on the person swinging — half of what decides the dice. */
+  mine?: readonly string[];
   onClaim: (targetId: string, toHit: number, damage: number) => void;
   onCancel: () => void;
 }) {
@@ -31,6 +34,20 @@ export function Swing({ attack, targets, onClaim, onCancel }: {
   const [damage, setDamage] = useState("");
 
   const ready = toHit.trim() !== "" && damage.trim() !== "" && target !== "";
+
+  /*
+   * How to roll, and why — said at the moment the dice are about to be picked
+   * up, which is the only moment it is worth saying. "Advantage: the goblin is
+   * prone" teaches the rule while it is being used; "Advantage" alone teaches
+   * nothing, and silence teaches the table to work it out slowly and often
+   * wrong.
+   */
+  const at = targets.find((c) => c.id === target);
+  const how = at === undefined ? null : stanceFor({
+    attacker: { name: "you", conditions: mine },
+    target: { name: at.name, conditions: at.conditions },
+    range: attack.range ?? "Melee",
+  });
 
   return (
     <form
@@ -63,6 +80,12 @@ export function Swing({ attack, targets, onClaim, onCancel }: {
                aria-label="How much damage you rolled"
                placeholder={attack.damage} onChange={(e) => setDamage(e.target.value)} />
       </label>
+
+      {how !== null && (
+        <p className={s.how} data-testid="stance" data-stance={how.stance}>
+          {describeReasons(how.stance, how.reasons)}
+        </p>
+      )}
 
       <span className={s.row}>
         <button type="submit" className={s.send} disabled={!ready}>Tell the DM</button>
