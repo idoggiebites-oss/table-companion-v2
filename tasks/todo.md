@@ -983,9 +983,29 @@ table then asks what it changed. Each prompt is a fact and a screen that
 answers it.
 
 **Acceptance criteria:**
-- [ ] Each prompt names a fact and opens the screen that answers it
-- [ ] Filtered by what currently exists — V1's `PROMPT_TABS` rule; a prompt pointing at an unbuilt screen is worse than none
-- [ ] Nothing moves a player on its own
+- [x] Each prompt names a fact and opens the screen that answers it
+- [x] Filtered by what currently exists — V1's `PROMPT_TABS` rule; a prompt pointing at an unbuilt screen is worse than none
+- [x] Nothing moves a player on its own
+
+**The filter is `tabsFor`'s own output**, so the rule is checked once rather
+than restated: a player has no Prep tab and cannot be sent there, and the Fight
+tab exists exactly when a fight is running — which is exactly when that prompt
+is true.
+
+**Three of V1's prompts have no basis in V2 and are named in the module rather
+than approximated:** a level waiting (V2 awards no experience, so nothing is
+ever owed), never-used and never-cast (no `resourceSpent`, no `spellCast` — and
+"you have never cast this" from an app that cannot see casting is confidently
+wrong about the half of a sheet somebody used all night), and encounters the
+party has outgrown (the bands are DMG content; `non-srd.ts` carries point-buy
+and not the encounter budget).
+
+**Two are V2's own:** who is still down, and a night's worth of encounters kept
+with nowhere to put them. The second only exists because Task 19 gave places a
+home.
+
+`WhatNow.tsx` beside `prompts.ts`, for the casing reason `LastTime` already
+had — and the pair reads as what it is.
 
 **Dependencies:** Task 23
 **Estimated scope:** M-L

@@ -4,6 +4,8 @@ import { Button, ButtonRow } from "./Button";
 import { LogView } from "./LogView";
 import { logFor, mayRevert } from "../features/room/visibility";
 import { LastTime } from "../features/room/LastTime";
+import { WhatNow } from "../features/room/WhatNow";
+import { promptsFor } from "../features/room/prompts";
 import { mayEditCharacter } from "../features/room/permissions";
 import { useFeatures } from "../features/progression/useFeatures";
 import { useCatalogue } from "../features/sheet/useCatalogue";
@@ -31,6 +33,7 @@ import { Party } from "../features/dm/Party";
 import { Staging } from "../features/dm/Staging";
 import { PrepScreen } from "../features/dm/PrepScreen";
 import { scenesFrom } from "../features/dm/scene";
+import { prepFrom } from "../features/dm/encounter";
 import { homebrewFrom, HOMEBREW } from "../features/sheet/homebrew";
 import { Fight as PlayerFight } from "../features/room/Fight";
 import { scoresOf } from "../features/creation/scores";
@@ -374,7 +377,16 @@ export function App({ dbName }: { dbName?: string }) {
           {/* The same events, read forwards. Above the rows because that is
               what it IS — a person who wants the transactions scrolls past. */}
           <LastTime events={logFor(events, dm)}
-                 nameOf={(id) => roster.find((r) => r.id === id)?.build.identity["name"] ?? "Someone"} />
+                    nameOf={(id) => roster.find((r) => r.id === id)?.build.identity["name"] ?? "Someone"} />
+          {/* And what it changed. Each one goes somewhere; none of them goes
+              on its own. */}
+          <WhatNow onGo={go} prompts={promptsFor({
+            dm, tabs: tabs.map((x) => x.id), fight,
+            party: membersIn(events),
+            vitals,
+            scenes: scenesFrom(events).scenes.length,
+            encounters: prepFrom(events).encounters.length,
+          })} />
           <LogView events={logFor(events, dm)} onUndo={undo}
                    mayUndo={(e) => mayRevert(e, dm, clock.device)} />
         </>
