@@ -3,6 +3,7 @@ import { Shell } from "./Shell";
 import { Button, ButtonRow } from "./Button";
 import { LogView } from "./LogView";
 import { logFor, mayRevert } from "../features/room/visibility";
+import { LastTime } from "../features/room/LastTime";
 import { mayEditCharacter } from "../features/room/permissions";
 import { useFeatures } from "../features/progression/useFeatures";
 import { useCatalogue } from "../features/sheet/useCatalogue";
@@ -369,8 +370,14 @@ export function App({ dbName }: { dbName?: string }) {
          * from behind: the fight screen can hide a creature as carefully as it
          * likes while this tab names it.
          */
-        <LogView events={logFor(events, dm)} onUndo={undo}
-                 mayUndo={(e) => mayRevert(e, dm, clock.device)} />
+        <>
+          {/* The same events, read forwards. Above the rows because that is
+              what it IS — a person who wants the transactions scrolls past. */}
+          <LastTime events={logFor(events, dm)}
+                 nameOf={(id) => roster.find((r) => r.id === id)?.build.identity["name"] ?? "Someone"} />
+          <LogView events={logFor(events, dm)} onUndo={undo}
+                   mayUndo={(e) => mayRevert(e, dm, clock.device)} />
+        </>
       ) : (
         <p data-testid="loading">Opening the log…</p>
       )}

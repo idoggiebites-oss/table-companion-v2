@@ -944,9 +944,32 @@ the first commit and has never been readable. Scrolling three hundred rows of
 shape of a session rather than its transactions.
 
 **Acceptance criteria:**
-- [ ] Reads forwards into a shape: fights, who went down, what was gained, where the night ended
-- [ ] Per reader, like the log itself — `visibility.ts` already decides what a player may see
-- [ ] Says nothing rather than inventing a narrative it cannot stand behind
+- [x] Reads forwards into a shape: fights, who went down, what was gained, where the night ended
+- [x] Per reader, like the log itself — `visibility.ts` already decides what a player may see
+- [x] Says nothing rather than inventing a narrative it cannot stand behind
+
+**Per reader falls out of the design rather than being enforced.** `recapOf`
+takes the events it is HANDED, so a player's recap is built from
+`logFor(events, false)` and the DM's prep cannot leak in sideways. A test holds
+both recaps against each other.
+
+**Three of V1's lines did not come, and are named in the module rather than
+approximated:** experience and loot (V2 records neither — `rawXp` computes what
+an encounter is worth and nothing awards it), spells cast (there is a
+concentration act and no cast act), and the natural twenty. That last is the
+one worth stating: V1 logs the dice, V2 logs a CLAIM whose to-hit is a total
+with the player's modifier already inside it, so the die is not recoverable.
+Guessing at the best moment of somebody's night is the worst thing on that list
+to get wrong.
+
+**Caught by looking, and it was the criterion failing:** creation's "what level
+are you starting at?" reduces to the same `level` step a sheet would, so a
+freshly rolled character read as having levelled up on the night it was made.
+Levelling is its own event — `TAKE` — and the recap reads that instead. A test
+holds it.
+
+**Named `LastTime.tsx`,** because `Recap.tsx` beside `recap.ts` differ only in
+casing, which this filesystem cannot tell apart and TypeScript refuses.
 
 **Dependencies:** Task 14
 **Estimated scope:** L

@@ -1,0 +1,31 @@
+/* The night, before the transactions. Prose weight, because it is read out
+   loud at the start of a session rather than scanned. */
+.wrap {
+  display: flex; flex-direction: column; gap: var(--s-4);
+  padding: var(--s-6) var(--card-pad);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.when {
+  font-size: var(--t-note); letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--gold-ink);
+}
+
+.lines {
+  margin: 0; max-width: 34em;
+  font-family: var(--font-display); font-size: var(--t-8);
+  line-height: 1.55; color: var(--ink); text-wrap: pretty;
+}
+
+.counts { display: flex; flex-wrap: wrap; gap: var(--s-7); margin: 0; }
+.count { display: flex; flex-direction: column; gap: var(--s-1); }
+
+.label {
+  font-size: var(--t-5); letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--ink-dim);
+}
+
+.value {
+  margin: 0; font-family: var(--font-mono); font-size: var(--t-sm);
+  font-variant-numeric: tabular-nums; color: var(--ink);
+}
