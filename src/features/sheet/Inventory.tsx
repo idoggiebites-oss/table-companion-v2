@@ -3,13 +3,14 @@ import { Icon, type IconName } from "../../ui/Icon";
 import { acFor } from "../../rules/5e/defence";
 import { displacedBy } from "../../rules/5e/slots";
 import { Figure, detailOf } from "./Figure";
-import { carryLimit, isArmour, isShield, isWeapon, weightOf, type Item, type Stack } from "../../rules/5e/items";
-import type { Worn } from "../../rules/5e/armour";
+import { carryLimit, weightOf, type Item } from "../../rules/5e/items";
+import { wornFrom } from "../../rules/5e/armour";
 import type { Build } from "../creation/model";
 import { scoresOf } from "../creation/scores";
 import type { Choice } from "../creation/choices";
 import { stacksOf, equippedOf } from "./carried";
 import { Pack } from "./Pack";
+import { MakeItem } from "./MakeItem";
 import s from "./Inventory.module.css";
 
 const TABS = [
@@ -31,13 +32,25 @@ const TABS = [
  * attack derivation yet, and a fabricated `+7` beside a real `1d8` is the one
  * thing worse than a missing column.
  */
-export function Inventory({ build, catalogue, loading, onAct }: {
+export function Inventory({ build, catalogue, made = [], loading, onAct, onMake, onForgetMade }: {
   build: Build;
   catalogue: readonly Item[];
+  /**
+   * The things this table wrote down itself.
+   *
+   * Passed in already merged into `catalogue` above — these are here only so
+   * the form can list them for editing. Nothing on this screen asks which of
+   * the items it is showing came from where, and `check-homebrew` fails the
+   * build if anything starts to.
+   */
+  made?: readonly Item[];
   loading?: boolean;
   onAct?: (c: Choice) => void;
+  onMake?: (i: Item) => void;
+  onForgetMade?: (id: string) => void;
 }) {
   const [tab, setTab] = useState<string>("weapons");
+  const [making, setMaking] = useState(false);
   const of = (id: string) => catalogue.find((i) => i.id === id);
   const stacks = stacksOf(build, catalogue);
   /* Seeded from what creation decided when nobody has said otherwise —
@@ -57,18 +70,7 @@ export function Inventory({ build, catalogue, loading, onAct }: {
     const next = on
       ? [...equippedIds.filter((id) => !displacedBy(item, equipped).some((d) => d.id === id)), item.id]
       : equippedIds.filter((id) => id !== item.id);
-    const worn: Worn[] = next
-      .map(of)
-      .filter((i): i is Item => i !== undefined && (isArmour(i) || isShield(i)))
-      .map((i) => ({
-        name: i.name,
-        kind: isShield(i) ? "shield" as const
-          : (i.armorCategory ?? "Light").toLowerCase() as "light" | "medium" | "heavy",
-        ac: i.baseAc ?? 10,
-        ...(i.maxDex === undefined ? {} : { maxDex: i.maxDex }),
-        ...(i.strMinimum === undefined ? {} : { strMinimum: i.strMinimum }),
-        ...(i.stealthDisadvantage === true ? { stealthDisadvantage: true } : {}),
-      }));
+    const worn = wornFrom(next.map(of).filter((i): i is Item => i !== undefined));
     onAct?.({ step: "wear", equipped: next, worn, said: item.name });
   };
 
@@ -113,6 +115,36 @@ export function Inventory({ build, catalogue, loading, onAct }: {
       <Figure equipped={equipped} onTake={(i) => wear(i, false)} />
 
       <Pack stacks={stacks} catalogue={catalogue} equipped={equippedIds} onWear={wear} />
+
+      {onMake !== undefined && (
+        <button type="button" className={s.make} onClick={() => setMaking(true)}>
+          Make something the books do not have
+        </button>
+      )}
+
+      {making && onMake !== undefined && (
+        <MakeItem
+          made={made}
+          onSave={(i) => {
+            onMake(i);
+            /*
+               And you have one. This form's only door is your own pack, so
+               writing a thing down here means you own it — a made-up sword
+               that lands in the catalogue and nowhere else cannot be carried
+               or equipped, which is half of what it exists for.
+
+               `carry` replaces the picked-up pile wholesale, which is why the
+               existing stacks are spread back in rather than appended to. */
+            onAct?.({
+              step: "carry", said: i.name,
+              stacks: [...build.stacks, { itemId: i.id, name: i.name, qty: 1 }],
+            });
+            setMaking(false);
+          }}
+          onForget={(id) => onForgetMade?.(id)}
+          onClose={() => setMaking(false)}
+        />
+      )}
     </div>
   );
 }

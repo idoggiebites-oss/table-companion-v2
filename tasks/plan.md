@@ -149,7 +149,7 @@ commit messages that already cite these ids.*
 - [x] Task 18: An encounter, saved and put live — built to the mockup; three of its elements deliberately absent and recorded
 - [x] Task 19: A scene — the place, not the parts
 - [x] Task 20: NPCs, notes first
-- [ ] Task 21: Homebrew items the app reads as items
+- [x] Task 21: Homebrew items the app reads as items
 
 ### Phase 6: Guidance (slice 10)
 - [ ] Task 22: Plain words for what numbers cannot say

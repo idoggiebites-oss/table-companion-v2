@@ -857,10 +857,35 @@ armour class moves; swing it and the damage is right; give it "versatile" and
 both grips appear. None of those code paths are told about homebrew.
 
 **Acceptance criteria:**
-- [ ] A made-up item is an `Item`, indistinguishable downstream
-- [ ] Equipping one moves AC through the existing `armour.ts` path, untouched
-- [ ] An attack from one derives to-hit through the existing `attack.ts` path
-- [ ] No branch anywhere reads "is this homebrew"
+- [x] A made-up item is an `Item`, indistinguishable downstream
+- [x] Equipping one moves AC through the existing `armour.ts` path, untouched
+- [x] An attack from one derives to-hit through the existing `attack.ts` path
+- [x] No branch anywhere reads "is this homebrew"
+
+**How the last one is held.** It is a property of the source, not of any run —
+a parallel path would pass every behavioural test while being the exact thing
+the feature prevents. So `scripts/checks/homebrew.mjs` (tier 4) enforces
+confinement: only the module, its form and its tests may import from
+`homebrew.ts`, and `homebrewFrom` is called EXACTLY ONCE, where the fold is
+appended to a catalogue. A second caller is by definition asking which items
+are made up.
+
+**The check was wrong first.** Written as "no file may read the `(HB)` marker",
+it flagged 51 lines of correct code: `content/marks.ts` reads `(HB)` as
+compendium PROVENANCE, and V1 marks a made-up item precisely so it flows
+through that same machinery — "the same filters hide it and the same badge
+shows it". Forbidding it would have forbidden the design.
+
+**Found by looking.** The drawer opens from inside the scrolling body, which
+comes before the tab bar in the DOM, and nothing in this app declares a
+`z-index` — so the nav band painted over the panel, its icons showing through
+the drawer's own text, and intercepted every tap on the save button. It is
+`Drawer.tsx`, so `Sheet`'s drawer had it too.
+
+**And a gap the criteria did not name:** writing an item down put it in the
+catalogue and nowhere else, so it could never be carried or equipped — half of
+what it exists for. Making one on your own pack screen now grants you one,
+through the `carry` step that was defined and unused.
 
 **Dependencies:** Task 20
 **Estimated scope:** M-L

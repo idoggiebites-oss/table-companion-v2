@@ -90,3 +90,12 @@
 .cost { font-size: var(--t-micro); color: var(--damage); }
 
 .note { font-size: var(--t-sm); color: var(--ink-dim); padding: var(--s-3); }
+
+
+/* Quiet, and last: making something up is rare beside carrying things. */
+.make {
+  align-self: flex-start; margin: var(--s-5) var(--card-pad) 0;
+  min-height: var(--tap); padding: 0 var(--s-5); font-size: var(--t-sm);
+  color: var(--ink-dim); background: none;
+  border: 1px solid var(--hairline); border-radius: var(--r-control);
+}

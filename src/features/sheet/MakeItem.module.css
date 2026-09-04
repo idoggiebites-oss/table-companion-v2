@@ -1,0 +1,83 @@
+.wrap { display: flex; flex-direction: column; gap: var(--s-3); }
+
+.tag {
+  font-size: var(--t-note); letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.field { display: flex; flex-direction: column; gap: var(--s-2); min-width: 0; }
+
+.text {
+  font: inherit; font-size: var(--t-sm); color: var(--ink); min-height: var(--tap);
+  background: var(--surface-2); border: 1px solid var(--hairline);
+  border-radius: var(--r-control); padding: var(--s-4) var(--s-5); min-width: 0;
+}
+
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); align-items: end; }
+
+.block { display: flex; flex-direction: column; gap: var(--s-3); }
+
+/* Exclusive choices read as one control. A hairline, not `--panel-border`:
+   that token is transparent in the light theme, which is right for a card and
+   wrong for something you are being asked to choose between. */
+.seg { display: flex; }
+.seg .pick { flex: 1; border-radius: 0; }
+.seg .pick:first-child { border-radius: var(--r-control) 0 0 var(--r-control); }
+.seg .pick:last-child { border-radius: 0 var(--r-control) var(--r-control) 0; }
+.seg .pick + .pick { border-left: none; }
+
+.pick {
+  min-height: var(--tap); font-size: var(--t-sm); color: var(--ink);
+  background: var(--surface-1); border: 1px solid var(--hairline);
+}
+
+.flags { display: flex; flex-wrap: wrap; gap: var(--s-3); }
+
+.chip {
+  min-height: var(--tap); padding: 0 var(--s-5); font-size: var(--t-sm);
+  color: var(--ink); background: var(--surface-1);
+  border: 1px solid var(--hairline); border-radius: var(--r-pill);
+}
+
+/* Gold marks what is on, the same way a picked choice does in creation. */
+.on { background: var(--gold-wash); border-color: var(--gold-fill); color: var(--ink); }
+
+.made { display: flex; flex-direction: column; gap: var(--s-2); }
+.madeRow { display: flex; align-items: center; gap: var(--s-3); }
+
+.madeName {
+  flex: 1; min-height: var(--tap); text-align: left; font-size: var(--t-sm);
+  color: var(--ink); background: var(--surface-1);
+  border: 1px solid var(--hairline); border-radius: var(--r-control);
+  padding: 0 var(--s-5);
+}
+
+.forget {
+  min-width: var(--tap); min-height: var(--tap);
+  background: none; border: none; color: var(--ink-dim);
+}
+
+/* The result, not a picture of it: the same lines the pack prints. */
+.preview {
+  display: flex; flex-direction: column; gap: var(--s-2);
+  padding: var(--s-5); margin-top: var(--s-3);
+  background: var(--gold-wash); border-left: 3px solid var(--gold-edge);
+  border-radius: 0 var(--r-card) var(--r-card) 0;
+}
+.previewName { font-size: var(--t-sm); font-weight: 600; }
+.previewFacts { font-size: var(--t-aside); color: var(--ink-dim); font-family: var(--font-mono); }
+
+.row { display: flex; gap: var(--s-3); align-items: center; margin-top: var(--s-3); }
+
+.save {
+  min-height: var(--tap); padding: 0 var(--s-5); font-size: var(--t-sm);
+  color: var(--on-gold); background: var(--gold-fill);
+  border: 1px solid var(--gold-edge); border-radius: var(--r-control);
+}
+.save:disabled { opacity: 0.45; }
+
+.cancel {
+  min-height: var(--tap); padding: 0 var(--s-5); font-size: var(--t-sm);
+  color: var(--ink-dim); background: none;
+  border: 1px solid var(--hairline); border-radius: var(--r-control);
+}

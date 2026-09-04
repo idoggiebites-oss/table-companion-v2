@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* Tier 4. Ten checks, each making a class of bug unwritable. */
+/* Tier 4. Eleven checks, each making a class of bug unwritable. */
 import { run as css } from "./checks/css.mjs";
 import { run as contrast } from "./checks/contrast.mjs";
 import { run as inline } from "./checks/inline.mjs";
@@ -10,8 +10,9 @@ import { run as glyphs } from "./checks/glyphs.mjs";
 import { run as styles } from "./checks/styles.mjs";
 import { run as keys } from "./checks/keys.mjs";
 import { run as cycles } from "./checks/cycles.mjs";
+import { run as homebrew } from "./checks/homebrew.mjs";
 
-const checks = [css, contrast, inline, size, locators, imports, glyphs, styles, keys, cycles];
+const checks = [css, contrast, inline, size, locators, imports, glyphs, styles, keys, cycles, homebrew];
 let bad = 0;
 
 for (const c of checks) {

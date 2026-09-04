@@ -28,10 +28,9 @@ import { tabsFor, currentOf } from "./tabs";
 import { useSeat } from "../features/room/useSeat";
 import { Party } from "../features/dm/Party";
 import { Staging } from "../features/dm/Staging";
-import { Prep } from "../features/dm/Prep";
-import { prepFrom, keepFrom, PREP } from "../features/dm/encounter";
-import { blankScene, scenesFrom, openActs, SCENE, type Scene } from "../features/dm/scene";
-import { peopleFrom, NPC } from "../features/dm/npc";
+import { PrepScreen } from "../features/dm/PrepScreen";
+import { scenesFrom } from "../features/dm/scene";
+import { homebrewFrom, HOMEBREW } from "../features/sheet/homebrew";
 import { Fight as PlayerFight } from "../features/room/Fight";
 import { scoresOf } from "../features/creation/scores";
 import { BLANK } from "../rules/5e/abilities";
@@ -76,15 +75,6 @@ export function App({ dbName }: { dbName?: string }) {
    * replaying the log a week later should re-derive.
    */
   const [openScene, setOpenScene] = useState<string | null>(null);
-
-  /** One press: clear, stage what is waiting, set the room. See `openActs`. */
-  const openPlace = (sc: Scene) => {
-    const e = prepFrom(events).encounters.find((x) => x.id === sc.encounter);
-    for (const a of openActs(sc, e, (i) => `${sc.id}-${String(i)}-${String(Date.now())}`)) {
-      record(FIGHT, a as unknown as Record<string, unknown>);
-    }
-    setOpenScene(sc.id);
-  };
 
   /*
    * The one navigation, computed here because this is where the state is.
@@ -200,11 +190,18 @@ export function App({ dbName }: { dbName?: string }) {
 
   if (mode === "sheet") {
     const build = current;
+    /* The whole integration, and one line is the point — see
+       `features/sheet/homebrew.ts`. The compendium comes FIRST so an exact
+       catalogue name wins a tie. */
+    const made = homebrewFrom(events);
     return (
       <Sheet
         build={build}
         features={features}
-        catalogue={gear.items}
+        catalogue={[...gear.items, ...made]}
+        made={made}
+        onMake={(i) => record(HOMEBREW, { act: "save", item: i } as unknown as Record<string, unknown>)}
+        onForgetMade={(id) => record(HOMEBREW, { act: "forget", id })}
         catalogueLoading={gear.loading}
         onChoose={(c) => record(CHOICE, { ...(c as unknown as Record<string, unknown>), character })}
         vitals={vitalsFrom(events, character, build)}
@@ -219,27 +216,10 @@ export function App({ dbName }: { dbName?: string }) {
 
   if (mode === "prep") {
     return (
-      <Prep
-        encounters={prepFrom(events).encounters}
-        scenes={scenesFrom(events).scenes}
-        npcs={peopleFrom(events).npcs}
-        nav={nav("prep")}
-        onPrepare={(sc) => record(SCENE, { act: "prepare", scene: sc } as unknown as Record<string, unknown>)}
-        onForgetScene={(id) => record(SCENE, { act: "forget", id })}
-        onOpenScene={(sc) => { openPlace(sc); setMode("fight"); }}
-        onSaveNpc={(person) => record(NPC, { act: "save", npc: person } as unknown as Record<string, unknown>)}
-        onForgetNpc={(id) => record(NPC, { act: "forget", id })}
-        onStage={(e) => {
-          /* An encounter with no place is a place with nothing said about the
-             room — the same one press, so it is the same code path. */
-          openPlace({ ...blankScene(`st${Date.now().toString(36)}`), encounter: e.id });
-          setMode("fight");
-        }}
-        onForget={(id) => record(PREP, { act: "forget", id })}
-        onNew={() => {
-          const kept = keepFrom(fight.combatants, `enc${Math.random().toString(36).slice(2, 8)}`);
-          if (kept !== null) record(PREP, { act: "keep", encounter: kept } as unknown as Record<string, unknown>);
-        }}
+      <PrepScreen
+        events={events} fight={fight} nav={nav("prep")}
+        record={record}
+        onOpened={(id) => { setOpenScene(id); setMode("fight"); }}
       />
     );
   }

@@ -1,6 +1,17 @@
 .scrim {
   position: fixed;
   inset: 0;
+  /*
+   * The only `z-index` in the app, and it needs to be exactly one.
+   *
+   * Nothing else declares one — the app stacks by DOM order — and a drawer
+   * opens from inside the scrolling body, which comes BEFORE the tab bar. So
+   * without this the nav band paints over the panel: its icons show through
+   * the drawer's own text, and the button at the bottom cannot be pressed at
+   * all, because the band is intercepting the taps. A modal that the
+   * navigation covers is not modal.
+   */
+  z-index: 1;
   background: rgb(0 0 0 / .45);
   display: flex;
   align-items: flex-end;

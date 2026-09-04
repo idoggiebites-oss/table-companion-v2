@@ -32,7 +32,7 @@ type Asking = { kind: "damage" } | { kind: "heal" } | { kind: "hitdie"; die: num
  */
 export function Sheet({
   build, vitals, name, onAct, onBack, onLevelUp, nav, features = [],
-  catalogue = [], catalogueLoading = false, onChoose,
+  catalogue = [], catalogueLoading = false, made = [], onMake, onForgetMade, onChoose,
 }: {
   build: Build;
   vitals: Vitals;
@@ -44,6 +44,10 @@ export function Sheet({
   /** The item catalogue, loaded by the screen above when this tab opens. */
   catalogue?: readonly Item[];
   catalogueLoading?: boolean;
+  /** Things this table wrote down, already merged into `catalogue`. */
+  made?: readonly Item[];
+  onMake?: (i: Item) => void;
+  onForgetMade?: (id: string) => void;
   /** Equipping is an event like everything else. */
   onChoose?: (c: Choice) => void;
   /** Gained features, loaded per class by the screen above. */
@@ -134,6 +138,8 @@ export function Sheet({
       )}
       {tab === "inventory" && (
         <Inventory build={build} catalogue={catalogue} loading={catalogueLoading}
+                   made={made} {...(onMake === undefined ? {} : { onMake })}
+                   {...(onForgetMade === undefined ? {} : { onForgetMade })}
                    {...(onChoose === undefined ? {} : { onAct: onChoose })} />
       )}
       {tab === "combat" && (

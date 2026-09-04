@@ -1,4 +1,5 @@
 import { modifier, type Scores } from "./abilities";
+import { isArmour, isShield, type Item } from "./items";
 
 /**
  * What being armoured actually does to the numbers.
@@ -55,6 +56,33 @@ export type ArmourClass = {
  * store one, it plugs in HERE, as the floor — not as a replacement.
  */
 export const UNARMOURED = 10;
+
+/**
+ * What is actually on the body, out of what is equipped.
+ *
+ * Here rather than in the screen that used to hold it, because it is the
+ * translation the armour rule reads and a test that rebuilt it would be
+ * testing its own copy. Anything that is neither armour nor a shield is
+ * carried, not worn, and drops out.
+ *
+ * It reads only the compendium's own fields — `armorCategory`, `baseAc`,
+ * `maxDex`, `strMinimum`, `stealthDisadvantage`. Nothing here asks where the
+ * item came from, which is what lets a made-up breastplate move an armour
+ * class without this file being told it exists.
+ */
+export const wornFrom = (equipped: readonly Item[]): Worn[] =>
+  equipped
+    .filter((i) => isArmour(i) || isShield(i))
+    .map((i) => ({
+      name: i.name,
+      kind: isShield(i)
+        ? ("shield" as const)
+        : ((i.armorCategory ?? "Light").toLowerCase() as "light" | "medium" | "heavy"),
+      ac: i.baseAc ?? UNARMOURED,
+      ...(i.maxDex === undefined ? {} : { maxDex: i.maxDex }),
+      ...(i.strMinimum === undefined ? {} : { strMinimum: i.strMinimum }),
+      ...(i.stealthDisadvantage === true ? { stealthDisadvantage: true } : {}),
+    }));
 
 export function armourClass(worn: readonly Worn[], scores: Scores): ArmourClass {
   const dexMod = modifier(scores.dex);
