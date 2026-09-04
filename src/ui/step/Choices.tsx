@@ -66,6 +66,17 @@ export type Option = {
   /** Shown when this option is not the game's own. */
   readonly mark?: string;
   /**
+   * One line on what this is LIKE, shown on the row once it is picked.
+   *
+   * Not on every row, and that is the whole design: twelve sentences stacked
+   * is a wall nobody reads, and the role and tags above are what a list is
+   * scanned with. The sentence is for the option you have landed on, which is
+   * the moment the question "what is this actually like" is being asked.
+   */
+  readonly says?: string;
+  /** How much it asks you to keep track of, 1-5. Shown beside `says`. */
+  readonly bookkeeping?: number;
+  /**
    * The record whose prose explains this option, when it is not this option.
    *
    * An ancestry row is a GROUP — "Elf" covers seven records — so it borrows
@@ -213,6 +224,21 @@ function Row({ option: o, value, onChange, onAsk }: {
             {o.role !== undefined && <span className={s.role}>{o.role}</span>}
             {o.tags !== undefined && o.tags.length > 0 && (
               <span className={s.chips}>{o.tags.map((t) => <span key={t} className={s.chip}>{t}</span>)}</span>
+            )}
+            {o.id === value && o.says !== undefined && (
+              <span className={s.says}>{o.says}</span>
+            )}
+            {o.id === value && o.bookkeeping !== undefined && (
+              /* Bookkeeping, not power: a wizard has no more rules than a
+                 fighter, it has three hundred more decisions. */
+              <span className={s.keep} aria-label={`Bookkeeping ${String(o.bookkeeping)} of 5`}>
+                <span className={s.keepTag}>Bookkeeping</span>
+                <span className={s.pips} aria-hidden="true">
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <span key={n} className={n <= o.bookkeeping! ? `${s.pip} ${s.lit}` : s.pip} />
+                  ))}
+                </span>
+              </span>
             )}
           </span>
       {o.id === value ? <Tick /> : <span />}

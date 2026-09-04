@@ -9,7 +9,7 @@
 export type IconName =
   | "sword" | "staff" | "note" | "sun" | "leaf" | "fist" | "shield" | "bow"
   | "dagger" | "spark" | "book" | "eye" | "die" | "pact" | "flask" | "person"
-  | "list";
+  | "list" | "moon";
 
 const PATHS: Record<IconName, string> = {
   sword: "M14.5 3.5 17 6l-7.5 7.5-2.5-2.5L14.5 3.5ZM7 13l-2 4 4-2M5.5 15.5 3 18",
@@ -31,6 +31,11 @@ const PATHS: Record<IconName, string> = {
   /* The log: entries, newest at the top. `book` would have done, but it is
      the Library's glyph the day the Library exists. */
   list: "M4 5.5h12M4 10h12M4 14.5h7",
+  /* The monk. Added because barbarian and monk shared `fist`, and two classes
+     with one shape is the thing the icons exist to prevent — V1's note: they
+     are "thirteen different SHAPES rather than thirteen tinted copies of one",
+     which is what replaced a colour per class. */
+  moon: "M16 12.3A6.5 6.5 0 0 1 7.7 4 7 7 0 1 0 16 12.3Z",
 };
 
 export function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
@@ -45,7 +50,7 @@ export function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
 /** What each class looks like, when a list of twelve names is not a choice. */
 const CLASS_ICON: Record<string, IconName> = {
   barbarian: "fist", bard: "note", cleric: "sun", druid: "leaf",
-  fighter: "sword", monk: "fist", paladin: "shield", ranger: "bow",
+  fighter: "sword", monk: "moon", paladin: "shield", ranger: "bow",
   rogue: "dagger", sorcerer: "spark", warlock: "pact", wizard: "staff",
   artificer: "flask",
 };

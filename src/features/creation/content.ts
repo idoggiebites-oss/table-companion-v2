@@ -7,6 +7,8 @@ import type { InnateCasting } from "../../content/innate";
 import type { Senses } from "../../content/senses";
 import type { FeatEffects } from "../../rules/5e/feats";
 import { NO_OFFER } from "./offers";
+import { facetsOf } from "../../rules/5e/classes";
+import { iconForClass } from "../../ui/Icon";
 
 export type { Asking };
 import type { StepId } from "../../rules/5e/steps";
@@ -50,13 +52,16 @@ const LINEAGES: Record<string, Option[]> = {
   dwarf: [{ id: "hill-dwarf", name: "Hill Dwarf" }, { id: "mountain-dwarf", name: "Mountain Dwarf" }],
 };
 
-const CLASSES: Option[] = [
-  { id: "wizard", name: "Wizard", role: "Arcane caster", tags: ["Magic", "Intelligence", "Ranged"] },
-  { id: "fighter", name: "Fighter", role: "Martial warrior", tags: ["Melee", "Strength", "Defense"] },
-  { id: "rogue", name: "Rogue", role: "Stealthy expert", tags: ["Dexterity", "Skill", "Stealth"] },
-  { id: "cleric", name: "Cleric", role: "Divine support", tags: ["Healing", "Wisdom", "Support"] },
-  { id: "ranger", name: "Ranger", role: "Natural explorer", tags: ["Ranged", "Wisdom", "Survival"] },
-];
+/*
+ * Built from `CLASS_BLURB` rather than restated. This list held its own copy
+ * of the same roles and tags, so a sentence added in one place would have been
+ * missing in the other — and this is the list a person sees when no compendium
+ * has loaded, which is the worst place to lose it.
+ */
+const CLASSES: Option[] = ["wizard", "fighter", "rogue", "cleric", "ranger"].map((id) => ({
+  id, name: `${id[0]!.toUpperCase()}${id.slice(1)}`,
+  ...facetsOf(id), icon: iconForClass(id),
+}));
 
 const PATHS: Record<string, Option[]> = {
   cleric: [{ id: "life", name: "Life Domain", role: "Healing and protection" },

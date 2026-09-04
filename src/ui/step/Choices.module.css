@@ -12,7 +12,10 @@
 .row {
   display: grid;
   grid-template-columns: auto 1fr auto;
-  align-items: center;
+  /* Start, not centre: a picked row grows a sentence and a bookkeeping line,
+     and a centred badge then floats to the middle of a four-line card, away
+     from the name it is labelling. Two-line rows read the same either way. */
+  align-items: start;
   gap: var(--row-gap);
   min-height: var(--tap);
   padding: var(--s-5) var(--s-6);
@@ -118,3 +121,29 @@
   -webkit-touch-callout: none;
   user-select: none;
 }
+
+
+/* ── what an option is LIKE ─────────────────────────────────────────────── */
+
+/* Only on the picked row: twelve of these stacked is a wall nobody reads. */
+.says {
+  font-size: var(--t-aside);
+  color: var(--ink-dim);
+  line-height: 1.45;
+  text-wrap: pretty;
+  margin-top: var(--s-2);
+}
+
+.keep { display: flex; align-items: center; gap: var(--s-3); margin-top: var(--s-2); }
+
+.keepTag {
+  font-size: var(--t-5); letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--ink-dim);
+}
+
+.pips { display: flex; gap: 3px; }
+
+/* Bookkeeping, not power — so these are ink, never the gold that means
+   "chosen" or the red that means damage. */
+.pip { width: 5px; height: 5px; border-radius: 50%; border: 1px solid var(--ink-dim); }
+.lit { background: var(--ink-dim); }

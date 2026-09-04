@@ -10,9 +10,11 @@ import s from "./Entry.module.css";
  * the number.
  */
 export function NumberEntry({
-  name, value, modifier, min, max, refuse, onChange,
+  name, does, value, modifier, min, max, refuse, onChange,
 }: {
   name: string;
+  /** What this score actually changes. See `ABILITY_DOES`. */
+  does?: string;
   value: number;
   modifier: string;
   min: number;
@@ -36,7 +38,10 @@ export function NumberEntry({
 
   return (
     <div className={s.entry}>
-      <span className={s.name}>{name}</span>
+      <span className={s.stack}>
+        <span className={s.name}>{name}</span>
+        {does !== undefined && <span className={s.does}>{does}</span>}
+      </span>
       <input
         className={`${s.field} ${why === null ? "" : s.refused}`}
         inputMode="numeric"
@@ -60,16 +65,20 @@ export function NumberEntry({
  * Tapping a filled one sends its value back.
  */
 export function AbilitySlot({
-  name, value, modifier, onTap,
+  name, does, value, modifier, onTap,
 }: {
   name: string;
+  does?: string;
   value: number | undefined;
   modifier: string;
   onTap: () => void;
 }) {
   return (
     <button type="button" className={s.slot} onClick={onTap} aria-label={name}>
-      <span className={s.name}>{name}</span>
+      <span className={s.stack}>
+        <span className={s.name}>{name}</span>
+        {does !== undefined && <span className={s.does}>{does}</span>}
+      </span>
       <span className={`${s.box} ${value === undefined ? s.waiting : s.filled}`}>
         {value ?? "—"}
       </span>

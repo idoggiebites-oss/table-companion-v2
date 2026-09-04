@@ -5,7 +5,7 @@ import { NumberEntry, AbilitySlot } from "../../ui/step/Entry";
 import { RollPad, Pool } from "./RollPool";
 import { Recommended } from "./Recommended";
 import { Button, ButtonRow } from "../../ui/Button";
-import { ABILITIES, ABILITY_NAME, BLANK, modifier, signed, type Ability, type Scores } from "../../rules/5e/abilities";
+import { ABILITIES, ABILITY_DOES, ABILITY_NAME, BLANK, modifier, signed, type Ability, type Scores } from "../../rules/5e/abilities";
 import { methods, remaining, spent, costOf, POINT_BUDGET, POINT_MIN, POINT_MAX, STANDARD_ARRAY, type Method } from "../../rules/5e/pointbuy";
 
 const LABEL: Record<Method, string> = {
@@ -160,6 +160,7 @@ export function AbilitiesStep({
             <AbilitySlot
               key={a}
               name={ABILITY_NAME[a]}
+              does={ABILITY_DOES[a]}
               value={placed[a]}
               modifier={signed(modifier(placed[a] ?? 10))}
               onTap={() => tapAbility(a)}
@@ -169,6 +170,7 @@ export function AbilitiesStep({
             <NumberEntry
               key={a}
               name={ABILITY_NAME[a]}
+              does={ABILITY_DOES[a]}
               value={scores[a]}
               modifier={signed(modifier(scores[a]))}
               min={isBuy ? POINT_MIN : 3}

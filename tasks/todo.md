@@ -902,8 +902,34 @@ asking is *what is this class LIKE to play* and *what does Strength even do*,
 and neither is derivable from data."
 
 **Acceptance criteria:**
-- [ ] A sentence per class and per ability, shown where the choice is made
-- [ ] **Only for the classes this app ships.** A compendium brings fifty-five more, and inventing a sentence about a homebrew class is worse than saying nothing — absent is honest, wrong is not.
+- [x] A sentence per class and per ability, shown where the choice is made
+- [x] **Only for the classes this app ships.** A compendium brings fifty-five more, and inventing a sentence about a homebrew class is worse than saying nothing — absent is honest, wrong is not.
+
+**Half of this already existed.** V2 had `CLASS_BLURB` (a role and three tags)
+and `PRIORITY` and `iconForClass`; what was missing is exactly what the brief
+names — the SENTENCE. Tags tell a returning player what they came for; the
+sentence is for the person who has never played one. So the fields were added
+to the table that was already there rather than a second one beside it.
+
+**Where it shows.** On the picked class row only — twelve sentences stacked is
+a wall nobody reads, and the role and tags are what a list is scanned with. On
+all six ability rows, because there are six and that is the screen where the
+question *what does Strength even do* is actually being asked.
+
+**The absence is visible.** The artificer has tags, an icon and no sentence,
+because it is not among the twelve in `CLASS_RULES`; a compendium class has
+none of the three. A test holds both.
+
+**`content.ts` held a second copy** of the roles and tags, so a sentence added
+in one place would have gone missing from the no-compendium fallback — the
+worst place to lose it. Both now build from `facetsOf`.
+
+**Cost:** the ability step measures 1.198 of its 1.25-screen budget, up from
+single-line rows. It passes, but the next addition to that step will not.
+
+**Fixed in passing:** barbarian and monk shared the `fist` icon. Two classes
+with one shape defeats the reason the icons exist — V1: "thirteen different
+SHAPES rather than thirteen tinted copies of one" — so the monk has a moon.
 
 **Dependencies:** none (independent of Phase 5)
 **Estimated scope:** S-M

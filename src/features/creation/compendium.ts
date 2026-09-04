@@ -15,7 +15,7 @@ import { spellsFrom } from "./spells";
 import type { Option, Group } from "../../ui/step/Choices";
 import type { CreationContent } from "./content";
 import { groupAncestries, hasLineages, lineageLabel, baseName, type Ancestry } from "./lineage";
-import { rulesFor, isFamiliar, blurbFor } from "../../rules/5e/classes";
+import { rulesFor, isFamiliar, facetsOf } from "../../rules/5e/classes";
 import { SKILLS } from "../../rules/5e/skills";
 import { cantripsKnown } from "../../rules/5e/casting";
 import { featsFrom } from "./feats";
@@ -174,8 +174,7 @@ export function contentFrom(loaded: Loaded, opts: { onlyGames: boolean }): Creat
         case "class":
           return familiarFirst.map((c) => {
             const id = key(c.name);
-            const b = blurbFor(id);
-            return { ...toOption(c, b?.role, b?.tags), icon: iconForClass(id) };
+            return { ...toOption(c), ...facetsOf(id), icon: iconForClass(id) };
           });
         case "subclass": {
           const p = build.klass === null ? undefined : loaded.paths[build.klass];

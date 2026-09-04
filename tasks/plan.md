@@ -152,7 +152,7 @@ commit messages that already cite these ids.*
 - [x] Task 21: Homebrew items the app reads as items
 
 ### Phase 6: Guidance (slice 10)
-- [ ] Task 22: Plain words for what numbers cannot say
+- [x] Task 22: Plain words for what numbers cannot say
 - [ ] Task 23: The recap — the log read forwards
 - [ ] Task 24: Prompts — what to do about it
 

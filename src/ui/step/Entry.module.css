@@ -5,7 +5,9 @@
 .entry {
   display: grid;
   grid-template-columns: 1fr auto auto;
-  align-items: center;
+  /* Centre no longer: the name column is two lines now, and centring it
+     against a single-line field floats the sentence away from its number. */
+  align-items: start;
   gap: var(--row-gap);
   min-height: var(--tap);
 }
@@ -91,4 +93,15 @@
   color: var(--ink-dim);
   min-width: 3ch;
   text-align: right;
+}
+
+
+/* The name, and what the score actually changes. */
+.stack { display: flex; flex-direction: column; gap: var(--s-1); min-width: 0; padding: var(--s-3) 0; }
+
+.does {
+  font-size: var(--t-aside);
+  color: var(--ink-dim);
+  line-height: 1.4;
+  text-wrap: pretty;
 }
