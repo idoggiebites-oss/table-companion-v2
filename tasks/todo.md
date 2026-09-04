@@ -1041,9 +1041,18 @@ freezing V1, establish what it is actually opened for.
 **tested** before the cutover. A rollback nobody has run is not a rollback.
 
 **Acceptance criteria:**
-- [ ] `ROADMAP.md` / README state V1 is deprecated and name V2
-- [ ] The rollback is one documented command, and it has been executed once against a non-production target
-- [ ] V1 stays deployable from a tagged commit for the whole cutover window
+- [x] `ROADMAP.md` / README state V1 is deprecated and name V2
+- [x] The rollback is one documented command, and it has been executed once against a non-production target
+- [x] V1 stays deployable from a tagged commit for the whole cutover window
+
+**Found first, and it blocked everything:** V1 had no git remote. It existed on
+one laptop, on a feature branch, with uncommitted changes — while being the
+port's only reference for everything `PORT.md` lists as not ported. Now public
+at `idoggiebites-oss/table-companion`, all three branches, tagged `v1-final`.
+
+The rollback was RUN, not written: built from the tag, deployed to
+`table-companion-rollback-test`, served 200, deleted. Transcript in
+`ROLLBACK.md`.
 
 **Verification:**
 - [ ] Manual check: run the rollback, confirm V1 serves, roll forward again
@@ -1058,9 +1067,32 @@ freezing V1, establish what it is actually opened for.
 that Task 3 already made harmless.
 
 **Acceptance criteria:**
-- [ ] The origin serves V2; a device that previously ran V1 loads without error
-- [ ] V1's database is untouched, so R2's rollback still restores a working app
-- [ ] The gate (Task 5) challenges as configured
+- [x] The origin serves V2 — `table-companion.idoggiebites.workers.dev`
+- [ ] **Owed to you:** a device that previously ran V1 loads without error
+- [x] V1's database is untouched, so R2's rollback still restores a working app
+- [x] The gate (Task 5) challenges as configured
+
+**Two traps, both predicted by V2's own `wrangler.jsonc` and both handled
+before the switch rather than after.**
+
+`gate.ts` FAILS OPEN with no passphrase, and the `table-companion` Worker had
+no `SITE_PASSPHRASE`. So the secret was set FIRST and the deploy came second:
+in that order the worst case is V1 asking for a passphrase for a minute, and in
+the other it is V2 serving the whole campaign to anyone with the address.
+
+A Durable Object namespace is script name plus class name, so taking V1's
+script name put V2's `Room` in V1's namespace — where `CREATE TABLE IF NOT
+EXISTS events` finds V1's incompatible table and every insert then fails, for
+exactly the room codes that already existed and nowhere else. `worker/index.ts`
+prefixes the object name with `v2:`. One line, no migration; a migration is the
+wrong thing to run during a cutover.
+
+Verified: 401 unauthenticated, a wrong passphrase refused, and through the gate
+`data-app="table-companion-v2"` at V1's address.
+
+**Left running on purpose:** the old `table-companion-v2` Worker still serves
+its last build. It is a second way back during the cutover window and costs
+nothing; R4 is where it goes.
 
 **Verification:**
 - [ ] Manual check: load on a device with V1 history in the browser profile

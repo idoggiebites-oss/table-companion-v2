@@ -162,8 +162,8 @@ Club import. Name it if that turns out to be wrong.
 
 ### Phase 7: Cut over and retire V1
 - [ ] Task R1: Measure what V1 is still used for
-- [ ] Task R2: Freeze V1 and write the rollback plan
-- [ ] Task R3: Cut the origin over to V2
+- [x] Task R2: Freeze V1 and write the rollback plan
+- [x] Task R3: Cut the origin over to V2
 - [ ] Task R4: Archive V1
 
 ### Checkpoint: Complete

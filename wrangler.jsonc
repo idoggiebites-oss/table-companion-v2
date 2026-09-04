@@ -2,31 +2,38 @@
   "$schema": "node_modules/wrangler/config-schema.json",
 
   /*
-   * Its own name until cutover, deliberately NOT V1's `table-companion`.
+   * V1's name, taken at cutover (Task R3) on 4 Sep 2026. This Worker IS the
+   * origin now; V1 is deprecated and tagged `v1-final`, and `ROLLBACK.md` is
+   * the one command that puts it back here.
    *
-   * Both repos declared that name, so `wrangler deploy` from here replaced the
-   * live V1 on the same workers.dev subdomain — no plan step, no warning, just
-   * a deploy. The name IS the guard: a stray deploy now lands on a different
-   * subdomain and V1 keeps serving.
+   * Until the cutover this said `table-companion-v2`, and the reason was that
+   * the name was the guard: a stray `wrangler deploy` from this repo would
+   * otherwise have replaced live V1 with no plan step and no warning. That
+   * guard is spent, deliberately, and two things it was also covering had to
+   * be handled explicitly instead.
    *
-   * It also settles the Durable Object question. A different worker name means
-   * different DO namespaces, so V2's `Room` can never open storage that V1's
-   * `Room` wrote. That matters because both classes are called `Room`, both
-   * declare migration tag `v1`, and both create a table called `events` — with
-   * incompatible schemas:
+   * **The Durable Object namespace.** It is identified by script name plus
+   * class name, so taking V1's script name puts this `Room` in the same
+   * namespace V1's `Room` used. Both create a table called `events`, with
+   * incompatible columns:
    *
    *   V1: events (seq INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT UNIQUE, payload TEXT)
    *   V2: events (id TEXT PRIMARY KEY, seq INTEGER, body TEXT)
    *
-   * `CREATE TABLE IF NOT EXISTS` would find V1's table and leave it alone, and
-   * then every `SELECT body` and every `INSERT ... body` in this file's Room
-   * fails — for exactly the rooms that already existed, and nowhere else.
+   * `CREATE TABLE IF NOT EXISTS` would find V1's and leave it, and then every
+   * insert fails — for exactly the room codes that already existed and nowhere
+   * else. `worker/index.ts` now prefixes the object name with `v2:` so every
+   * code gets a fresh object. Rooms created under V1 are not reachable from
+   * here, which is the intended trade and not a loss: a room is a live session,
+   * not a record.
    *
-   * Cutover (Task R3) is therefore a deliberate act, not a default: either
-   * point a custom domain at this worker, or rename it and accept that rooms
-   * created under V1 are gone. Do not rename it back casually.
+   * **The gate.** `worker/gate.ts` FAILS OPEN when no passphrase is set, and
+   * this Worker name had no `SITE_PASSPHRASE` before the cutover — so the
+   * secret was set FIRST and the deploy came second. In that order the worst
+   * case is V1 asking for a passphrase for a minute; in the other order it is
+   * V2 serving the whole campaign to anyone with the address.
    */
-  "name": "table-companion-v2",
+  "name": "table-companion",
 
   "main": "worker/index.ts",
   "compatibility_date": "2026-08-01",

@@ -60,7 +60,28 @@ export default {
     if (match) {
       const code = match[1]!;
       if (!CODE.test(code)) return new Response("bad code", { status: 400 });
-      const id = env.ROOMS.idFromName(code);
+      /*
+       * Namespaced, and it has to be from the cutover onward.
+       *
+       * A Durable Object namespace is identified by the SCRIPT name and the
+       * class name, and at cutover this Worker took V1's script name. Both
+       * classes are called `Room`, so `idFromName(code)` now resolves to the
+       * same object V1 would have opened for that code — and both create a
+       * table called `events` with `IF NOT EXISTS` and incompatible columns:
+       *
+       *   V1: events (seq INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT UNIQUE, payload TEXT)
+       *   V2: events (id TEXT PRIMARY KEY, seq INTEGER, body TEXT)
+       *
+       * So V2 opening a code V1 had used would find V1's table, skip its own
+       * CREATE, and fail on the first insert — for that code only, which is
+       * the worst shape of bug: it works everywhere except the room somebody
+       * chose because they had used it before.
+       *
+       * The prefix is a one-line guarantee of a fresh object per code. It is
+       * deliberately not a class rename: that needs a migration, and a
+       * migration is the wrong thing to be executing during a cutover.
+       */
+      const id = env.ROOMS.idFromName(`v2:${code}`);
       return env.ROOMS.get(id).fetch(request);
     }
     return env.ASSETS.fetch(request);
