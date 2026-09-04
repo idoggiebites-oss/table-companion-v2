@@ -16,7 +16,7 @@ test("declares itself installable", async ({ page }) => {
     name: string; display: string; start_url: string;
     icons: { sizes: string; purpose?: string }[];
   };
-  expect(m.name).toBe("Table Companion");
+  expect(m.name).toBe("Adventurer's Forge");
   expect(m.display).toBe("standalone");
   // A maskable icon, or Android crops the crest into a circle badly.
   expect(m.icons.some((i) => i.purpose === "maskable")).toBe(true);

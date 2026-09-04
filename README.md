@@ -1,4 +1,8 @@
-# Table Companion V2
+# Adventurer's Forge
+
+*Formerly Table Companion. The repository, the Worker and the compendium keep
+the `table-companion` name — this is what the app calls itself, not what the
+infrastructure is called.*
 
 A rebuild, not a rewrite. V1 is at `../table-companion`: 41,559 lines, 218
 files, twelve modules, nine of them solid. Little about the product was wrong.

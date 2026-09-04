@@ -85,4 +85,29 @@ describe("the gate, when a passphrase is configured", () => {
     expect(response?.status).toBe(401);
     expect(response?.headers.get("set-cookie")).toBeNull();
   });
+
+  it("lets its own artwork through, and nothing else", async () => {
+    /*
+     * The page draws a door, and it is shown to somebody who has not
+     * authenticated — so `/gate/` has to be reachable without the cookie or
+     * the gate answers its own <img> tags with the login page's HTML.
+     *
+     * It is the only hole, and it must stay the size of a picture: four
+     * decorative files, no data, on a page that is already public.
+     */
+    const open = await guard(new Request("https://x/gate/door.webp"), "friend");
+    expect(open.response).toBeUndefined();
+
+    for (const path of ["/", "/index.html", "/gateway", "/gate", "/assets/app.js"]) {
+      const shut = await guard(new Request(`https://x${path}`), "friend");
+      expect(shut.response?.status, path).toBe(401);
+    }
+  });
+
+  it("cannot be walked out of with a traversal", async () => {
+    /* `new URL` normalises the path before we see it, so `..` never survives
+       into the prefix test — asserted rather than assumed. */
+    const out = await guard(new Request("https://x/gate/../secrets"), "friend");
+    expect(out.response?.status).toBe(401);
+  });
 });

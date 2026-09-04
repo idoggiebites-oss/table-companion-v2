@@ -23,8 +23,8 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["apple-touch-icon.png"],
       manifest: {
-        name: "Table Companion",
-        short_name: "Companion",
+        name: "Adventurer's Forge",
+        short_name: "Forge",
         description: "A companion for a table that is already in the room together.",
         start_url: "/",
         display: "standalone",

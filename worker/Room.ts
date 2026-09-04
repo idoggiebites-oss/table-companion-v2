@@ -158,7 +158,7 @@ export class Room extends DurableObject<Env> {
          *
          * Fired and NOT awaited: a slow push service must not hold up the log.
          */
-        this.ctx.waitUntil(this.#buzz(msg.to, msg.title ?? "Table Companion", msg.body ?? ""));
+        this.ctx.waitUntil(this.#buzz(msg.to, msg.title ?? "Adventurer's Forge", msg.body ?? ""));
         return;
       }
 
