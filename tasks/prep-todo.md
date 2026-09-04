@@ -139,11 +139,22 @@ DM shouldn't have to dig through menus just to create an NPC they invented
 thirty seconds before the session."*
 
 **Acceptance criteria:**
-- [ ] Every tile opens an editor that exists
-- [ ] Reachable without scrolling on a phone
+- [x] Every tile opens an editor that exists
+- [x] Reachable without scrolling on a phone
 
 **Verification:** component test; journey creating an NPC in two taps
 **Dependencies:** 28 · **Scope:** S
+
+**Three tiles, not the mockup's six.** Quest and Loot have nothing behind them,
+and a tile that opens nothing is worse than a missing tile — it is a promise
+made and broken at the one moment the DM is in a hurry. Scene and Location are
+one thing until Task 37 splits them.
+
+**Built alongside a correction.** Arturo asked whether the image-to-code pass had
+actually been run on the Prep screen; it had not. The extraction turned up a
+structural miss: the rail in the mockup NAVIGATES, with one section highlighted
+and the middle column showing only that one. Prep was a stack of everything at
+once. Fixed here — see `Outline.tsx`.
 
 ---
 

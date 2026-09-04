@@ -476,6 +476,10 @@ test("an encounter is kept, and put back on the table next week", async ({ page 
   /* Keep what is already staged. Asking the DM to rebuild it in a second form
      would be asking twice for the same thing. */
   await bar(page).getByRole("button", { name: "Prep" }).click();
+  /* Prep opens on Overview, as the mockup does — the rail navigates and the
+     middle column shows one section. */
+  await page.getByRole("navigation", { name: "Session outline" })
+    .getByRole("button", { name: "Encounters" }).click();
   await expect(page.getByTestId("prep-empty")).toBeVisible();
   await page.getByRole("button", { name: "Keep what is staged" }).click();
   await expect(page.getByTestId("encounter-card")).toHaveCount(1);
@@ -488,6 +492,8 @@ test("an encounter is kept, and put back on the table next week", async ({ page 
 
   /* And put it back. Fresh: nothing carries over from the last run. */
   await bar(page).getByRole("button", { name: "Prep" }).click();
+  await page.getByRole("navigation", { name: "Session outline" })
+    .getByRole("button", { name: "Encounters" }).click();
   await page.getByRole("button", { name: /^Put .* on the table/ }).click();
   await expect(page.getByTestId("staged-row")).toHaveCount(2);
 
@@ -497,12 +503,18 @@ test("an encounter is kept, and put back on the table next week", async ({ page 
   /* It is in the log like everything else. */
   await page.reload();
   await bar(page).getByRole("button", { name: "Prep" }).click();
+  await page.getByRole("navigation", { name: "Session outline" })
+    .getByRole("button", { name: "Encounters" }).click();
   await expect(page.getByTestId("encounter-card")).toHaveCount(1);
 });
 
 test("an encounter is built from nothing, without staging first", async ({ page }) => {
   await hub(page);
   await bar(page).getByRole("button", { name: "Prep" }).click();
+  /* Prep opens on Overview, as the mockup does — the rail navigates and the
+     middle column shows one section. */
+  await page.getByRole("navigation", { name: "Session outline" })
+    .getByRole("button", { name: "Encounters" }).click();
   await expect(page.getByTestId("prep-empty")).toBeVisible();
 
   /* No fight in progress, nothing staged — the editor is its own way in.
@@ -539,6 +551,8 @@ test("an encounter is built from nothing, without staging first", async ({ page 
   /* It is in the log like everything else. */
   await page.reload();
   await bar(page).getByRole("button", { name: "Prep" }).click();
+  await page.getByRole("navigation", { name: "Session outline" })
+    .getByRole("button", { name: "Encounters" }).click();
   await expect(page.getByTestId("encounters")).toContainText("Roadside ambush");
 });
 
@@ -552,6 +566,8 @@ test("an encounter is built from nothing, without staging first", async ({ page 
 test("an encounter built with an environment arrives on the table with it", async ({ page }) => {
   await hub(page);
   await bar(page).getByRole("button", { name: "Prep" }).click();
+  await page.getByRole("navigation", { name: "Session outline" })
+    .getByRole("button", { name: "Encounters" }).click();
   await page.getByRole("button", { name: "Build one" }).click();
 
   await page.getByPlaceholder("Goblin ambush").fill("The dark cellar");
@@ -577,5 +593,7 @@ test("an encounter built with an environment arrives on the table with it", asyn
 
   /* And it was written down on the way past, not only staged. */
   await bar(page).getByRole("button", { name: "Prep" }).click();
+  await page.getByRole("navigation", { name: "Session outline" })
+    .getByRole("button", { name: "Encounters" }).click();
   await expect(page.getByTestId("encounters")).toContainText("The dark cellar");
 });

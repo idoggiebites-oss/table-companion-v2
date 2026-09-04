@@ -13,15 +13,24 @@ type Props = {
   children: ReactNode;
   counter?: ReactNode;
   actions?: ReactNode;
+  /**
+   * Let this screen use the whole window.
+   *
+   * This shell is phone-first and caps itself at a phone-shaped column, which
+   * is right for a player and wrong for a DM. `Party` and `Staging` set it
+   * because they still live here rather than on `DmShell`; nothing a player
+   * looks at should.
+   */
+  wide?: boolean;
 };
 
 /**
  * The play/step shell: pinned header, one scrolling middle, pinned footer.
  * A document, not a page — heights are dvh so iOS chrome cannot lie about them.
  */
-export function Shell({ title, lead, trail, before, children, counter, actions, below }: Props) {
+export function Shell({ title, lead, trail, before, children, counter, actions, below, wide }: Props) {
   return (
-    <div className={s.shell}>
+    <div className={wide === true ? `${s.shell} ${s.wide}` : s.shell}>
       {/* Equal-width slots on BOTH sides, always rendered. `flex: 1` centres
           the title in what is left over, so a back chevron with no trailing
           button pushed every step's title half a tap target to the right. */}

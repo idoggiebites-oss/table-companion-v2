@@ -1,0 +1,37 @@
+.wrap { display: flex; flex-direction: column; gap: var(--s-3); }
+
+.head {
+  font-size: var(--t-note); letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--ink-dim);
+}
+
+.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+
+.row {
+  display: flex; align-items: center; gap: var(--s-5);
+  width: 100%; min-height: var(--tap); padding: 0 var(--s-5);
+  text-align: left; font: inherit; font-size: var(--t-sm);
+  color: var(--ink); background: none;
+  border: 1px solid transparent; border-radius: var(--r-control);
+}
+
+/*
+ * The one you are on. The mockup marks it with a wash and a gold rule down the
+ * leading edge — a border rather than a background alone, so it still reads in
+ * a high-contrast mode where backgrounds are dropped.
+ */
+.on {
+  background: var(--gold-wash);
+  border-color: var(--gold-edge);
+  box-shadow: inset 3px 0 0 var(--gold-fill);
+}
+
+.mark { flex: none; display: inline-flex; color: var(--ink-dim); }
+.on .mark { color: var(--gold-ink); }
+
+.label { flex: 1; min-width: 0; }
+
+.count {
+  flex: none; font-family: var(--font-mono); font-size: var(--t-aside);
+  font-variant-numeric: tabular-nums; color: var(--ink-dim);
+}

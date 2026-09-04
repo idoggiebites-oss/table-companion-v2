@@ -9,7 +9,7 @@
 export type IconName =
   | "sword" | "staff" | "note" | "sun" | "leaf" | "fist" | "shield" | "bow"
   | "dagger" | "spark" | "book" | "eye" | "die" | "pact" | "flask" | "person"
-  | "list" | "moon";
+  | "list" | "moon" | "pin" | "clipboard";
 
 const PATHS: Record<IconName, string> = {
   sword: "M14.5 3.5 17 6l-7.5 7.5-2.5-2.5L14.5 3.5ZM7 13l-2 4 4-2M5.5 15.5 3 18",
@@ -35,6 +35,10 @@ const PATHS: Record<IconName, string> = {
      with one shape is the thing the icons exist to prevent — V1's note: they
      are "thirteen different SHAPES rather than thirteen tinted copies of one",
      which is what replaced a colour per class. */
+  /* A place, for the outline and Quick Create. The mockup's map pin. */
+  pin: "M10 17s5-4.6 5-9a5 5 0 0 0-10 0c0 4.4 5 9 5 9ZM12 8a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z",
+  /* The session itself — what the whole night is, before its parts. */
+  clipboard: "M7.5 4H6a1.5 1.5 0 0 0-1.5 1.5v10A1.5 1.5 0 0 0 6 17h8a1.5 1.5 0 0 0 1.5-1.5v-10A1.5 1.5 0 0 0 14 4h-1.5M7.5 4a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1M7.5 4a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1M7.5 9.5h5M7.5 13h3",
   moon: "M16 12.3A6.5 6.5 0 0 1 7.7 4 7 7 0 1 0 16 12.3Z",
 };
 

@@ -69,6 +69,7 @@ export function Staging({ fight, party = [], note, place, nav, onAct }: {
 
   return (
     <Shell
+      wide
       title="The fight"
       below={nav}
       actions={fight.combatants.length === 0 ? undefined : (

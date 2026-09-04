@@ -5,6 +5,46 @@
   grid-template-rows: auto auto 1fr auto auto;
   height: 100dvh;
   background: var(--canvas);
+
+  /*
+   * A phone-shaped column, centred, once there is more width than a phone.
+   *
+   * DESIGN.md's rule is that the two surfaces do not share a shell and that
+   * this one is PHONE-FIRST: "a player looks at one character". Nothing here
+   * was ever designed to be a metre wide, and without a cap it simply
+   * stretched — `Grid.module.css`'s `1fr 1fr` gave two 970px ancestry cards on
+   * a desktop, which is what this fixes. One rule here rather than a cap on
+   * every grid, because every player screen has the same problem.
+   *
+   * The whole shell rather than only the scroller, so the header and the tab
+   * bar stay with their content: a full-width bar over a narrow column reads
+   * as a broken page rather than a deliberate one.
+   *
+   * 30rem, not 390px. The reference phone is the floor this is designed
+   * against, not a ceiling to freeze at — a little more room makes the two-up
+   * grids comfortable without letting anything sprawl.
+   */
+  max-width: 30rem;
+  margin-inline: auto;
+}
+
+/*
+ * The DM's screens, which are not phone-first.
+ *
+ * `Party` and `Staging` still sit on this shell rather than `DmShell` — T25
+ * moved Prep across and left them — and squeezing a party of six or a
+ * bestiary into a 480px column is the opposite of what the DM side is for.
+ * They opt out until they move, and then this rule goes with them.
+ */
+.wide { max-width: none; margin-inline: 0; }
+
+/* The ground outside the column, so it reads as a page on a wide screen
+   rather than as content that failed to fill the window. */
+@media (min-width: 30rem) {
+  .shell:not(.wide) {
+    border-inline: 1px solid var(--hairline);
+    box-shadow: var(--lift-1);
+  }
 }
 
 .head {

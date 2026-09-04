@@ -37,7 +37,9 @@ describe("Task 28's session rail, assembled with the outline beneath it", () => 
     phone = await mount(keep);
     const rail = phone.doc.querySelector('[aria-label="This session"]')!;
     const head = rail.querySelector('[data-testid="session-head"]')!;
-    const outline = [...rail.querySelectorAll("h2")].find((h) => h.textContent === "Session outline")!;
+    /* The outline is a <nav> now, not a heading and a list: the rail
+       navigates, and the middle column shows the section you are on. */
+    const outline = rail.querySelector('[aria-label="Session outline"]')!;
     // DOCUMENT_POSITION_FOLLOWING: head precedes outline in the tree.
     expect(head.compareDocumentPosition(outline) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });

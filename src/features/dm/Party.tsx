@@ -46,7 +46,7 @@ export function Party({ events, nav, who, onOpen, onHit }: {
 }) {
   const party = membersIn(events);
   return (
-    <Shell title="The party" below={nav} trail={who}>
+    <Shell title="The party" below={nav} trail={who} wide>
       {party.length === 0 ? (
         /* Not "no characters": say what to do about it. */
         <p className={s.empty} data-testid="party-empty">

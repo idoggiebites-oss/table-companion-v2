@@ -8,6 +8,9 @@ import { Npcs } from "./Npcs";
 import type { Npc } from "./npc";
 import { SessionRail } from "./SessionRail";
 import { HowReady } from "./HowReady";
+import { Outline, type Section } from "./Outline";
+import { QuickCreate } from "./QuickCreate";
+import { Overview } from "./Overview";
 import type { Prepared } from "./session";
 import type { ReactNode } from "react";
 import s from "./Prep.module.css";
@@ -37,6 +40,11 @@ import s from "./Prep.module.css";
  *     nothing in V1 frames prep as a completion metric. It wants to be a
  *     decision of its own rather than arriving inside a port.
  */
+/** The heading each section gives the middle column. */
+const SECTION_LABEL: Readonly<Record<Section, string>> = {
+  overview: "Overview", encounters: "Encounters", places: "Places", people: "People",
+};
+
 export function Prep({
   session, encounters, scenes, npcs, partyLevels, nav, onStage, onForget, onNew,
   onSaveEncounter, onSendEncounter,
@@ -66,6 +74,14 @@ export function Prep({
   onForgetNpc: (id: string) => void;
 }) {
   const [editing, setEditing] = useState(false);
+  /*
+   * The rail navigates and the middle column shows ONE section — the
+   * structural half of the mockup, and the half a prose description of it
+   * lost. Prep was a stack of everything at once, which is what a workspace
+   * exists to stop.
+   */
+  const [at, setAt] = useState<Section>("overview");
+  const go = (to: Section) => { setAt(to); if (to === "encounters") setEditing(true); };
 
   return (
     <DmShell
@@ -94,110 +110,91 @@ export function Prep({
             })}
           />
 
-          <h2 className={s.railHead}>Session outline</h2>
-          <ul className={s.outline}>
-            {/* Only what is built, and in the order the column below reads.
-                An outline that indexes a screen in a different order from the
-                screen is a table of contents you have to translate. */}
-            <li className={s.line}>
-              <span>Encounters</span>
-              <span className={s.count}>{encounters.length}</span>
-            </li>
-            <li className={s.line}>
-              <span>Places</span>
-              <span className={s.count}>{scenes.length}</span>
-            </li>
-            <li className={s.line}>
-              <span>People</span>
-              <span className={s.count}>{npcs.length}</span>
-            </li>
-          </ul>
+          <Outline
+            current={at}
+            counts={{
+              encounters: encounters.length, places: scenes.length, people: npcs.length,
+            }}
+            onGo={setAt}
+          />
+
+          <QuickCreate onCreate={go} />
         </>
       }
     >
-      <section className={s.main} aria-label="Encounters">
-        <div className={s.head}>
-            <h2 className={s.title}>Encounters</h2>
-            <span className={s.actions}>
-              <button type="button" className={s.new} onClick={() => setEditing((v) => !v)}>
-                {editing ? "Hide" : "Build one"}
-              </button>
-              <button type="button" className={s.new} onClick={onNew}>
-                Keep what is staged
-              </button>
-            </span>
-          </div>
+      <section className={s.main} aria-label={SECTION_LABEL[at]}>
+        {at === "overview" && (
+          <Overview session={session} onSave={onSaveSession} />
+        )}
 
-          {/*
-            * Beside "Keep what is staged", not replacing it: keeping what the
-            * DM already assembled on the table is a different act from
-            * planning one cold, days before anybody sits down.
-            */}
-          {editing && (
-            <EncounterEditor
-              partyLevels={partyLevels}
-              onSave={onSaveEncounter}
-              onSend={onSendEncounter}
-              onClose={() => setEditing(false)}
-            />
-          )}
+        {at === "encounters" && (
+          <>
+            <div className={s.head}>
+              <h2 className={s.title}>Encounters</h2>
+              <span className={s.actions}>
+                <button type="button" className={s.new} onClick={() => setEditing((v) => !v)}>
+                  {editing ? "Hide" : "Build one"}
+                </button>
+                {/* Beside "Build one", not replacing it: keeping what the DM
+                    already assembled on the table is a different act from
+                    planning one cold, days before anybody sits down. */}
+                <button type="button" className={s.new} onClick={onNew}>
+                  Keep what is staged
+                </button>
+              </span>
+            </div>
 
-          {encounters.length === 0 ? (
-            <p className={s.empty} data-testid="prep-empty">
-              Nothing kept yet. Stage a fight, then keep it here to put the same
-              one on the table again next week.
-            </p>
-          ) : (
-            <ul className={s.list} data-testid="encounters">
-              {encounters.map((e) => (
-                <li key={e.id} className={s.card} data-testid="encounter-card">
-                  <span className={s.cardHead}>
-                    <span className={s.name}>{e.name}</span>
-                    {/*
-                      * Creatures and experience, and NO difficulty band. The
-                      * bands are Dungeon Master's Guide content rather than
-                      * SRD — see `rules/5e/non-srd.ts`, the one file that
-                      * would have to go before this could be shared. The
-                      * arithmetic works without one, which is V1's point.
-                      *
-                      * The experience is RAW. Any multiplier a table applies
-                      * estimates danger and is never earned; getting that
-                      * backwards roughly doubles a party's progression.
-                      */}
-                    <span className={s.meta}>
-                      {creatureCount(e)} creature{creatureCount(e) === 1 ? "" : "s"}
-                      {e.place === "" ? "" : ` · ${e.place}`}
-                      {" · "}{rawXp(e)} XP
+            {editing && (
+              <EncounterEditor
+                partyLevels={partyLevels}
+                onSave={onSaveEncounter}
+                onSend={onSendEncounter}
+                onClose={() => setEditing(false)}
+              />
+            )}
+
+            {encounters.length === 0 ? (
+              <p className={s.empty} data-testid="prep-empty">
+                Nothing kept yet. Build one, or stage a fight and keep it here to
+                put the same one on the table again next week.
+              </p>
+            ) : (
+              <ul className={s.list} data-testid="encounters">
+                {encounters.map((e) => (
+                  <li key={e.id} className={s.card} data-testid="encounter-card">
+                    <span className={s.cardHead}>
+                      <span className={s.name}>{e.name}</span>
+                      <span className={s.meta}>
+                        {creatureCount(e)} creature{creatureCount(e) === 1 ? "" : "s"}
+                        {e.place === "" ? "" : ` · ${e.place}`}
+                        {" · "}{rawXp(e)} XP
+                      </span>
                     </span>
-                  </span>
-                  <span className={s.actions}>
-                    <button type="button" className={s.stage}
-                            aria-label={`Put ${e.name} on the table`}
-                            onClick={() => onStage(e)}>To the table</button>
-                    <button type="button" className={s.forget}
-                            aria-label={`Forget ${e.name}`}
-                            onClick={() => onForget(e.id)}>×</button>
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
+                    <span className={s.actions}>
+                      <button type="button" className={s.stage}
+                              aria-label={`Put ${e.name} on the table`}
+                              onClick={() => onStage(e)}>To the table</button>
+                      <button type="button" className={s.forget}
+                              aria-label={`Forget ${e.name}`}
+                              onClick={() => onForget(e.id)}>×</button>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
+        )}
 
-          {/*
-            * Places below encounters, because a place is assembled FROM one:
-            * you keep the three ghouls, then say which cellar they are in. The
-            * order on screen is the order of the work.
-            */}
+        {at === "places" && (
           <Scenes
             scenes={scenes} encounters={encounters}
             onPrepare={onPrepare} onForget={onForgetScene} onOpen={onOpenScene}
           />
+        )}
 
-          {/*
-            * People last: neither an encounter nor a place depends on one,
-            * and the party will meet most of these outside a fight entirely.
-            */}
-        <Npcs npcs={npcs} onSave={onSaveNpc} onForget={onForgetNpc} />
+        {at === "people" && (
+          <Npcs npcs={npcs} onSave={onSaveNpc} onForget={onForgetNpc} />
+        )}
       </section>
     </DmShell>
   );

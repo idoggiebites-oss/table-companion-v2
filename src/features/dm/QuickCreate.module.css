@@ -1,0 +1,26 @@
+.wrap { display: flex; flex-direction: column; gap: var(--s-3); }
+
+.head {
+  font-size: var(--t-note); letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--ink-dim);
+}
+
+/* Two up, as the mockup draws it. A third column would make each tile smaller
+   than its own label at rail width. */
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); }
+
+.tile {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: var(--s-2);
+  min-height: 68px; padding: var(--s-4);
+  font: inherit; font-size: var(--t-aside); color: var(--ink);
+  background: var(--surface-1);
+  border: 1px solid var(--hairline); border-radius: var(--r-card);
+}
+
+.tile:hover { border-color: var(--gold-edge); }
+
+.mark { color: var(--ink-dim); }
+.tile:hover .mark { color: var(--gold-ink); }
+
+.label { text-align: center; }
