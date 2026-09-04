@@ -9,7 +9,7 @@ afterEach(() => phone?.destroy());
 
 const nothing = () => {};
 const noop = {
-  onStage: nothing, onForget: nothing, onNew: nothing,
+  onStage: nothing, onForget: nothing, onNew: nothing, onSaveEncounter: nothing,
   onSaveSession: nothing, onForgetSession: nothing,
   onPrepare: nothing, onForgetScene: nothing, onOpenScene: nothing,
   onSaveNpc: nothing, onForgetNpc: nothing,
@@ -19,7 +19,7 @@ const keep: Prepared = { ...blankSession("s1"), title: "The Shattered Keep", num
 
 const mount = (session: Prepared | null, size: Size = PHONE) =>
   mountPhone(
-    <Prep session={session} encounters={[]} scenes={[]} npcs={[]} {...noop} />,
+    <Prep session={session} encounters={[]} scenes={[]} npcs={[]} partyLevels={[]} {...noop} />,
     "light", size,
   );
 

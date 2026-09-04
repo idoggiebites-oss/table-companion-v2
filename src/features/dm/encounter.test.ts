@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { prepFrom, creatureCount, rawXp, xpForCr, staging, PREP, NO_PREP,
+  blankEncounter, isNamed, addEntry, setCount, setDisclosure,
   type Encounter, type PrepAct } from "./encounter";
 import { asDevice, type Event } from "../../core/types";
 
@@ -67,6 +68,49 @@ describe("the arithmetic nobody enjoys", () => {
     const one: Encounter = { ...goblins, entries: [goblins.entries[0]!] };
     const four: Encounter = { ...goblins, entries: [{ ...goblins.entries[0]!, count: 16 }] };
     expect(rawXp(four)).toBe(rawXp(one) * 4);
+  });
+});
+
+describe("building one from nothing", () => {
+  it("starts empty and unnamed", () => {
+    const blank = blankEncounter("e1");
+    expect(blank.entries).toEqual([]);
+    expect(isNamed(blank)).toBe(false);
+  });
+
+  it("a name of only spaces is not a name", () => {
+    expect(isNamed({ ...blankEncounter("e1"), name: "   " })).toBe(false);
+  });
+
+  it("adding the same statblock twice merges into one group, not two rows", () => {
+    let e = blankEncounter("e1");
+    e = addEntry(e, { statblock: "goblin", name: "Goblin", count: 1, max: 7, ac: 15, cr: 0.25, disclosure: "hidden" });
+    e = addEntry(e, { statblock: "goblin", name: "Goblin", count: 1, max: 7, ac: 15, cr: 0.25, disclosure: "hidden" });
+    expect(e.entries).toHaveLength(1);
+    expect(e.entries[0]?.count).toBe(2);
+  });
+
+  it("adding a different statblock is a second group", () => {
+    let e = blankEncounter("e1");
+    e = addEntry(e, { statblock: "goblin", name: "Goblin", count: 1, max: 7, ac: 15, cr: 0.25, disclosure: "hidden" });
+    e = addEntry(e, { statblock: "wolf", name: "Wolf", count: 1, max: 11, ac: 13, cr: 0.25, disclosure: "hidden" });
+    expect(e.entries.map((x) => x.statblock)).toEqual(["goblin", "wolf"]);
+  });
+
+  it("stepping the count down to zero removes the group rather than showing a zero", () => {
+    let e = blankEncounter("e1");
+    e = addEntry(e, { statblock: "goblin", name: "Goblin", count: 2, max: 7, ac: 15, cr: 0.25, disclosure: "hidden" });
+    e = setCount(e, "goblin", 0);
+    expect(e.entries).toEqual([]);
+  });
+
+  it("setting disclosure touches only the named group", () => {
+    let e = blankEncounter("e1");
+    e = addEntry(e, { statblock: "goblin", name: "Goblin", count: 1, max: 7, ac: 15, cr: 0.25, disclosure: "hidden" });
+    e = addEntry(e, { statblock: "wolf", name: "Wolf", count: 1, max: 11, ac: 13, cr: 0.25, disclosure: "hidden" });
+    e = setDisclosure(e, "wolf", "vague");
+    expect(e.entries.find((x) => x.statblock === "goblin")?.disclosure).toBe("hidden");
+    expect(e.entries.find((x) => x.statblock === "wolf")?.disclosure).toBe("vague");
   });
 });
 

@@ -1,9 +1,10 @@
 import { Prep } from "./Prep";
-import { prepFrom, keepFrom, PREP } from "./encounter";
+import { prepFrom, keepFrom, PREP, type Encounter } from "./encounter";
 import { blankScene, scenesFrom, openActs, SCENE, type Scene } from "./scene";
 import { peopleFrom, NPC } from "./npc";
 import { sessionsFrom, SESSION, type Prepared } from "./session";
 import { FIGHT, type Fight } from "./fight";
+import { charactersIn } from "../creation/log";
 import type { Event } from "../../core/types";
 import type { ReactNode } from "react";
 
@@ -45,6 +46,13 @@ export function PrepScreen({ events, fight, nav, record, onOpened }: {
   const sessions = sessionsFrom(events).sessions;
   const session: Prepared | null = sessions.length > 0 ? sessions[sessions.length - 1]! : null;
 
+  /* The difficulty gauge's party, from the characters this device already
+     knows about — never typed in. Empty means no band, which `totalsFor`
+     already handles as the honest answer for a party that does not exist yet. */
+  const partyLevels = charactersIn(events).map(
+    ({ build }) => build.classes.reduce((n, c) => n + c.level, 0),
+  );
+
   return (
     <Prep
       session={session}
@@ -53,6 +61,9 @@ export function PrepScreen({ events, fight, nav, record, onOpened }: {
       encounters={prepFrom(events).encounters}
       scenes={scenesFrom(events).scenes}
       npcs={peopleFrom(events).npcs}
+      partyLevels={partyLevels}
+      onSaveEncounter={(e: Encounter) =>
+        record(PREP, { act: "keep", encounter: e } as unknown as Record<string, unknown>)}
       nav={nav}
       onPrepare={(sc) => record(SCENE, { act: "prepare", scene: sc } as unknown as Record<string, unknown>)}
       onForgetScene={(id) => record(SCENE, { act: "forget", id })}

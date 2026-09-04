@@ -36,6 +36,12 @@ export type Encounter = {
   readonly entries: readonly Entry[];
 };
 
+/** A fresh encounter, before anything has been added to it. */
+export const blankEncounter = (id: string): Encounter => ({ id, name: "", place: "", entries: [] });
+
+/** Ready enough to keep — the same bar `scene.ts` and `session.ts` hold their own drafts to. */
+export const isNamed = (e: Encounter): boolean => e.name.trim().length > 0;
+
 export type Prep = { readonly encounters: readonly Encounter[] };
 export const NO_PREP: Prep = { encounters: [] };
 
@@ -95,6 +101,36 @@ const XP_BY_CR: Readonly<Record<string, number>> = {
 
 /** Unknown challenge ratings are worth nothing rather than a guess. */
 export const xpForCr = (cr: number): number => XP_BY_CR[String(cr)] ?? 0;
+
+/**
+ * Building one from nothing — the arithmetic the builder leans on so it
+ * never touches `entries` directly.
+ *
+ * Three goblins added one at a time are one group with count 3, not three
+ * groups of one: `addEntry` merges by statblock, because a DM tapping the
+ * same result twice means "another of those", not "a second identical row".
+ */
+export function addEntry(e: Encounter, entry: Entry): Encounter {
+  const existing = e.entries.find((x) => x.statblock === entry.statblock);
+  return {
+    ...e,
+    entries: existing
+      ? e.entries.map((x) => x.statblock === entry.statblock ? { ...x, count: x.count + entry.count } : x)
+      : [...e.entries, entry],
+  };
+}
+
+/** Zero is "remove it" rather than a group that sits there reading 0. */
+export function setCount(e: Encounter, statblock: string, count: number): Encounter {
+  return { ...e, entries: e.entries
+    .map((x) => x.statblock === statblock ? { ...x, count } : x)
+    .filter((x) => x.count > 0) };
+}
+
+/** Per-group, same as a staged creature's — see `fight.ts`'s `disclose` act. */
+export function setDisclosure(e: Encounter, statblock: string, disclosure: Disclosure): Encounter {
+  return { ...e, entries: e.entries.map((x) => x.statblock === statblock ? { ...x, disclosure } : x) };
+}
 
 /**
  * The acts that put one on the table.

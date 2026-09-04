@@ -1,5 +1,6 @@
 import { DmShell } from "./DmShell";
 import { creatureCount, rawXp, type Encounter } from "./encounter";
+import { EncounterBuilder } from "./EncounterBuilder";
 import { Scenes } from "./Scenes";
 import type { Scene } from "./scene";
 import { Npcs } from "./Npcs";
@@ -36,7 +37,7 @@ import s from "./Prep.module.css";
  *     decision of its own rather than arriving inside a port.
  */
 export function Prep({
-  session, encounters, scenes, npcs, nav, onStage, onForget, onNew,
+  session, encounters, scenes, npcs, partyLevels, nav, onStage, onForget, onNew, onSaveEncounter,
   onSaveSession, onForgetSession,
   onPrepare, onForgetScene, onOpenScene, onSaveNpc, onForgetNpc,
 }: {
@@ -45,12 +46,15 @@ export function Prep({
   encounters: readonly Encounter[];
   scenes: readonly Scene[];
   npcs: readonly Npc[];
+  /** From `charactersIn(events)` — the gauge reads the party, never a typed-in number. */
+  partyLevels: readonly number[];
   nav?: ReactNode;
   onSaveSession: (session: Prepared) => void;
   onForgetSession: (id: string) => void;
   onStage: (e: Encounter) => void;
   onForget: (id: string) => void;
   onNew: () => void;
+  onSaveEncounter: (e: Encounter) => void;
   onPrepare: (s: Scene) => void;
   onForgetScene: (id: string) => void;
   onOpenScene: (s: Scene) => void;
@@ -112,6 +116,13 @@ export function Prep({
               Keep what is staged
             </button>
           </div>
+
+          {/*
+            * Beside "Keep what is staged", not replacing it: keeping what the
+            * DM already assembled on the table is a different act from
+            * planning one cold, days before anybody sits down.
+            */}
+          <EncounterBuilder partyLevels={partyLevels} onSave={onSaveEncounter} />
 
           {encounters.length === 0 ? (
             <p className={s.empty} data-testid="prep-empty">

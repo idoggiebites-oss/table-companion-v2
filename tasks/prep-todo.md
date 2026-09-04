@@ -182,12 +182,24 @@ born from "Keep what is staged". Search the bestiary, add groups, set counts.
 Per-group disclosure comes back (V1 had it; the port dropped it).
 
 **Acceptance criteria:**
-- [ ] An encounter can be built from nothing, without staging first
-- [ ] Reuses `Staging.tsx`'s bestiary rather than a second picker
-- [ ] Per-group count and disclosure
+- [x] An encounter can be built from nothing, without staging first
+- [x] Reuses `Staging.tsx`'s bestiary rather than a second picker
+- [x] Per-group count and disclosure
 
 **Verification:** domain test; journey building one from empty
 **Dependencies:** 31 · **Scope:** M
+
+**Left out of V1's 402 lines, named rather than silent:** the kind and CR-band
+filter piles (the plain text search is what `Staging.tsx` proved and what the
+brief asked for), V1's hand-drawn gauge (Task 31 computes the band and Task 33
+owns the visual), and HP mode — roll-vs-average is not a field on V2's `Entry`
+at all.
+
+**A test gap that turned out to be avoidable.** The first pass covered only the
+collapsed state, on the grounds that opening it fetches the bestiary and this
+tier forbids the network. But `bestiary` has always taken an optional fetcher —
+the same door `statblock` and `pushKey` leave open — so the compendium is
+injected instead and the open state is covered.
 
 ---
 

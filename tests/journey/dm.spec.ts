@@ -499,3 +499,45 @@ test("an encounter is kept, and put back on the table next week", async ({ page 
   await bar(page).getByRole("button", { name: "Prep" }).click();
   await expect(page.getByTestId("encounter-card")).toHaveCount(1);
 });
+
+test("an encounter is built from nothing, without staging first", async ({ page }) => {
+  await hub(page);
+  await bar(page).getByRole("button", { name: "Prep" }).click();
+  await expect(page.getByTestId("prep-empty")).toBeVisible();
+
+  /* Task 32's point: no fight in progress, nothing staged — the builder is
+     its own way in. "Keep what is staged" is left untouched beside it. */
+  await page.getByRole("button", { name: "Build one" }).click();
+  await expect(page.getByTestId("builder-search")).toBeVisible({ timeout: 30_000 });
+
+  await page.getByTestId("builder-search").fill("goblin");
+  await page.getByTestId("builder-hit").first().click();
+  await expect(page.getByTestId("builder-entry")).toHaveCount(1);
+
+  /* The stepper sums instances rather than adding a second row. */
+  await page.getByRole("button", { name: /^One more/ }).click();
+  await expect(page.getByTestId("builder-entry")).toHaveCount(1);
+  await expect(page.getByTestId("builder-entry")).toContainText("2");
+
+  /* Per-group disclosure, the thing the port dropped and this brings back —
+     defaults hidden, one tap slides it up. */
+  await expect(page.getByRole("button", { name: /disclosure/ })).toContainText("hidden");
+  await page.getByRole("button", { name: /disclosure/ }).click();
+  await expect(page.getByRole("button", { name: /disclosure/ })).toContainText("present");
+
+  /* The working, not only a verdict — raw × multiplier = adjusted. */
+  await expect(page.getByTestId("builder-working")).toContainText("×");
+
+  await page.getByPlaceholder("Goblin ambush").fill("Roadside ambush");
+  await page.getByRole("button", { name: "Keep it" }).click();
+
+  await expect(page.getByTestId("encounter-card")).toHaveCount(1);
+  await expect(page.getByTestId("encounters")).toContainText("Roadside ambush");
+  await expect(page.getByTestId("encounters")).toContainText("2 creatures");
+
+  /* It is in the log like everything else. */
+  await page.reload();
+  await bar(page).getByRole("button", { name: "Prep" }).click();
+  await expect(page.getByTestId("encounter-card")).toHaveCount(1);
+  await expect(page.getByTestId("encounters")).toContainText("Roadside ambush");
+});
