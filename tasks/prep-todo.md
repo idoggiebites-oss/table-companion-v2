@@ -393,6 +393,145 @@ characters involved, read-aloud, triggers, outcomes, notes.
 
 ---
 
+## Task 41 · **Opus**: NPCs, as the brief asks for them
+
+**Description:** V2 has an NPC creator and it is a faithful port — which is the
+problem. V1's record had six fields and so does V2's: name, role, notes, a
+`trader` flag, stock, and optional stats. The brief asks for eleven.
+
+Adding: **race/species**, **faction**, **attitude toward the party**,
+**voice and personality notes**, **goals**, **secrets**, **quick actions**, and
+**relationships to other NPCs**. Portrait comes with Task 40.
+
+**The rule that must survive all of it** is V1's, and it is the reason the
+record is small today: *"Most of the ones a campaign accumulates never roll
+anything — a shopkeeper, a harbourmaster, the contact who knows a guy — and
+forcing them through a creature form would mean inventing an armour class for a
+man who sells rope."* Eleven fields on one form is exactly that mistake at
+greater length. So the form stays notes-first and everything new is folded away
+until asked for, the way `stats` and `stock` already are.
+
+**Two that need a decision inside the task:**
+- **Attitude** is a short fixed list, authored here rather than transcribed —
+  the DMG's reaction table is not SRD, and `non-srd.ts` is a one-file exit that
+  should not grow a third reason to exist.
+- **Relationships** are links by id and must not become a graph editor. One
+  list of "who this person is to whom", read from both ends.
+
+**Acceptance criteria:**
+- [ ] A shopkeeper can still be written in a name and one line, with nothing else shown
+- [ ] Secrets never reach a player — the whole kind is already in `PREP_KINDS`, so this is a test rather than a change
+- [ ] A relationship added from one side is visible from the other
+
+**Verification:** domain tests for the fold and the relationship read-back; a
+component test that the empty form is still short
+**Dependencies:** none (40 for the portrait) · **Scope:** M-L
+
+---
+
+## Task 42 · **Sonnet**: The library column
+
+**Description:** The mockup's right-hand column, which no task covered — Quick
+Access counts, Recent NPCs with faces and roles, and Pinned Notes. `DmShell`
+already has the `library` slot and drops the third track when nothing fills it,
+which is why the desktop layout currently looks unbalanced.
+
+**The distinction it draws is the point of the whole screen**, in the brief's
+words: *"session prep and campaign prep aren't the same thing."* The rail is
+tonight; this column is the campaign — everything reusable, so a DM adds
+Captain Theron to a scene rather than inventing him twice.
+
+**Acceptance criteria:**
+- [ ] Only lists what exists, like the rail
+- [ ] Nothing here is tonight's plan — it is the library, and it says so
+- [ ] Absent below 64rem rather than stacked at the bottom, where it would be a second copy of the outline
+
+**Verification:** component test at 390 and 1024
+**Dependencies:** 28 · **Scope:** M
+
+---
+
+## Task 43 · **Opus**: The DM code
+
+**Description:** V2's seat is self-declared. `seat.ts` keeps it on the device
+and the picker offers "The DM" to anybody — so in a shared room a player can
+become the DM and read the whole log. Every disclosure decision this app makes
+is enforced by seat: `visibility.ts` filters the log by it, `fight.ts` hides
+creatures by it, `PREP_KINDS` hides prep by it. **All of it is honour-system
+until this exists.**
+
+V1 solved it and the shape is worth copying exactly. The room's creator is a DM
+and the room holds a `dmKey`; anyone already joined can claim the DM seat by
+presenting it. Two rules from V1's own comment:
+
+> *"Additive — the device that started the room stays a DM, so a laptop and a
+> tablet can both be one."*
+> *"Joining closes after a window; claiming deliberately does not. Losing a
+> device is exactly the case this exists for, and it can happen in week nine."*
+
+**Acceptance criteria:**
+- [ ] A device in a room cannot take the DM seat without the key
+- [ ] The creator keeps it, and a second device can claim it too
+- [ ] Solo play is unaffected — a device in no room is its own DM, as now
+
+**Verification:** worker tests for claim and refusal; a room journey across two
+contexts where the second is refused and then succeeds with the key
+**Dependencies:** none · **Scope:** M
+
+---
+
+## Task 44 · **Sonnet**: Settings, behind one button
+
+**Description:** The Characters screen currently spends its top third on things
+a person touches twice a campaign: the room code with "Everyone sees this", a
+Leave button, and the push toggle. They crowd out the two things that screen is
+actually for — making a character and importing one.
+
+Move them behind a cogwheel in the header. The gate's sprite sheet has a gear
+and an anvil roundel already cut; use one rather than drawing a new glyph.
+
+**Acceptance criteria:**
+- [ ] The room code, Leave, and the push toggle all live behind one control
+- [ ] "Everyone sees this" survives in some form — it is the sentence that stops somebody pasting the code publicly
+- [ ] Guided creation and Import are the first things on the screen
+
+**Verification:** component test at 390; the room journey still joins and leaves
+**Dependencies:** none · **Scope:** S-M
+
+---
+
+## Task 45 · **Opus**: Class descriptions, which never arrive
+
+**Description:** Long-pressing a class in creation shows its provenance and no
+prose. Two independent faults:
+
+1. `useProse.ts`'s `pileFor` maps ancestry, background, feat, spells and
+   subclass to a pile and **has no case for `class`** — so it returns null and
+   never fetches.
+2. `describe/class/` is published **empty**. `compile-content.ts` builds each
+   block from `o.text ?? o.description`, and class rows in the corpus carry
+   neither, so every block is empty and nothing is written.
+
+A class's meaning in this corpus is its FEATURES, the same way a race's is its
+traits — which the compiler already special-cases for race and background.
+
+Note the app already has an authored sentence per class from Task 22
+(`CLASS_BLURB.sentence`). That is what a chooser most wants and it is already
+licensed and accurate; the compendium prose is the depth behind it.
+
+**Acceptance criteria:**
+- [x] Long-pressing a class shows something true about it — Task 22's authored sentence, which nothing was reading
+- [~] A class the app ships no judgement about falls back to its name and book; the compendium half is below
+- [ ] Republishing the compendium emits a non-empty `describe/class/`
+- [ ] `pileFor` gains its `class` case — deliberately NOT added yet, because
+      until the pile has files in it every long-press would spend a 404
+
+**Verification:** a content-compiler assertion that the pile is non-empty; a
+component test on the drawer
+**Dependencies:** none · **Scope:** M
+
+---
+
 **Phase 9, not planned yet:** Quests · Loot & Rewards · Notes · Random Tables ·
 Reference. Deliberately left until a session has been played on Phase 8. Loot
 needs the purse half of `money.ts` that `PORT.md` lists as not ported.

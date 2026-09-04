@@ -94,6 +94,11 @@ subtle invariant, an auth boundary, or a number that is quietly wrong.
 | 37 | Scene becomes Location | **Opus** | An event-sourced rename can silently drop history and still pass |
 | 38 | Scenes as beats | **Opus** | A new record referencing another, reaching the fight screen |
 | 39 | Key Scenes | **Sonnet** | An ordered list that enforces nothing |
+| 41 | NPCs, as the brief asks | **Opus** | Eleven fields on a record whose whole point is being small — the failure is a form nobody finishes |
+| 42 | The library column | **Sonnet** | The mockup is the spec, and the slot already exists |
+| 43 | The DM code | **Opus** | Every disclosure rule in the app is enforced by a seat anyone can currently just pick |
+| 44 | Settings behind one button | **Sonnet** | Moving three controls; the criteria are precise |
+| 45 | Class descriptions | **Opus** | Two faults in different layers, one of them in the content compiler |
 | 40 | A face that travels | **Opus** | Storage swapped under a control V1 already reasoned about; the failure mode is a sheet that breaks when R2 is absent |
 
 **Nothing here is Haiku-shaped**, and that is worth writing down rather than

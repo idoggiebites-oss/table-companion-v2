@@ -15,6 +15,7 @@ import { spellsFrom } from "./spells";
 import type { Option, Group } from "../../ui/step/Choices";
 import type { CreationContent } from "./content";
 import { groupAncestries, hasLineages, lineageLabel, baseName, type Ancestry } from "./lineage";
+import { detailFor } from "./detail";
 import { rulesFor, isFamiliar, facetsOf } from "../../rules/5e/classes";
 import { SKILLS } from "../../rules/5e/skills";
 import { cantripsKnown } from "../../rules/5e/casting";
@@ -270,28 +271,6 @@ export function contentFrom(loaded: Loaded, opts: { onlyGames: boolean }): Creat
     // has to be found IN a sentence rather than looked up by id.
     wornIn: (lines) => wornFrom(lines, loaded.armour),
 
-    detailFor(step, ids, build) {
-      const id = ids[0];
-      if (id === undefined) return undefined;
-      if (step === "ancestry" || step === "subrace") {
-        const a = step === "ancestry" ? byAncestry.get(id) : byAncestry.get(build?.race ?? "");
-        if (a === undefined) return undefined;
-        const row = step === "subrace"
-          ? a.lineages.find((l) => l.id === id) ?? a.lineages[0]
-          : a.lineages[0];
-        const traits = (row as { traits?: readonly string[] } | undefined)?.traits ?? [];
-        const name = step === "subrace" && row !== undefined ? lineageLabel(a.name, row.name) : a.name;
-        if (traits.length === 0) return undefined;
-        return { label: `${name} traits`, lines: traits };
-      }
-      if (step === "skills") return undefined;
-      const row = [...loaded.classes, ...loaded.backgrounds].find((e) => e.id === id);
-      if (row === undefined) return undefined;
-      return {
-        label: row.name,
-        lead: row.provenance.source === "" ? undefined : row.provenance.source,
-        lines: row.provenance.book === null ? ["Elsewhere"] : [],
-      } as { label: string; lead?: string; lines?: readonly string[] };
-    },
+    detailFor: (step, ids, build) => detailFor(step, ids, build, { byAncestry, loaded }),
   };
 }
