@@ -1,5 +1,6 @@
 import { Room } from "./Room";
 import { guard } from "./gate";
+import { getImage, putImage } from "./images";
 
 export { Room };
 
@@ -22,6 +23,12 @@ type Env = {
   VAPID_PRIVATE?: string;
   /** Who a push service should complain to. A mailto: or an https: URL. */
   VAPID_SUBJECT?: string;
+  /**
+   * Pictures the table put there. Optional: unbound, every image route answers
+   * politely and the cards fall back to the icon set — the same rule the push
+   * keys follow. See worker/images.ts.
+   */
+  IMAGES?: R2Bucket;
 };
 
 /** The keys, or null when this deployment has none. All three or nothing. */
@@ -54,6 +61,19 @@ export default {
         : new Response(keys.publicKey, {
             headers: { "content-type": "text/plain", "cache-control": "no-store" },
           });
+    }
+
+    /*
+     * Campaign content, and so behind the gate — unlike `/gate/`'s own
+     * artwork, which is decoration on a page that is already public. `guard`
+     * has already run above; reaching this line means the cookie was good.
+     */
+    const image = /^\/images\/([0-9a-f]{64})$/.exec(url.pathname);
+    if (image) {
+      const id = image[1]!;
+      if (request.method === "PUT") return putImage(request, env, id);
+      if (request.method === "GET") return getImage(env, id);
+      return new Response("method not allowed", { status: 405 });
     }
 
     const match = /^\/room\/([A-Z0-9]{6})$/.exec(url.pathname);
