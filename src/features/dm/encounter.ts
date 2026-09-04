@@ -2,7 +2,7 @@ import { fold } from "../../core/fold";
 import type { Room } from "../../rules/5e/terrain";
 import type { Band } from "../../rules/5e/encounter";
 import type { Event } from "../../core/types";
-import type { Combatant, Disclosure } from "./fight";
+import type { Act, Combatant, Disclosure } from "./fight";
 
 export const PREP = "prep.act";
 
@@ -195,6 +195,30 @@ export function staging(e: Encounter, id: (n: number) => string) {
   }
   return out.map((x, i) => ({ ...x, id: id(i) }));
 }
+
+/**
+ * The acts that put an encounter's creatures on the table — and nothing else.
+ *
+ * Split out of `openActs` because Arturo's distinction turns on exactly this
+ * list: *"an Encounter should be something the DM prepped for. A Creature
+ * Group can be an on-the-fly cluster for an impromptu battle or addition to an
+ * established encounter."*
+ *
+ * The two are not different records. They are the same entries with a
+ * different **verb**: an encounter REPLACES what is on the table (`openActs`
+ * clears first and sets the room), a group JOINS it (`joinActs` does neither).
+ * Modelling a second stored kind would have been a record nobody asked to
+ * save — a group is over when the fight is.
+ *
+ * V1 reached the same place from the other side and called it `joinCombat`.
+ */
+export const joinActs = (
+  entries: readonly Entry[], id: (n: number) => string,
+): readonly Act[] =>
+  staging({ ...blankEncounter("join"), entries }, id).map((row) => ({
+    act: "stage", id: row.id, name: row.name, disclosure: row.disclosure,
+    source: { kind: "creature", statblock: row.statblock, max: row.max, ac: row.ac },
+  }));
 
 /**
  * What is on the table now, as something worth keeping.

@@ -1,6 +1,7 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { mountPhone, PHONE, DESK, type Phone, type Size } from "../../../tests/phone";
 import { Prep } from "./Prep";
+import { blankEncounter, type Encounter } from "./encounter";
 import { blankSession, type Prepared } from "./session";
 import "../../design/tokens.css";
 
@@ -9,6 +10,7 @@ afterEach(() => phone?.destroy());
 
 const nothing = () => {};
 const noop = {
+  running: false, onReinforce: nothing,
   onStage: nothing, onForget: nothing, onNew: nothing,
   onSaveEncounter: nothing, onSendEncounter: nothing,
   onSaveSession: nothing, onForgetSession: nothing,
@@ -65,5 +67,43 @@ describe("Task 28's session rail, assembled with the outline beneath it", () => 
     phone = await mount(null);
     expect(phone.doc.querySelector('[data-testid="session-empty"]')?.textContent)
       .toContain("Nothing planned yet");
+  });
+});
+
+/* The outline row reads "Encounters" plus its count, so match the label. */
+const toEncounters = async (p: Phone) => {
+  for (const b of p.doc.querySelectorAll<HTMLButtonElement>("button")) {
+    if (b.textContent?.startsWith("Encounters") === true) b.click();
+  }
+  await new Promise((r) => setTimeout(r, 30));
+};
+
+describe("an encounter can start a fight or join one", () => {
+  const amb: Encounter = {
+    ...blankEncounter("amb"), name: "Roadside Ambush",
+    entries: [{ statblock: "goblin", name: "Goblin", count: 2, max: 7, ac: 15, cr: 0.25, disclosure: "hidden" }],
+  };
+
+  it("offers no reinforcement while no fight is running", async () => {
+    /*
+     * Reinforcing nothing is starting a fight the long way round, and
+     * `tabs.ts`'s rule applies to buttons as much as tabs: what has nothing
+     * behind it is not drawn.
+     */
+    phone = await mountPhone(
+      <Prep session={null} encounters={[amb]} scenes={[]} npcs={[]} partyLevels={[]} {...noop} />,
+      "light", DESK,
+    );
+    await toEncounters(phone);
+    expect(phone.doc.querySelector('[data-testid="reinforce"]')).toBeNull();
+  });
+
+  it("offers it once there is a fight to join", async () => {
+    phone = await mountPhone(
+      <Prep session={null} encounters={[amb]} scenes={[]} npcs={[]} partyLevels={[]} {...noop} running />,
+      "light", DESK,
+    );
+    await toEncounters(phone);
+    expect(phone.doc.querySelector('[data-testid="reinforce"]')).not.toBeNull();
   });
 });

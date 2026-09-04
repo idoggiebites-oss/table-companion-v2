@@ -675,3 +675,38 @@ test("a staged creature shows everything it can do", async ({ page }) => {
   /* And nothing here throws anything. The number still comes from a person. */
   await expect(block.locator("button")).toHaveCount(0);
 });
+
+test("reinforcements join a fight without wiping it", async ({ page }) => {
+  /*
+   * Arturo's distinction, end to end: "an Encounter should be something the DM
+   * prepped for. A Creature Group can be an on-the-fly cluster for an
+   * impromptu battle or addition to an established encounter."
+   *
+   * They are not two records. They are the same entries with a different verb —
+   * "To the table" clears and sets the room, "Reinforce" does neither — and
+   * before this the second was impossible: `openActs` always began with
+   * `clear`, so anything sent to a running fight wiped it first.
+   */
+  await hub(page);
+  await bar(page).getByRole("button", { name: "Combat" }).click();
+  await page.getByTestId("bestiary-search").fill("adult red dragon");
+  await page.getByTestId("bestiary-row").first().click();
+  await page.getByTestId("initiative").first().fill("18");
+  await page.getByRole("button", { name: /^Begin/ }).click();
+  await expect(page.getByTestId("staged-row")).toHaveCount(1);
+
+  /* Keep what is out there as an encounter, so there is something to send. */
+  await bar(page).getByRole("button", { name: "Prep" }).click();
+  await page.getByRole("button", { name: "Encounters", exact: false }).first().click();
+  await page.getByRole("button", { name: "Keep what is staged" }).click();
+  await expect(page.getByTestId("encounter-card")).toHaveCount(1);
+
+  const reinforce = page.getByTestId("reinforce").first();
+  await expect(reinforce).toBeVisible();
+  await reinforce.click();
+
+  /* The dragon is still there, and still the one whose go it is. */
+  await bar(page).getByRole("button", { name: "Combat" }).click();
+  await expect(page.getByTestId("staged")).toContainText("Adult Red Dragon");
+  await expect(page.getByTestId("staged-row")).not.toHaveCount(1);
+});

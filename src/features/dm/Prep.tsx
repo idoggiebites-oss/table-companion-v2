@@ -46,7 +46,7 @@ const SECTION_LABEL: Readonly<Record<Section, string>> = {
 };
 
 export function Prep({
-  session, encounters, scenes, npcs, partyLevels, nav, onStage, onForget, onNew,
+  session, encounters, scenes, npcs, partyLevels, nav, running, onStage, onReinforce, onForget, onNew,
   onSaveEncounter, onSendEncounter,
   onSaveSession, onForgetSession,
   onPrepare, onForgetScene, onOpenScene, onSaveNpc, onForgetNpc,
@@ -61,7 +61,11 @@ export function Prep({
   nav?: ReactNode;
   onSaveSession: (session: Prepared) => void;
   onForgetSession: (id: string) => void;
+  /** Whether a fight is actually running — decides if "Reinforce" is drawn. */
+  running: boolean;
   onStage: (e: Encounter) => void;
+  /** Join the fight already out there: no clear, no room. See `joinActs`. */
+  onReinforce: (e: Encounter) => void;
   onForget: (id: string) => void;
   onNew: () => void;
   onSaveEncounter: (e: Encounter) => void;
@@ -171,9 +175,26 @@ export function Prep({
                       </span>
                     </span>
                     <span className={s.actions}>
+                      {/*
+                        * Two verbs, and only when the second one means
+                        * anything. "To the table" CLEARS and sets the room —
+                        * it is the prepared encounter starting. "Reinforce"
+                        * joins what is already out there and touches neither.
+                        *
+                        * The second is hidden while no fight is running,
+                        * because reinforcing nothing is starting a fight the
+                        * long way round, and `tabs.ts`'s rule applies to
+                        * buttons too: what has nothing behind it is not drawn.
+                        */}
                       <button type="button" className={s.stage}
                               aria-label={`Put ${e.name} on the table`}
                               onClick={() => onStage(e)}>To the table</button>
+                      {running && (
+                        <button type="button" className={s.stage}
+                                aria-label={`Add ${e.name} to the fight already running`}
+                                data-testid="reinforce"
+                                onClick={() => onReinforce(e)}>Reinforce</button>
+                      )}
                       <button type="button" className={s.forget}
                               aria-label={`Forget ${e.name}`}
                               onClick={() => onForget(e.id)}>×</button>

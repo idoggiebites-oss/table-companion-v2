@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { prepFrom, creatureCount, rawXp, xpForCr, staging, PREP, NO_PREP,
   blankEncounter, isNamed, addEntry, setCount, setDisclosure,
-  type Encounter, type PrepAct } from "./encounter";
+  joinActs, type Encounter, type PrepAct } from "./encounter";
+import { fightFrom, activeOf, FIGHT, type Act } from "./fight";
 import { asDevice, type Event } from "../../core/types";
 
 let n = 0;
@@ -132,5 +133,52 @@ describe("putting one on the table", () => {
     const rows = staging(goblins, (i) => `s${String(i)}`);
     expect(rows.every((r) => r.max > 0)).toBe(true);
     expect(JSON.stringify(rows)).not.toContain("damage");
+  });
+});
+
+/** A fight-kind event, since this file's own `ev` issues prep acts. */
+const fev = (a: Act): Event =>
+  ({ id: `f${String(++n)}`, kind: FIGHT, seq: n, by: asDevice("d1"), at: n, data: a } as unknown as Event);
+
+describe("an encounter replaces the table; a group joins it", () => {
+  const entries = [{
+    statblock: "goblin", name: "Goblin", count: 2, max: 7, ac: 15,
+    cr: 0.25, disclosure: "hidden" as const,
+  }];
+  const id = (n: number) => `g${String(n)}`;
+
+  it("stages the creatures and clears nothing", () => {
+    /*
+     * The whole of Arturo's distinction, and it is a VERB rather than a second
+     * record: "an Encounter should be something the DM prepped for. A Creature
+     * Group can be an on-the-fly cluster... or addition to an established
+     * encounter." A group that stored itself would be a record nobody asked to
+     * save — it is over when the fight is.
+     */
+    const acts = joinActs(entries, id);
+    expect(acts.map((a) => a.act)).toEqual(["stage", "stage"]);
+    expect(acts.some((a) => a.act === "clear")).toBe(false);
+    expect(acts.some((a) => a.act === "room")).toBe(false);
+  });
+
+  it("expands a count into one act per creature, as the table needs", () => {
+    /* Two goblins are two rows with their own hit points — the moment one is
+       bloodied and the other is not, a count cannot say so. */
+    const acts = joinActs(entries, id);
+    expect(acts).toHaveLength(2);
+    expect(new Set(acts.map((a) => (a.act === "stage" ? a.id : "")))).toHaveProperty("size", 2);
+  });
+
+  it("joins a fight already running without disturbing it", () => {
+    const base: Act[] = [
+      { act: "stage", id: "a", name: "Aria", source: { kind: "creature", statblock: "a", max: 10, ac: 10 } },
+      { act: "roll", id: "a", value: 20 },
+      { act: "begin" },
+    ];
+    const after = fightFrom([...base, ...joinActs(entries, id)].map(fev));
+    expect(after.phase).toBe("active");
+    expect(after.round).toBe(1);
+    expect(after.combatants).toHaveLength(3);
+    expect(activeOf(after)?.name).toBe("Aria");
   });
 });

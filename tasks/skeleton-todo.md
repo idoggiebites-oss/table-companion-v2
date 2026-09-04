@@ -25,9 +25,10 @@ a running fight, because `openActs` always begins with `clear`. Port the
 arrival, and the Group falls out of it: an Encounter **replaces** the table, a
 Group **joins** it, and both are the same entries expanded the same way.
 **Accepts:**
-- [ ] Creatures join a fight already running, in the right place in the order
-- [ ] A prepared encounter can either replace the table or join it
-- [ ] Existing encounters and fights fold forward untouched
+- [x] Creatures join a fight already running, in the right place in the order
+- [x] A prepared encounter can either replace the table or join it
+- [x] Existing encounters and fights fold forward untouched
+- [x] *Found while building: an arrival was silently stealing the current turn*
 **Verification:** fold tests for arrival mid-round; a journey that adds a group
 to a running fight · **Scope:** M · **Deps:** none — **blocks 49, 53, 65**
 

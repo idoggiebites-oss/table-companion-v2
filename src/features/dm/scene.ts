@@ -1,7 +1,7 @@
 import { fold } from "../../core/fold";
 import type { Event } from "../../core/types";
 import { isOpenGround, OPEN_GROUND, type Room } from "../../rules/5e/terrain";
-import { staging, type Encounter } from "./encounter";
+import { joinActs, type Encounter } from "./encounter";
 import type { Act } from "./fight";
 
 export const SCENE = "scene.act";
@@ -109,15 +109,11 @@ export function openActs(
   encounter: Encounter | undefined,
   id: (n: number) => string,
 ): readonly Act[] {
+  /* `clear` first, then the same expansion `joinActs` uses — the difference
+     between opening a place and reinforcing one is this line and the room
+     below it, which is the whole of the Encounter/Group distinction. */
   const out: Act[] = [{ act: "clear" }];
-  if (encounter !== undefined) {
-    for (const row of staging(encounter, id)) {
-      out.push({
-        act: "stage", id: row.id, name: row.name, disclosure: row.disclosure,
-        source: { kind: "creature", statblock: row.statblock, max: row.max, ac: row.ac },
-      });
-    }
-  }
+  if (encounter !== undefined) out.push(...joinActs(encounter.entries, id));
   /*
    * The encounter's own environment wins, when it has one.
    *

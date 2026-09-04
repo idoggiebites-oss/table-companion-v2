@@ -2,6 +2,7 @@ import { fold } from "../../core/fold";
 import type { Event } from "../../core/types";
 import { OPEN_GROUND, type Room } from "../../rules/5e/terrain";
 import type { Claim } from "./claim";
+import { keepingTurn, orderOf, REORDERS } from "./turnorder";
 
 export const FIGHT = "fight.act";
 
@@ -151,6 +152,11 @@ export function nameFor(name: string, existing: readonly Combatant[], statblock:
 function reduce(f: Fight, e: Event): Fight {
   const a = asAct(e);
   if (a === null) return f;
+  const next = apply(f, a);
+  return REORDERS.has(a.act) ? keepingTurn(f, next) : next;
+}
+
+function apply(f: Fight, a: Act): Fight {
   switch (a.act) {
     case "stage":
       return { ...f, combatants: [...f.combatants, {
@@ -247,40 +253,8 @@ function reduce(f: Fight, e: Event): Fight {
   }
 }
 
-/**
- * Higher initiative first; anyone who has not rolled last; ties by the order
- * the DM staged them.
- *
- * Ported from V1's `sortOrder`, including its reason: the tie-break consults
- * only the staged order, so the same fight resolves the same way on every
- * device. A sort that reached for anything device-local would desynchronise
- * the table.
- *
- * Not-yet-rolled sorts LAST rather than as a zero, so a half-rolled order
- * still reads correctly while the table waits.
- */
-export function orderOf(f: Fight): readonly Combatant[] {
-  return f.combatants
-    .map((c, i) => ({ c, i }))
-    .sort((a, b) => {
-      const ai = a.c.initiative;
-      const bi = b.c.initiative;
-      if (ai === null && bi === null) return a.i - b.i;
-      if (ai === null) return 1;
-      if (bi === null) return -1;
-      return bi - ai || a.i - b.i;
-    })
-    .map(({ c }) => c);
-}
-
-/** Who the table is still waiting on. */
-export const awaiting = (f: Fight): readonly Combatant[] =>
-  f.combatants.filter((c) => c.initiative === null);
-
-/** Whose go it is, or null before the fight runs. */
-export function activeOf(f: Fight): Combatant | null {
-  if (f.phase !== "active") return null;
-  return orderOf(f)[f.turn] ?? null;
-}
+/* Re-exported so the twenty-odd call sites that read a fight's order keep
+   importing it from the fight, which is where it reads as belonging. */
+export { orderOf, activeOf, awaiting } from "./turnorder";
 
 export const fightFrom = (events: readonly Event[]): Fight => fold(events, reduce, NO_FIGHT);

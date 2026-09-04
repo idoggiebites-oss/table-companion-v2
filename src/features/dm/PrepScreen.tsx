@@ -1,5 +1,5 @@
 import { Prep } from "./Prep";
-import { prepFrom, keepFrom, PREP, type Encounter } from "./encounter";
+import { prepFrom, keepFrom, joinActs, PREP, type Encounter } from "./encounter";
 import { blankScene, scenesFrom, openActs, SCENE, type Scene } from "./scene";
 import { peopleFrom, NPC } from "./npc";
 import { sessionsFrom, SESSION, type Prepared } from "./session";
@@ -61,6 +61,23 @@ export function PrepScreen({ events, fight, nav, record, onOpened }: {
    * was most recently touched, with no separate "current session" concept to
    * keep in sync.
    */
+  /**
+   * Reinforcements: the same entries, without the eraser.
+   *
+   * `send` clears the table and sets the room because a prepared encounter is
+   * the fight STARTING. This one joins whatever is out there — Arturo's
+   * "addition to an established encounter" — so it is `joinActs` alone, and
+   * `fight.ts` re-anchors whose go it is around the arrivals.
+   *
+   * It does not move the DM to the fight screen the way `send` does: they are
+   * already watching it, which is why they reached for this button.
+   */
+  const reinforce = (e: Encounter) => {
+    for (const a of joinActs(e.entries, (i) => `${e.id}-r${String(i)}-${String(Date.now())}`)) {
+      record(FIGHT, a as unknown as Record<string, unknown>);
+    }
+  };
+
   const sessions = sessionsFrom(events).sessions;
   const session: Prepared | null = sessions.length > 0 ? sessions[sessions.length - 1]! : null;
 
@@ -75,6 +92,8 @@ export function PrepScreen({ events, fight, nav, record, onOpened }: {
     <Prep
       session={session}
       onSendEncounter={send}
+      running={fight.phase === "active"}
+      onReinforce={reinforce}
       onSaveSession={(sn) => record(SESSION, { act: "save", session: sn } as unknown as Record<string, unknown>)}
       onForgetSession={(id) => record(SESSION, { act: "forget", id })}
       encounters={prepFrom(events).encounters}
