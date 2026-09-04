@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  blankNpc, describeStock, inStock, isNamed, isUnlimited, peopleFrom, sellOne,
-  stockId, UNLIMITED, NPC, type Npc, type StockEntry,
+  NPC, UNLIMITED, blankNpc, describeStock, hasDepth, inStock, isNamed, isUnlimited, peopleFrom, sellOne, stockId, tiesOf, type Npc, type StockEntry,
 } from "./npc";
 import { isDmOnly } from "../room/visibility";
 import { asDevice, type Event } from "../../core/types";
@@ -123,5 +122,68 @@ describe("log privacy", () => {
        watched happen — whichever of the two acts fires. */
     expect(isDmOnly(npc({ act: "save", npc: halbrek }))).toBe(true);
     expect(isDmOnly(npc({ act: "forget", id: "n1" }))).toBe(true);
+  });
+});
+
+describe("the depth, folded away", () => {
+  const rope = { ...blankNpc("n1"), name: "The rope seller" };
+
+  it("a shopkeeper is still a name and a line", () => {
+    /*
+     * V1's rule, and the reason the record was six fields: "forcing them
+     * through a creature form would mean inventing an armour class for a man
+     * who sells rope." Eleven fields is that mistake at greater length unless
+     * every one of them is optional.
+     */
+    expect(hasDepth(rope)).toBe(false);
+    expect(isNamed(rope)).toBe(true);
+  });
+
+  it("says when there is more to show", () => {
+    expect(hasDepth({ ...rope, faction: "The Blackshields" })).toBe(true);
+    expect(hasDepth({ ...rope, attitude: "wary" })).toBe(true);
+    expect(hasDepth({ ...rope, ties: [{ to: "n2", as: "owes money to" }] })).toBe(true);
+  });
+
+  it("does not count an empty string as something filled in", () => {
+    expect(hasDepth({ ...rope, voice: "", goals: "" })).toBe(false);
+  });
+});
+
+describe("who somebody is to somebody else", () => {
+  const yazuk = { ...blankNpc("yazuk"), name: "Yazuk",
+    ties: [{ to: "theron", as: "informs on" }] };
+  const theron = { ...blankNpc("theron"), name: "Captain Theron" };
+  const all = [yazuk, theron];
+
+  it("reads from the side it was written on", () => {
+    const ties = tiesOf(yazuk, all);
+    expect(ties).toHaveLength(1);
+    expect(ties[0]?.other.name).toBe("Captain Theron");
+    expect(ties[0]?.as).toBe("informs on");
+    expect(ties[0]?.theirs).toBe(false);
+  });
+
+  it("and from the other side, without inventing the opposite", () => {
+    /*
+     * Stored once, because "Yazuk informs on Theron" is one fact and storing
+     * it twice is two that can disagree. The reverse shows the words as
+     * WRITTEN — the app cannot turn "sister of" into its opposite, and
+     * guessing would put words in the DM's mouth.
+     */
+    const ties = tiesOf(theron, all);
+    expect(ties).toHaveLength(1);
+    expect(ties[0]?.other.name).toBe("Yazuk");
+    expect(ties[0]?.as).toBe("informs on");
+    expect(ties[0]?.theirs).toBe(true);
+  });
+
+  it("ignores a tie to somebody who has been forgotten", () => {
+    expect(tiesOf({ ...yazuk, ties: [{ to: "gone", as: "knew" }] }, all)).toEqual([]);
+  });
+
+  it("never ties somebody to themselves", () => {
+    const self = { ...blankNpc("a"), name: "A", ties: [{ to: "a", as: "is" }] };
+    expect(tiesOf(self, [self]).filter((t) => t.theirs)).toEqual([]);
   });
 });

@@ -1,0 +1,52 @@
+.wrap { display: flex; flex-direction: column; gap: var(--s-3); }
+
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); }
+
+.field { display: flex; flex-direction: column; gap: var(--s-2); min-width: 0; }
+
+.tag {
+  font-size: var(--t-note); letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--ink-dim);
+}
+
+.text, .note {
+  font: inherit; font-size: var(--t-sm); color: var(--ink); min-width: 0;
+  background: var(--surface-2); border: 1px solid var(--hairline);
+  border-radius: var(--r-control); padding: var(--s-4) var(--s-5);
+}
+.text { min-height: var(--tap); }
+.note { resize: vertical; }
+
+/* Five exclusive choices, wrapping rather than shrinking below their words. */
+.seg { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+
+.pick {
+  min-height: var(--tap); padding: 0 var(--s-5);
+  font-size: var(--t-aside); text-transform: capitalize; color: var(--ink);
+  background: var(--surface-1);
+  border: 1px solid var(--hairline); border-radius: var(--r-pill);
+}
+.on { background: var(--gold-wash); border-color: var(--gold-fill); }
+
+.ties { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s-2); }
+
+.tie {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--s-3);
+  min-height: var(--tap); padding: 0 var(--s-5); font-size: var(--t-aside);
+  background: var(--surface-2); border-radius: var(--r-control);
+}
+
+.drop { min-width: var(--tap); min-height: var(--tap); background: none; border: none; color: var(--ink-dim); }
+
+.add { display: grid; grid-template-columns: 1fr auto auto; gap: var(--s-3); align-items: center; }
+
+.tieAdd {
+  /* `min-width` as well as height: "Tie" is a short word and the padding alone
+     left it 42px across, which `smallTargets()` correctly refused. */
+  min-height: var(--tap); min-width: var(--tap);
+  padding: 0 var(--s-5); font-size: var(--t-sm);
+  color: var(--ink); background: var(--surface-1);
+  border: 1px solid var(--hairline); border-radius: var(--r-control);
+}
+
+.none { margin: 0; font-size: var(--t-aside); color: var(--ink-dim); }

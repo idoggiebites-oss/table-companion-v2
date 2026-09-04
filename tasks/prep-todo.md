@@ -419,13 +419,22 @@ until asked for, the way `stats` and `stock` already are.
   list of "who this person is to whom", read from both ends.
 
 **Acceptance criteria:**
-- [ ] A shopkeeper can still be written in a name and one line, with nothing else shown
-- [ ] Secrets never reach a player — the whole kind is already in `PREP_KINDS`, so this is a test rather than a change
-- [ ] A relationship added from one side is visible from the other
+- [x] A shopkeeper can still be written in a name and one line, with nothing else shown
+- [x] Secrets never reach a player — the whole kind is already in `PREP_KINDS`, so this is a test rather than a change
+- [x] A relationship added from one side is visible from the other
 
 **Verification:** domain tests for the fold and the relationship read-back; a
 component test that the empty form is still short
 **Dependencies:** none (40 for the portrait) · **Scope:** M-L
+
+**Ties are stored once and read from both ends**, because "Yazuk informs on
+Theron" is one fact and storing it twice is two that can disagree. The reverse
+shows the words as WRITTEN rather than inverted — the app cannot turn "sister
+of" into its opposite, and guessing would put words in the DM's mouth.
+
+**Attitude is authored, not transcribed.** The DMG's reaction table is not SRD,
+and `non-srd.ts` is a one-file licensing exit that should not grow a third
+reason to exist.
 
 ---
 

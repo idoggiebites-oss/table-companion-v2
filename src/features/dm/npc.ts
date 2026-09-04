@@ -49,6 +49,25 @@ export type NpcStats = {
   readonly notes?: string;
 };
 
+/**
+ * How this person feels about the party.
+ *
+ * A short authored list rather than a transcribed table: the Dungeon Master's
+ * Guide has a reaction table and it is not SRD, and `non-srd.ts` is a one-file
+ * licensing exit that should not grow a third reason to exist. These five are
+ * the words a table already uses.
+ */
+export const ATTITUDES = ["hostile", "wary", "neutral", "friendly", "devoted"] as const;
+export type Attitude = (typeof ATTITUDES)[number];
+
+/** Who this person is to somebody else. Held on one side, read from both. */
+export type Tie = {
+  /** The other person's id. */
+  readonly to: string;
+  /** "owes money to", "sister of", "informs on" — the DM's own words. */
+  readonly as: string;
+};
+
 export type Npc = {
   readonly id: string;
   readonly name: string;
@@ -58,6 +77,41 @@ export type Npc = {
   readonly notes: string;
   readonly stats?: NpcStats;
   readonly stock: readonly StockEntry[];
+
+  /*
+   * Everything below is optional, and that is the whole design rather than a
+   * convenience. V1's rule, which the six-field record existed to keep:
+   *
+   *   > Most of the ones a campaign accumulates never roll anything — a
+   *   > shopkeeper, a harbourmaster, the contact who knows a guy — and forcing
+   *   > them through a creature form would mean inventing an armour class for
+   *   > a man who sells rope.
+   *
+   * Eleven fields on one form is that same mistake at greater length. So the
+   * form stays notes-first and every one of these is folded away until asked
+   * for, the way `stats` and `stock` already are.
+   */
+
+  /** "Human", "Half-Orc". Free text: a campaign invents species. */
+  readonly species?: string;
+  /** "The Blackshields", "The Dawnflower". Who they answer to. */
+  readonly faction?: string;
+  readonly attitude?: Attitude;
+  /** How they sound. The half of an NPC a DM actually performs. */
+  readonly voice?: string;
+  /** What they want, which is what makes them do anything. */
+  readonly goals?: string;
+  /**
+   * What they are hiding.
+   *
+   * Behind the screen like the rest of this record — `NPC` is in `PREP_KINDS`,
+   * so no player's log ever carries it — but worth naming separately because
+   * it is the field whose leak would matter most.
+   */
+  readonly secrets?: string;
+  /** What they can do without a statblock. "Casts charm person once a day." */
+  readonly actions?: string;
+  readonly ties?: readonly Tie[];
 };
 
 export const blankNpc = (id: string): Npc =>
@@ -127,3 +181,36 @@ function reduce(p: People, e: Event): People {
 }
 
 export const peopleFrom = (events: readonly Event[]): People => fold(events, reduce, NOBODY);
+
+/**
+ * Everyone this person is tied to, from both directions.
+ *
+ * A tie is stored on ONE side — whichever record the DM was editing — and read
+ * from both, because "Yazuk informs on Captain Theron" is one fact and storing
+ * it twice is two facts that can disagree. The reverse reads as written rather
+ * than inverted: the app cannot turn "sister of" into its opposite, and
+ * guessing would put words in the DM's mouth.
+ */
+export function tiesOf(
+  npc: Npc,
+  all: readonly Npc[],
+): readonly { readonly other: Npc; readonly as: string; readonly theirs: boolean }[] {
+  const out: { other: Npc; as: string; theirs: boolean }[] = [];
+  for (const t of npc.ties ?? []) {
+    const other = all.find((n) => n.id === t.to);
+    if (other !== undefined) out.push({ other, as: t.as, theirs: false });
+  }
+  for (const other of all) {
+    if (other.id === npc.id) continue;
+    for (const t of other.ties ?? []) {
+      if (t.to === npc.id) out.push({ other, as: t.as, theirs: true });
+    }
+  }
+  return out;
+}
+
+/** Whether anything beyond the notes-first six has been filled in. */
+export const hasDepth = (n: Npc): boolean =>
+  [n.species, n.faction, n.attitude, n.voice, n.goals, n.secrets, n.actions]
+    .some((v) => v !== undefined && v !== "")
+  || (n.ties ?? []).length > 0;

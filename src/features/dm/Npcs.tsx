@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { parseCoins } from "../../rules/5e/money";
 import {
-  blankNpc, describeStock, isNamed, stockId, UNLIMITED,
-  type Npc, type StockEntry,
+  UNLIMITED, blankNpc, describeStock, hasDepth, isNamed, stockId, type Npc, type StockEntry,
 } from "./npc";
+import { NpcDepth } from "./NpcDepth";
 import s from "./Npcs.module.css";
 
 /**
@@ -28,6 +28,9 @@ export function Npcs({ npcs, onSave, onForget }: {
   onForget: (id: string) => void;
 }) {
   const [draft, setDraft] = useState<Npc | null>(null);
+  /* Open already when there is something in there — otherwise editing a
+     fully-written NPC hides most of them behind a button that looks unused. */
+  const [deeper, setDeeper] = useState(false);
   const [stockName, setStockName] = useState("");
   const [stockPrice, setStockPrice] = useState("");
   const [stockQty, setStockQty] = useState("");
@@ -58,7 +61,10 @@ export function Npcs({ npcs, onSave, onForget }: {
         <h2 className={s.title}>People</h2>
         <button
           type="button" className={s.new}
-          onClick={() => setDraft(draft === null ? blankNpc(`npc${Date.now().toString(36)}`) : null)}
+          onClick={() => {
+            setDraft(draft === null ? blankNpc(`npc${Date.now().toString(36)}`) : null);
+            setDeeper(false);
+          }}
         >
           {draft === null ? "Add someone" : "Cancel"}
         </button>
@@ -89,7 +95,8 @@ export function Npcs({ npcs, onSave, onForget }: {
               <span className={s.actions}>
                 <button
                   type="button" className={s.edit}
-                  aria-label={`Edit ${p.name}`} onClick={() => setDraft(p)}
+                  aria-label={`Edit ${p.name}`}
+                  onClick={() => { setDraft(p); setDeeper(hasDepth(p)); }}
                 >
                   Edit
                 </button>
@@ -148,6 +155,28 @@ export function Npcs({ npcs, onSave, onForget }: {
           >
             Trades with the party
           </button>
+
+          {/*
+            * Everything else, folded.
+            *
+            * The brief asks for eleven fields. V1's record had six and its
+            * reason is the one thing that had to survive: forcing every NPC
+            * through a full form "would mean inventing an armour class for a
+            * man who sells rope". So the form a DM meets is still a name, a
+            * role and a line — and this opens for the one who turns out to
+            * matter. `hasDepth` keeps it open when there is already something
+            * in there to see.
+            */}
+          <button
+            type="button"
+            className={deeper ? `${s.chip} ${s.on}` : s.chip}
+            aria-expanded={deeper}
+            onClick={() => setDeeper((v) => !v)}
+          >
+            {deeper ? "Less about them" : "More about them"}
+          </button>
+
+          {deeper && <NpcDepth draft={draft} all={npcs} onChange={setDraft} />}
 
           {draft.trader && (
             <div className={s.stock} data-testid="stock">
