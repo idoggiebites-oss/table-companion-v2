@@ -19,9 +19,19 @@ import s from "./Party.module.css";
  * columns as the width allows and collapses to one on a phone, because the DM
  * side has to work on both without being two designs.
  */
-export function Party({ events, nav, onOpen, onHit }: {
+export function Party({ events, nav, who, onOpen, onHit }: {
   events: readonly Event[];
   nav?: ReactNode;
+  /**
+   * The seat control, in the DM's header.
+   *
+   * It used to live on the Characters screen alone, and Task 26 took that tab
+   * off the DM's bar — which left a DM sitting in a character with no way back
+   * to their own chair except through a player's screen. Party is where it
+   * belongs anyway: this is the DM's home, and it is the screen that absorbed
+   * Characters when the two merged.
+   */
+  who?: ReactNode;
   /** Sitting in somebody, to read their whole sheet. */
   onOpen?: (id: string) => void;
   /**
@@ -36,7 +46,7 @@ export function Party({ events, nav, onOpen, onHit }: {
 }) {
   const party = membersIn(events);
   return (
-    <Shell title="The party" below={nav}>
+    <Shell title="The party" below={nav} trail={who}>
       {party.length === 0 ? (
         /* Not "no characters": say what to do about it. */
         <p className={s.empty} data-testid="party-empty">

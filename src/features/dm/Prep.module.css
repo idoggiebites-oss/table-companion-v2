@@ -1,16 +1,7 @@
 /* From the mockup: a session rail beside a centre column, stacking on a phone.
-   Cards are flat with a hairline and almost no shadow — the mockup's weight. */
-.split {
-  display: grid; gap: var(--s-5);
-  padding: var(--s-5) var(--card-pad);
-  align-items: start;
-}
-
-@media (min-width: 46rem) {
-  .split { grid-template-columns: 15rem 1fr; }
-}
-
-.rail { display: flex; flex-direction: column; gap: var(--s-3); min-width: 0; }
+   The grid itself now lives in `DmShell.module.css` — this file keeps only
+   what is particular to Prep's own cards. Cards are flat with a hairline and
+   almost no shadow: the mockup's weight. */
 
 .railHead {
   margin: 0; font-size: var(--t-note); letter-spacing: 0.08em;

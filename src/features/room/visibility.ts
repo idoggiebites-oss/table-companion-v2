@@ -3,6 +3,7 @@ import { FIGHT } from "../dm/fight";
 import { PREP } from "../dm/encounter";
 import { SCENE } from "../dm/scene";
 import { NPC } from "../dm/npc";
+import { SESSION } from "../dm/session";
 
 /**
  * What a player's log is allowed to say.
@@ -80,8 +81,14 @@ const AT_THE_TABLE = new Set([
  * puts `npcSaved`/`npcDeleted` behind the screen for the same reason — a
  * shopkeeper the DM just wrote down is prep, not something the table watched
  * happen, whichever of the two acts on it fires.
+ *
+ * A prepared session joins for the same reason as a scene: the plan for
+ * tonight — its opening recap, its goals, its checklist — is written before
+ * the table sits down, and none of it is something the table has watched
+ * happen. It is also not `recap.ts`'s `Session`, which is derived from the
+ * log rather than an event on it and so never appears here at all.
  */
-const PREP_KINDS = new Set<string>([PREP, SCENE, NPC]);
+const PREP_KINDS = new Set<string>([PREP, SCENE, NPC, SESSION]);
 
 const actOf = (e: Event): string | null =>
   e.kind === FIGHT ? String((e.data as Record<string, unknown>)["act"] ?? "") : null;

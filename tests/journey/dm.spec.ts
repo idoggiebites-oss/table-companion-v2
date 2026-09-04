@@ -16,6 +16,20 @@ const make = async (page: Page, name: string) => {
 
 const bar = (page: Page) => page.getByTestId("tabbar");
 
+/**
+ * Back to the hub as the DM, from a screen whose bar no longer has a way
+ * there. Task 26 dropped Characters from the DM's bar — the door on Party's
+ * own rows is the better one for reaching a SHEET — but the seat control
+ * still lives on the hub alone, and the log screen is the only DM screen that
+ * still carries a route to it (its own action row, outside the tab bar; see
+ * `hub()`). A player's bar keeps Characters, so this is only needed while
+ * seated as the DM.
+ */
+const toHub = async (page: Page) => {
+  await bar(page).getByRole("button", { name: "Log" }).click();
+  await page.getByRole("button", { name: "Characters" }).click();
+};
+
 test("the seat decides the bar, and it stays one bar", async ({ page }) => {
   await hub(page);
 
@@ -74,7 +88,7 @@ test("the party says what to do when there is nobody in it", async ({ page }) =>
 
 test("a fight is assembled before anybody sees it", async ({ page }) => {
   await hub(page);
-  await bar(page).getByRole("button", { name: "Fight" }).click();
+  await bar(page).getByRole("button", { name: "Combat" }).click();
 
   /* Not "no creatures": say what to do, and say what staging means. */
   await expect(page.getByTestId("table-empty")).toContainText("hidden");
@@ -111,7 +125,7 @@ test("a fight is assembled before anybody sees it", async ({ page }) => {
 
   /* It is in the log, so it survives the DM's phone locking. */
   await page.reload();
-  await bar(page).getByRole("button", { name: "Fight" }).click();
+  await bar(page).getByRole("button", { name: "Combat" }).click();
   await expect(page.getByTestId("staged-row")).toHaveCount(3);
   await expect(page.getByTestId("staged-row").first().getByTestId("step-vague"))
     .toHaveAttribute("aria-checked", "true");
@@ -125,12 +139,12 @@ test("a player is not offered the fight until there is one", async ({ page }) =>
      business, and V1's playerTabs carry Combat. The has-content rule decides
      which: no fight, no tab, because a tab reading "no fight yet" is the dead
      screen V1 refuses to draw. */
-  await expect(bar(page).getByRole("button", { name: "Fight" })).toHaveCount(0);
+  await expect(bar(page).getByRole("button", { name: "Combat" })).toHaveCount(0);
 });
 
 test("the order settles, then the fight walks down it", async ({ page }) => {
   await hub(page);
-  await bar(page).getByRole("button", { name: "Fight" }).click();
+  await bar(page).getByRole("button", { name: "Combat" }).click();
 
   await page.getByTestId("bestiary-search").fill("goblin");
   await page.getByTestId("bestiary-row").first().click();
@@ -176,13 +190,13 @@ test("the order settles, then the fight walks down it", async ({ page }) => {
 
   /* And it survives a reload, because the turn is in the log like everything else. */
   await page.reload();
-  await bar(page).getByRole("button", { name: "Fight" }).click();
+  await bar(page).getByRole("button", { name: "Combat" }).click();
   await expect(page.getByRole("heading", { name: /Round 2/ })).toBeVisible();
 });
 
 test("a creature takes damage, and mends, and remembers both", async ({ page }) => {
   await hub(page);
-  await bar(page).getByRole("button", { name: "Fight" }).click();
+  await bar(page).getByRole("button", { name: "Combat" }).click();
   await page.getByTestId("bestiary-search").fill("goblin");
   await page.getByTestId("bestiary-row").first().click();
 
@@ -216,14 +230,14 @@ test("a creature takes damage, and mends, and remembers both", async ({ page }) 
 
   /* It is in the log like everything else, so it survives the app closing. */
   await page.reload();
-  await bar(page).getByRole("button", { name: "Fight" }).click();
+  await bar(page).getByRole("button", { name: "Combat" }).click();
   await expect(page.getByTestId("staged-row").first().locator('[class*="rowNote"]'))
     .toContainText(`${String(max - 5)}/${String(max)}`);
 });
 
 test("a condition goes on a creature, says what it does, and comes off", async ({ page }) => {
   await hub(page);
-  await bar(page).getByRole("button", { name: "Fight" }).click();
+  await bar(page).getByRole("button", { name: "Combat" }).click();
   await page.getByTestId("bestiary-search").fill("goblin");
   await page.getByTestId("bestiary-row").first().click();
 
@@ -240,7 +254,7 @@ test("a condition goes on a creature, says what it does, and comes off", async (
 
   /* It is in the log, so it survives the app closing. */
   await page.reload();
-  await bar(page).getByRole("button", { name: "Fight" }).click();
+  await bar(page).getByRole("button", { name: "Combat" }).click();
   await expect(page.getByTestId("staged-row").first()
     .getByRole("button", { name: /^Clear Poisoned/ })).toBeVisible();
 
@@ -258,7 +272,7 @@ test("a player claims a hit, and nothing lands until the DM says so", async ({ p
      The seat control is on the hub's crest row, so seats change from there. */
   await bar(page).getByRole("button", { name: "Characters" }).click();
   await page.getByTestId("seat").selectOption({ value: "dm" });
-  await bar(page).getByRole("button", { name: "Fight" }).click();
+  await bar(page).getByRole("button", { name: "Combat" }).click();
   /* 6,633 creatures arrive as a 142KB fetch when this screen opens; the search
      is live before they land and says so. Wait for it rather than for a row. */
   await expect(page.getByTestId("bestiary-search"))
@@ -281,14 +295,14 @@ test("a player claims a hit, and nothing lands until the DM says so", async ({ p
 
   /* Now as the player. The sheet is where you keep what you swing; the fight
      is where you swing it — two doors into one room would be one too many. */
-  await bar(page).getByRole("button", { name: "Characters" }).click();
+  await toHub(page);
   await page.getByTestId("seat").selectOption({ label: "Bree Thorn" });
   await bar(page).getByRole("button", { name: "Sheet" }).click();
   await page.getByRole("tab", { name: "Combat", exact: true }).click();
   await page.getByRole("button", { name: "Add an attack" }).click();
   await page.getByRole("group", { name: "Add an attack" }).getByRole("button").first().click();
 
-  await bar(page).getByRole("button", { name: "Fight" }).click();
+  await bar(page).getByRole("button", { name: "Combat" }).click();
   const attack = page.getByTestId("my-attacks").locator("li").first();
   await attack.getByRole("button", { name: /^Swing/ }).click();
 
@@ -304,7 +318,7 @@ test("a player claims a hit, and nothing lands until the DM says so", async ({ p
   /* Sent, and nothing has happened to the goblin yet. */
   await bar(page).getByRole("button", { name: "Characters" }).click();
   await page.getByTestId("seat").selectOption({ value: "dm" });
-  await bar(page).getByRole("button", { name: "Fight" }).click();
+  await bar(page).getByRole("button", { name: "Combat" }).click();
   await expect(page.getByTestId("claim")).toHaveCount(1);
   /* Bree is first in the order now, so name the goblin rather than take the
      first row — the order is the thing under test elsewhere. */
@@ -330,14 +344,15 @@ test("a player's fight is two screens, and shows only what the ladder allows", a
   await page.getByTestId("seat").selectOption({ value: "dm" });
 
   /* No fight yet, so a player is offered none — a tab reading "no fight yet"
-     is the dead screen V1 refuses to draw. */
-  await bar(page).getByRole("button", { name: "Characters" }).click();
+     is the dead screen V1 refuses to draw. Already on the hub screen from the
+     seat switch above, so there is nothing to tap to get back to it — the DM
+     bar dropped Characters (Task 26) and this is where that would have gone. */
   await page.getByTestId("seat").selectOption({ label: "Bree Thorn" });
-  await expect(bar(page).getByRole("button", { name: "Fight" })).toHaveCount(0);
+  await expect(bar(page).getByRole("button", { name: "Combat" })).toHaveCount(0);
 
   await bar(page).getByRole("button", { name: "Characters" }).click();
   await page.getByTestId("seat").selectOption({ value: "dm" });
-  await bar(page).getByRole("button", { name: "Fight" }).click();
+  await bar(page).getByRole("button", { name: "Combat" }).click();
   await expect(page.getByTestId("bestiary-search"))
     .toHaveAttribute("placeholder", /Search/, { timeout: 30_000 });
   await page.getByTestId("bestiary-search").fill("goblin");
@@ -355,9 +370,9 @@ test("a player's fight is two screens, and shows only what the ladder allows", a
     .getByRole("spinbutton", { name: /^Initiative/ }).fill("1");
   await page.getByRole("button", { name: "Begin", exact: true }).click();
 
-  await bar(page).getByRole("button", { name: "Characters" }).click();
+  await toHub(page);
   await page.getByTestId("seat").selectOption({ label: "Bree Thorn" });
-  await bar(page).getByRole("button", { name: "Fight" }).click();
+  await bar(page).getByRole("button", { name: "Combat" }).click();
 
   /* Waiting: whose go it is, and nothing to press. Bree rolled lowest.
      The active one is HIDDEN, so it is not named — announcing it in the
@@ -381,7 +396,7 @@ test("the log reads differently per person", async ({ page }) => {
 
   await bar(page).getByRole("button", { name: "Characters" }).click();
   await page.getByTestId("seat").selectOption({ value: "dm" });
-  await bar(page).getByRole("button", { name: "Fight" }).click();
+  await bar(page).getByRole("button", { name: "Combat" }).click();
   await expect(page.getByTestId("bestiary-search"))
     .toHaveAttribute("placeholder", /Search/, { timeout: 30_000 });
   await page.getByTestId("bestiary-search").fill("goblin");
@@ -442,7 +457,7 @@ test("the DM applies a hit without leaving the party", async ({ page }) => {
   await page.screenshot({ path: "shots/party-hit.png", fullPage: true });
 
   /* And it lands on the character's own sheet, because there is one number. */
-  await page.getByRole("button", { name: "Characters" }).click();
+  await toHub(page);
   await page.getByTestId("seat").selectOption({ label: "Bree Thorn" });
   await bar(page).getByRole("button", { name: "Sheet" }).click();
   await expect(page.getByTestId("vitals")).toContainText(`${String(max)}`);
@@ -450,7 +465,7 @@ test("the DM applies a hit without leaving the party", async ({ page }) => {
 
 test("an encounter is kept, and put back on the table next week", async ({ page }) => {
   await hub(page);
-  await bar(page).getByRole("button", { name: "Fight" }).click();
+  await bar(page).getByRole("button", { name: "Combat" }).click();
   await expect(page.getByTestId("bestiary-search"))
     .toHaveAttribute("placeholder", /Search/, { timeout: 30_000 });
   await page.getByTestId("bestiary-search").fill("goblin");
@@ -467,7 +482,7 @@ test("an encounter is kept, and put back on the table next week", async ({ page 
   await expect(page.getByTestId("encounters")).toContainText("2 creatures");
 
   /* Clear the table entirely, the way a week passing would. */
-  await bar(page).getByRole("button", { name: "Fight" }).click();
+  await bar(page).getByRole("button", { name: "Combat" }).click();
   await page.getByRole("button", { name: "Clear the table" }).click();
   await expect(page.getByTestId("staged-row")).toHaveCount(0);
 

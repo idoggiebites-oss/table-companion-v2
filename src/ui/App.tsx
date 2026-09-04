@@ -1,11 +1,7 @@
 import { useRef, useState } from "react";
 import { Shell } from "./Shell";
 import { Button, ButtonRow } from "./Button";
-import { LogView } from "./LogView";
-import { logFor, mayRevert } from "../features/room/visibility";
-import { LastTime } from "../features/room/LastTime";
-import { WhatNow } from "../features/room/WhatNow";
-import { promptsFor } from "../features/room/prompts";
+import { LogScreen } from "../features/room/LogScreen";
 import { mayEditCharacter } from "../features/room/permissions";
 import { useFeatures } from "../features/progression/useFeatures";
 import { useCatalogue } from "../features/sheet/useCatalogue";
@@ -33,7 +29,6 @@ import { Party } from "../features/dm/Party";
 import { Staging } from "../features/dm/Staging";
 import { PrepScreen } from "../features/dm/PrepScreen";
 import { scenesFrom } from "../features/dm/scene";
-import { prepFrom } from "../features/dm/encounter";
 import { homebrewFrom, HOMEBREW } from "../features/sheet/homebrew";
 import { Fight as PlayerFight } from "../features/room/Fight";
 import { scoresOf } from "../features/creation/scores";
@@ -114,6 +109,17 @@ export function App({ dbName }: { dbName?: string }) {
   };
   const nav = (at: string) => (
     <TabBar tabs={tabs} current={currentOf(at, tabs)} onGo={go} />
+  );
+
+  /* One control, two homes. A player reaches it on the hub; a DM reaches it on
+     Party, because Task 26 took Characters off the DM's bar. Built once so the
+     two cannot drift apart. */
+  const seatControl = (
+    <SeatControl
+      seat={seat} mine={mine} all={roster.map((r) => r.id)}
+      nameOf={(id) => roster.find((r) => r.id === id)?.build.identity["name"] ?? "Unnamed"}
+      onSit={sit}
+    />
   );
 
   /*
@@ -283,6 +289,9 @@ export function App({ dbName }: { dbName?: string }) {
       <Party
         events={events}
         nav={nav("party")}
+        /* The seat control, reachable now that the DM's bar has no Characters
+           tab — see the prop's own note. */
+        who={seatControl}
         /* Sitting in them reads their whole sheet — `controls` is about the
            seat, not about authority (see `room/seat.ts`). */
         onOpen={(id) => { claim(id); setCharacter(id); setMode("sheet"); }}
@@ -320,13 +329,7 @@ export function App({ dbName }: { dbName?: string }) {
         onImport={(imported) => pushMany(adopt(imported, clock, newId()))}
         onLog={() => setMode("log")}
         nav={nav("characters")}
-        who={
-          <SeatControl
-            seat={seat} mine={mine} all={roster.map((r) => r.id)}
-            nameOf={(id) => roster.find((r) => r.id === id)?.build.identity["name"] ?? "Unnamed"}
-            onSit={sit}
-          />
-        }
+        who={seatControl}
         theme={theme}
         onTheme={flip}
         push={
@@ -373,23 +376,11 @@ export function App({ dbName }: { dbName?: string }) {
          * from behind: the fight screen can hide a creature as carefully as it
          * likes while this tab names it.
          */
-        <>
-          {/* The same events, read forwards. Above the rows because that is
-              what it IS — a person who wants the transactions scrolls past. */}
-          <LastTime events={logFor(events, dm)}
-                    nameOf={(id) => roster.find((r) => r.id === id)?.build.identity["name"] ?? "Someone"} />
-          {/* And what it changed. Each one goes somewhere; none of them goes
-              on its own. */}
-          <WhatNow onGo={go} prompts={promptsFor({
-            dm, tabs: tabs.map((x) => x.id), fight,
-            party: membersIn(events),
-            vitals,
-            scenes: scenesFrom(events).scenes.length,
-            encounters: prepFrom(events).encounters.length,
-          })} />
-          <LogView events={logFor(events, dm)} onUndo={undo}
-                   mayUndo={(e) => mayRevert(e, dm, clock.device)} />
-        </>
+        <LogScreen
+          events={events} dm={dm} device={clock.device} fight={fight}
+          vitals={vitals} tabs={tabs.map((x) => x.id)} onGo={go} onUndo={undo}
+          nameOf={(id) => roster.find((r) => r.id === id)?.build.identity["name"] ?? "Someone"}
+        />
       ) : (
         <p data-testid="loading">Opening the log…</p>
       )}

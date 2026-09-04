@@ -1,4 +1,4 @@
-import { Shell } from "../../ui/Shell";
+import { DmShell } from "./DmShell";
 import { creatureCount, rawXp, type Encounter } from "./encounter";
 import { Scenes } from "./Scenes";
 import type { Scene } from "./scene";
@@ -50,9 +50,11 @@ export function Prep({
   onForgetNpc: (id: string) => void;
 }) {
   return (
-    <Shell title="Prep" below={nav}>
-      <div className={s.split}>
-        <aside className={s.rail} aria-label="This session">
+    <DmShell
+      title="Prep"
+      below={nav}
+      rail={
+        <>
           <h2 className={s.railHead}>Session outline</h2>
           <ul className={s.outline}>
             {/* Only what is built, and in the order the column below reads.
@@ -71,10 +73,11 @@ export function Prep({
               <span className={s.count}>{npcs.length}</span>
             </li>
           </ul>
-        </aside>
-
-        <section className={s.main} aria-label="Encounters">
-          <div className={s.head}>
+        </>
+      }
+    >
+      <section className={s.main} aria-label="Encounters">
+        <div className={s.head}>
             <h2 className={s.title}>Encounters</h2>
             <button type="button" className={s.new} onClick={onNew}>
               Keep what is staged
@@ -136,9 +139,8 @@ export function Prep({
             * People last: neither an encounter nor a place depends on one,
             * and the party will meet most of these outside a fight entirely.
             */}
-          <Npcs npcs={npcs} onSave={onSaveNpc} onForget={onForgetNpc} />
-        </section>
-      </div>
-    </Shell>
+        <Npcs npcs={npcs} onSave={onSaveNpc} onForget={onForgetNpc} />
+      </section>
+    </DmShell>
   );
 }

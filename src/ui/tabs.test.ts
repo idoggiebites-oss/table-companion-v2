@@ -7,7 +7,7 @@ describe("the bar turns with the seat, and stays one bar", () => {
   it("gives the DM a party and no sheet", () => {
     /* V1's model: one navigation whose entries depend on who you are. A DM
        has no Sheet because a DM has no character. */
-    expect(ids({ dm: true })).toEqual(["party", "fight", "prep", "characters", "log"]);
+    expect(ids({ dm: true })).toEqual(["party", "fight", "prep", "log"]);
   });
 
   it("gives a player a sheet and no party", () => {
@@ -15,11 +15,27 @@ describe("the bar turns with the seat, and stays one bar", () => {
     expect(ids({})).toEqual(["sheet", "characters", "log"]);
   });
 
+  it("calls the DM's fight tab Combat, without touching its id", () => {
+    /* The id stays "fight" — it is routing, wired into App, its tests and
+       the journeys — only the label the DM reads changes. */
+    const fight = tabsFor({ dm: true }).find((t) => t.id === "fight");
+    expect(fight?.label).toBe("Combat");
+  });
+
+  it("drops Characters from the DM's bar, not the player's", () => {
+    /* Party.tsx's rows already open a sheet (App.tsx claim/setCharacter/
+       setMode("sheet")), which is the better door: one tap on the person
+       instead of two. */
+    expect(ids({ dm: true })).not.toContain("characters");
+    expect(ids({})).toContain("characters");
+  });
+
   it("draws nothing that is not built", () => {
     /* Home, Companion, Library and More were drawn for weeks and went
-       nowhere. Library returns when there is a compendium screen behind it. */
+       nowhere. Library returns when there is a compendium screen behind it.
+       Notes is the mockup's, not this bar's, until a Notes screen exists. */
     for (const seat of [{ dm: true }, {}]) {
-      for (const gone of ["home", "companion", "library", "more"]) {
+      for (const gone of ["home", "companion", "library", "more", "notes"]) {
         expect(ids(seat)).not.toContain(gone);
       }
     }

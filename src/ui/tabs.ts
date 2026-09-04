@@ -51,18 +51,32 @@ export function tabsFor({ dm, waiting, owed, fighting }: {
   return dm === true
     ? [
         { id: "party", label: "Party", icon: "person", dot: owed === true },
-        { id: "fight", label: "Fight", icon: "sword" },
+        /* Label only — the id stays "fight" because it is routing, wired into
+           App, its tests and the journeys; renaming it would touch all three
+           for no gain. "Combat" is what the DM's bar calls it now. */
+        { id: "fight", label: "Combat", icon: "sword" },
         /* Prep is the DM's alone: staging a fight is not a player's job, which
-           is the same line the Fight tab draws by seat. */
+           is the same line the Combat tab draws by seat. */
         { id: "prep", label: "Prep", icon: "book" },
-        ...rest,
+        /* No Characters here: `Party.tsx`'s rows are already buttons wired to
+           `onOpen`, and `App.tsx` (~line 288) wires that to
+           `claim(id); setCharacter(id); setMode("sheet")`. The DM reaches any
+           sheet by tapping the person on the Party screen, which is the
+           better door anyway — one step instead of two, and it starts from
+           the person rather than a bare list. No Notes tab either: the
+           mockup draws one, but this file's own rule is that what is not
+           built is not drawn, and there is no Notes screen yet. */
+        { id: "log", label: "Log", icon: "list" },
       ]
     : [
         { id: "sheet", label: "Sheet", icon: "person", dot: waiting === true },
         /* V1's playerTabs carry Combat: a fight IS a player's business, even
            though staging it is not. The has-content rule decides when — a tab
            reading "no fight yet" is the dead screen V1 refuses to draw. */
-        ...(fighting === true ? [{ id: "fight", label: "Fight", icon: "sword" as const }] : []),
+        /* "Combat", the same word the DM's bar uses. One screen with two
+           names depending on who is looking at it is a screen two people at
+           the same table cannot talk about. */
+        ...(fighting === true ? [{ id: "fight", label: "Combat", icon: "sword" as const }] : []),
         ...rest,
       ];
 }

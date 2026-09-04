@@ -9,6 +9,18 @@ import { createRoot } from "react-dom/client";
    media queries and dvh are honest. */
 export const PHONE = { width: 390, height: 844 } as const;
 
+/*
+ * And the desk. DESIGN.md: the DM side starts at tablet and desktop and
+ * collapses to a phone, so its screens have to be measured at both — a layout
+ * that is right at one width and broken at the other passes every assertion
+ * made at a single size.
+ *
+ * 1024 is the first width at which the DM shell shows three columns.
+ */
+export const DESK = { width: 1024, height: 768 } as const;
+
+export type Size = { readonly width: number; readonly height: number };
+
 export type Phone = {
   doc: Document;
   frame: HTMLIFrameElement;
@@ -21,10 +33,14 @@ export type Phone = {
   destroy(): void;
 };
 
-export async function mountPhone(ui: ReactNode, theme: "light" | "dark" = "light"): Promise<Phone> {
+export async function mountPhone(
+  ui: ReactNode,
+  theme: "light" | "dark" = "light",
+  size: Size = PHONE,
+): Promise<Phone> {
   const frame = document.createElement("iframe");
-  frame.width = String(PHONE.width);
-  frame.height = String(PHONE.height);
+  frame.width = String(size.width);
+  frame.height = String(size.height);
   frame.style.border = "0";
   document.body.appendChild(frame);
 
@@ -45,13 +61,13 @@ export async function mountPhone(ui: ReactNode, theme: "light" | "dark" = "light
     frame,
     screens() {
       const scroller = doc.querySelector('[data-testid="scroll"]');
-      if (!scroller) return doc.documentElement.scrollHeight / PHONE.height;
+      if (!scroller) return doc.documentElement.scrollHeight / size.height;
       const shell = scroller.parentElement!;
       let total = 0;
       for (const child of shell.children) {
         total += child === scroller ? scroller.scrollHeight : (child as HTMLElement).offsetHeight;
       }
-      return total / PHONE.height;
+      return total / size.height;
     },
     smallTargets() {
       const sel = 'button, a[href], input, select, textarea, [role="button"], [role="tab"], [role="checkbox"]';

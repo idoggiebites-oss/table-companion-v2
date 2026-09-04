@@ -1,0 +1,103 @@
+/* The DM's shell. Three declared rows: header, columns, tab bar.
+   See DmShell.tsx for why this surface is not the player's. */
+.shell {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  height: 100dvh;
+  background: var(--canvas);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-5);
+  min-height: var(--tap);
+  padding: 0 var(--s-6);
+  border-bottom: 1px solid var(--hairline);
+  background: var(--surface-1);
+}
+
+/* Reserved either side, so the title centres on the header rather than on the
+   space a trailing button leaves behind. Same rule as the player shell. */
+.slot { flex: 0 0 var(--tap); display: flex; align-items: center; min-width: 0; }
+.slotEnd { justify-content: flex-end; }
+
+.title {
+  flex: 1;
+  margin: 0;
+  text-align: center;
+  font-size: var(--t-note);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+/*
+ * One scroller on a phone. `min-height: 0` because a grid child will not
+ * shrink below its content otherwise, and the whole thing then grows past
+ * 100dvh instead of scrolling inside it.
+ */
+.columns {
+  min-height: 0;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s-5);
+  padding: var(--s-5) var(--card-pad);
+  align-content: start;
+}
+
+.rail, .work, .library {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+  min-width: 0;
+}
+
+/* ── two columns ───────────────────────────────────────────────────────────
+   The outline earns its place first: it is how you get anywhere. The library
+   drops under the work rather than beside it, because at this width a third
+   column would be narrower than the cards it holds. */
+@media (min-width: 46rem) {
+  .columns {
+    grid-template-columns: 15rem minmax(0, 1fr);
+    /* The columns each take the full height and scroll on their own — see the
+       component's header. `align-content: start` would collapse them. */
+    align-content: stretch;
+    overflow: hidden;
+    gap: var(--s-6);
+  }
+  .rail, .work, .library { overflow-y: auto; min-height: 0; }
+  .library { grid-column: 2; }
+
+  /*
+   * The work stops widening at a readable measure.
+   *
+   * Without this the middle column takes every spare pixel, and two things go
+   * wrong at once that both look fine at 390: prose runs to a 750px line, and
+   * a section heading with an action opposite it — `justify-content:
+   * space-between`, correct inside a card — throws that button most of a
+   * screen away from the words it belongs to. Found by looking at 1024.
+   *
+   * 34rem because that is the mockup's centre column (about 530px of its
+   * 1015) and the measure `Prep.module.css` already sets on its own prose.
+   * 46rem was tried first and changed nothing: it was wider than the track.
+   */
+  .work { max-width: 34rem; }
+}
+
+/* ── three columns ────────────────────────────────────────────────────────
+   The mockup's proportions, near enough: 21 / 52 / 27. Both rails are fixed
+   and the work takes the rest, so widening the window widens the thing being
+   worked on rather than the furniture around it. */
+@media (min-width: 64rem) {
+  .columns { grid-template-columns: 15rem minmax(0, 1fr) 17rem; }
+  .library { grid-column: 3; }
+  /* A screen with nothing reusable to show does not get an empty third track
+     — the work takes the room instead. */
+  .noLibrary { grid-template-columns: 15rem minmax(0, 1fr); }
+}
+
+/* Always rendered, empty or not — three declared rows need three children. */
+.band { min-width: 0; }
