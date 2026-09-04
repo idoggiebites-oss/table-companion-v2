@@ -1,0 +1,75 @@
+/* A rule above it, because everything else in the row is a control and this
+   is the one part that is read rather than pressed. */
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  margin-top: var(--s-4);
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--hairline);
+}
+
+.line {
+  margin: 0;
+  color: var(--ink-dim);
+  font-size: var(--t-note);
+  font-style: italic;
+}
+
+/* Six across on a phone: the scores are two characters and the row is the one
+   part of a statblock a DM reads by position rather than by label. */
+.abilities {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--s-1);
+}
+
+.ability {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: var(--s-1) 0;
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-control);
+  background: var(--surface-2);
+}
+
+.abbr { color: var(--ink-dim); font-size: var(--t-micro); text-transform: uppercase; }
+.score { font-size: var(--t-note); font-variant-numeric: tabular-nums; }
+.mod { color: var(--ink-dim); font-size: var(--t-micro); font-variant-numeric: tabular-nums; }
+
+.meta { display: flex; flex-direction: column; gap: 2px; margin: 0; }
+.fact { display: flex; gap: var(--s-2); }
+.label { color: var(--ink-dim); font-size: var(--t-micro); min-width: 5.5rem; }
+.value { margin: 0; font-size: var(--t-note); }
+
+.block { display: flex; flex-direction: column; gap: var(--s-2); }
+
+.head {
+  margin: 0;
+  color: var(--ink-dim);
+  font-size: var(--t-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.entry { display: flex; flex-direction: column; gap: 2px; }
+.name { margin: 0; font-size: var(--t-note); font-weight: 600; }
+
+/* The line the DM reads at arm's length, so it is not the colour of prose. */
+.numbers {
+  margin: 0;
+  color: var(--gold-ink);
+  font-size: var(--t-note);
+  font-variant-numeric: tabular-nums;
+}
+
+.desc { margin: 0; color: var(--ink-dim); font-size: var(--t-note); line-height: 1.45; }
+
+.cost {
+  margin-inline-start: var(--s-2);
+  color: var(--ink-dim);
+  font-size: var(--t-micro);
+  font-weight: 400;
+}

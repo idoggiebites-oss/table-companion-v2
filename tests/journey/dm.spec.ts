@@ -597,3 +597,40 @@ test("an encounter built with an environment arrives on the table with it", asyn
     .getByRole("button", { name: "Encounters" }).click();
   await expect(page.getByTestId("encounters")).toContainText("The dark cellar");
 });
+
+test("a staged creature shows everything it can do", async ({ page }) => {
+  /*
+   * The gap this closes. `creatures.ts` has had a `statblock()` loader since
+   * the content layer was written and **nothing ever called it**, so a staged
+   * creature was a name, an armour class and a hit point total. Every trait,
+   * every reaction and every legendary action was on disk and on no screen.
+   *
+   * V1 measured its own, smaller version of this: 17 of 57 entries surviving
+   * staging across seven common monsters. The line it was quietest about is
+   * Multiattack, which is dropped from nearly every statblock in the game and
+   * is the one that says how many times to swing.
+   */
+  await hub(page);
+  await bar(page).getByRole("button", { name: "Combat" }).click();
+  await page.getByTestId("bestiary-search").fill("adult red dragon");
+  await page.getByTestId("bestiary-row").first().click();
+
+  const row = page.getByTestId("staged-row").first();
+
+  /* Closed until asked: one statblock is 1KB, all 6,633 are 2.3MB gzipped. */
+  await expect(row.getByTestId("statblock")).toHaveCount(0);
+  await row.getByTestId("statblock-toggle").click();
+
+  const block = row.getByTestId("statblock");
+  await expect(block).toContainText("Multiattack");
+  await expect(block).toContainText("Legendary Resistance");
+  await expect(block).toContainText("Frightful Presence");
+
+  /* An action's numbers on a line of their own, which is the whole point: a
+     DM reads them at arm's length instead of leaving the fight to look up the
+     bite they have made forty times tonight. */
+  await expect(block).toContainText("+14 to hit");
+
+  /* And nothing here throws anything. The number still comes from a person. */
+  await expect(block.locator("button")).toHaveCount(0);
+});

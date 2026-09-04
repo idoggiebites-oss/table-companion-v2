@@ -2,6 +2,7 @@ import { loadLayer, type Fetcher } from "../../content/load";
 import type { CreatureEntry } from "../../content/schema";
 import type { Option, Lair } from "../../content/legendary";
 import { contentUrl } from "../../content/base";
+import type { Entry } from "./statblock";
 
 /**
  * The bestiary, as the DM side reads it.
@@ -20,22 +21,36 @@ import { contentUrl } from "../../content/base";
  * runs the parser, so what arrives here is the three things a dragon can do
  * rather than the eleven entries the book prints.
  */
+/*
+ * The detail file, as it is actually shaped on disk.
+ *
+ * Several of these were declared `unknown` or `string` and are neither. The
+ * view reads every one of them, so a wrong type here is a wrong line at the
+ * table: `senses` is `{notes}` on 666 of 900 sampled creatures and a bare
+ * string on the rest, `saves` and `skills` are modifier maps or null, and
+ * `immunities` is a list or null. Nothing carries resistances, vulnerabilities
+ * or condition immunities — V1's type had all three and the corpus has none,
+ * so they are absent here rather than optional-and-never-set.
+ *
+ * The identity half — name, size, type, AC, hit points, CR — is in the index
+ * row, not here, which is why the view takes both.
+ */
 export type Statblock = {
   readonly id: string;
   readonly abilities: Readonly<Record<string, number>>;
   readonly speed: Readonly<Record<string, string>>;
   readonly hitDice: string;
-  readonly senses: string;
+  readonly senses: string | { readonly notes?: string };
   readonly languages: string;
   readonly acNote: string;
   readonly alignment: string;
   readonly xp: number;
-  readonly saves: unknown;
-  readonly skills: unknown;
-  readonly immunities: unknown;
-  readonly traits: readonly { name: string; desc?: string }[];
-  readonly actions: readonly { name: string; desc?: string }[];
-  readonly reactions: readonly { name: string; desc?: string }[];
+  readonly saves: Readonly<Record<string, number>> | null;
+  readonly skills: Readonly<Record<string, number>> | null;
+  readonly immunities: readonly string[] | null;
+  readonly traits: readonly Entry[];
+  readonly actions: readonly Entry[];
+  readonly reactions: readonly Entry[];
   readonly legendary: readonly Option[];
   readonly lair: Lair | null;
 };

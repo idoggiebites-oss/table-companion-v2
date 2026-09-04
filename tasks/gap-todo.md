@@ -23,9 +23,9 @@ V1's two rules travel with it:
   number still comes from a person throwing something."*
 
 **Acceptance criteria:**
-- [ ] A staged creature's full statblock is readable from the fight
-- [ ] Traits render as prose; actions that name dice render as controls
-- [ ] Nothing here rolls
+- [x] A staged creature's full statblock is readable from the fight
+- [x] Traits render as prose; actions that name dice are lifted onto their own line — NOT a button: V1's tap routed into `savefrom` and the swing walkthrough, neither ported
+- [x] Nothing here rolls
 
 **Verification:** domain test on the parse; component test that a trait is not a
 button; a journey that stages a monster and reads an ability the fight never
