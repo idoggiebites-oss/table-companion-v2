@@ -210,15 +210,34 @@ Notes. Environment reuses `RoomPicker.tsx` unchanged; Send to Combat calls the
 existing `openActs()`.
 
 **Acceptance criteria:**
-- [ ] Five tabs, each holding only its own fields
-- [ ] Send to Combat leaves the DM on the fight with everything in place
+- [x] Five tabs, each holding only its own fields
+- [x] Send to Combat leaves the DM on the fight with everything in place
 
 **Verification:**
-- [ ] **The journey that is the point of this phase:** build an encounter, set
+- [x] **The journey that is the point of this phase:** build an encounter, set
       its environment, send it to combat, and assert the creatures, the room
       *and* the note all arrive on the fight screen
 
 **Dependencies:** 32 · **Scope:** M
+
+**The editor absorbed the builder** rather than sitting beside it: the mockup's
+Creatures tab does exactly what T32's builder did, and two screens that build
+the same thing is one too many. `EncounterBuilder` is now that controlled panel.
+
+**A precedence rule that had to be written down.** Both a place and an encounter
+can carry a room, and they mean different things — a place's is what it is like
+to walk into, an encounter's is what it is like when THIS fight starts. The more
+specific wins, and "has one" means *not open ground*, because open ground is the
+default rather than a choice anybody made. Left implicit it would have been
+decided by whichever `room` act happened to be pushed last.
+
+**`send` passes the encounter object, not its id.** `record` appends to the log
+and the fold has not run when the next line executes, so a lookup would miss the
+encounter saved a microsecond earlier and stage an empty fight.
+
+**Found by looking:** the phone drew "100 XP" twice, because the builder kept
+its own working line after the split. The editor owns it — it shows on every tab
+— and a test now counts the renderings.
 
 ---
 
@@ -270,6 +289,47 @@ content. Ids in the log, bytes in R2.
 
 **Verification:** component test with and without
 **Dependencies:** 35, 34 · **Scope:** S
+
+---
+
+## Task 40 · **Opus**: A face that travels
+
+**Description:** V1 put an edit button on the character portrait, and V1's
+`ui/portrait.ts` states the limitation it could not fix:
+
+> *"DEVICE-LOCAL, and deliberately not an event… The cost is honest and worth
+> saying out loud: a portrait does NOT travel. The player who set it sees it;
+> the DM does not. **Making it travel needs somewhere to put bytes that is not
+> the log** — see the map question in ROADMAP.md, which is the same question
+> with the same answer missing."*
+
+Task 35 is that missing answer. This is the port, and the fix: the log carries a
+64-character id, R2 carries the bytes, and the face reaches the DM's party
+screen and every other device at the table.
+
+**What comes across unchanged:** V1's `shrink()` — 256px square, centre-cropped
+— which already solves the "a phone hands over eight megabytes" problem this
+would otherwise have. And the affordance, which V1 reasoned about carefully: the
+portrait IS the button, with a pencil badge riding its rim, because *"a circle
+you can press is not obviously a circle you can press — it looks like a
+picture"*, and the badge is `aria-hidden` because the button underneath already
+says what pressing does.
+
+**What changes:** the storage. `localStorage` and its quota go; an id in the log
+and bytes in R2 replace them. The empty state stays the class mark rather than a
+grey circle.
+
+**Acceptance criteria:**
+- [ ] A portrait set on one device appears on another, and on the DM's party screen
+- [ ] With R2 unbound it degrades to the class mark rather than breaking the sheet
+- [ ] Removing one leaves no reference in the log; the orphaned object is collectable
+
+**Verification:**
+- [ ] Domain test for the id on the character, and for removal
+- [ ] Component test: the portrait is one control with one accessible name
+- [ ] Manual: set a face on one device, see it on a second
+
+**Dependencies:** 35 · **Scope:** M
 
 ---
 

@@ -1,6 +1,6 @@
 import { fold } from "../../core/fold";
 import type { Event } from "../../core/types";
-import { OPEN_GROUND, type Room } from "../../rules/5e/terrain";
+import { isOpenGround, OPEN_GROUND, type Room } from "../../rules/5e/terrain";
 import { staging, type Encounter } from "./encounter";
 import type { Act } from "./fight";
 
@@ -118,6 +118,22 @@ export function openActs(
       });
     }
   }
-  out.push({ act: "room", room: scene.room });
+  /*
+   * The encounter's own environment wins, when it has one.
+   *
+   * Both can carry a room and they mean different things: a place's is what
+   * that room is like to walk into, and an encounter's is what it is like when
+   * THIS fight starts — the same cellar with the lanterns knocked out. So the
+   * more specific one wins, and "has one" means it is not open ground, because
+   * open ground is the default rather than a choice anybody made.
+   *
+   * Stated here rather than left to whichever push happens to be last, because
+   * a precedence rule nobody wrote down is a precedence rule that gets swapped
+   * by an unrelated edit.
+   */
+  const room = encounter?.room !== undefined && !isOpenGround(encounter.room)
+    ? encounter.room
+    : scene.room;
+  out.push({ act: "room", room });
   return out;
 }

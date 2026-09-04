@@ -94,6 +94,7 @@ subtle invariant, an auth boundary, or a number that is quietly wrong.
 | 37 | Scene becomes Location | **Opus** | An event-sourced rename can silently drop history and still pass |
 | 38 | Scenes as beats | **Opus** | A new record referencing another, reaching the fight screen |
 | 39 | Key Scenes | **Sonnet** | An ordered list that enforces nothing |
+| 40 | A face that travels | **Opus** | Storage swapped under a control V1 already reasoned about; the failure mode is a sheet that breaks when R2 is absent |
 
 **Nothing here is Haiku-shaped**, and that is worth writing down rather than
 leaving an inviting gap: every task either ports reasoning out of V1 or lands

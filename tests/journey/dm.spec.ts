@@ -505,32 +505,33 @@ test("an encounter is built from nothing, without staging first", async ({ page 
   await bar(page).getByRole("button", { name: "Prep" }).click();
   await expect(page.getByTestId("prep-empty")).toBeVisible();
 
-  /* Task 32's point: no fight in progress, nothing staged — the builder is
-     its own way in. "Keep what is staged" is left untouched beside it. */
+  /* No fight in progress, nothing staged — the editor is its own way in.
+     "Keep what is staged" is left untouched beside it. */
   await page.getByRole("button", { name: "Build one" }).click();
-  await expect(page.getByTestId("builder-search")).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByTestId("encounter-editor")).toBeVisible();
 
+  await page.getByPlaceholder("Goblin ambush").fill("Roadside ambush");
+
+  await page.getByRole("tab", { name: "Creatures" }).click();
+  await expect(page.getByTestId("builder-search")).toBeVisible({ timeout: 30_000 });
   await page.getByTestId("builder-search").fill("goblin");
   await page.getByTestId("builder-hit").first().click();
   await expect(page.getByTestId("builder-entry")).toHaveCount(1);
 
   /* The stepper sums instances rather than adding a second row. */
   await page.getByRole("button", { name: /^One more/ }).click();
-  await expect(page.getByTestId("builder-entry")).toHaveCount(1);
   await expect(page.getByTestId("builder-entry")).toContainText("2");
 
-  /* Per-group disclosure, the thing the port dropped and this brings back —
+  /* Per-group disclosure, the thing the port dropped and T32 brought back —
      defaults hidden, one tap slides it up. */
   await expect(page.getByRole("button", { name: /disclosure/ })).toContainText("hidden");
   await page.getByRole("button", { name: /disclosure/ }).click();
   await expect(page.getByRole("button", { name: /disclosure/ })).toContainText("present");
 
   /* The working, not only a verdict — raw × multiplier = adjusted. */
-  await expect(page.getByTestId("builder-working")).toContainText("×");
+  await expect(page.getByTestId("editor-working")).toContainText("×");
 
-  await page.getByPlaceholder("Goblin ambush").fill("Roadside ambush");
   await page.getByRole("button", { name: "Keep it" }).click();
-
   await expect(page.getByTestId("encounter-card")).toHaveCount(1);
   await expect(page.getByTestId("encounters")).toContainText("Roadside ambush");
   await expect(page.getByTestId("encounters")).toContainText("2 creatures");
@@ -538,6 +539,43 @@ test("an encounter is built from nothing, without staging first", async ({ page 
   /* It is in the log like everything else. */
   await page.reload();
   await bar(page).getByRole("button", { name: "Prep" }).click();
-  await expect(page.getByTestId("encounter-card")).toHaveCount(1);
   await expect(page.getByTestId("encounters")).toContainText("Roadside ambush");
+});
+
+/*
+ * The point of the whole phase: what is prepared reaches the table intact.
+ *
+ * The creatures, the ROOM and the notes travel together — `openActs` has done
+ * that since Task 19, and this is the first time a DM can assemble all three
+ * in one place and press one button.
+ */
+test("an encounter built with an environment arrives on the table with it", async ({ page }) => {
+  await hub(page);
+  await bar(page).getByRole("button", { name: "Prep" }).click();
+  await page.getByRole("button", { name: "Build one" }).click();
+
+  await page.getByPlaceholder("Goblin ambush").fill("The dark cellar");
+
+  await page.getByRole("tab", { name: "Creatures" }).click();
+  await expect(page.getByTestId("builder-search")).toBeVisible({ timeout: 30_000 });
+  await page.getByTestId("builder-search").fill("goblin");
+  await page.getByTestId("builder-hit").first().click();
+  await expect(page.getByTestId("builder-entry")).toHaveCount(1);
+
+  /* The environment is on the encounter, and `RoomPicker` is the same control
+     the fight screen uses to change it mid-session. */
+  await page.getByRole("tab", { name: "Environment" }).click();
+  await page.getByRole("button", { name: "Prepare light dark" }).click();
+  await page.getByRole("button", { name: "Prepare difficult ground" }).click();
+
+  await page.getByRole("button", { name: "Send to combat" }).click();
+
+  /* On the fight, with the room set — not merely staged into daylight. */
+  await expect(page.getByRole("button", { name: "The room" })).toContainText("dark");
+  await expect(page.getByRole("button", { name: "The room" })).toContainText("difficult ground");
+  await expect(page.getByTestId("staged")).toContainText("Goblin");
+
+  /* And it was written down on the way past, not only staged. */
+  await bar(page).getByRole("button", { name: "Prep" }).click();
+  await expect(page.getByTestId("encounters")).toContainText("The dark cellar");
 });

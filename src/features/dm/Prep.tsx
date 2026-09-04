@@ -1,6 +1,7 @@
+import { useState } from "react";
 import { DmShell } from "./DmShell";
 import { creatureCount, rawXp, type Encounter } from "./encounter";
-import { EncounterBuilder } from "./EncounterBuilder";
+import { EncounterEditor } from "./EncounterEditor";
 import { Scenes } from "./Scenes";
 import type { Scene } from "./scene";
 import { Npcs } from "./Npcs";
@@ -37,7 +38,8 @@ import s from "./Prep.module.css";
  *     decision of its own rather than arriving inside a port.
  */
 export function Prep({
-  session, encounters, scenes, npcs, partyLevels, nav, onStage, onForget, onNew, onSaveEncounter,
+  session, encounters, scenes, npcs, partyLevels, nav, onStage, onForget, onNew,
+  onSaveEncounter, onSendEncounter,
   onSaveSession, onForgetSession,
   onPrepare, onForgetScene, onOpenScene, onSaveNpc, onForgetNpc,
 }: {
@@ -55,12 +57,16 @@ export function Prep({
   onForget: (id: string) => void;
   onNew: () => void;
   onSaveEncounter: (e: Encounter) => void;
+  /** Save it and put it straight on the table — see `PrepScreen`'s `send`. */
+  onSendEncounter: (e: Encounter) => void;
   onPrepare: (s: Scene) => void;
   onForgetScene: (id: string) => void;
   onOpenScene: (s: Scene) => void;
   onSaveNpc: (n: Npc) => void;
   onForgetNpc: (id: string) => void;
 }) {
+  const [editing, setEditing] = useState(false);
+
   return (
     <DmShell
       title="Prep"
@@ -112,9 +118,14 @@ export function Prep({
       <section className={s.main} aria-label="Encounters">
         <div className={s.head}>
             <h2 className={s.title}>Encounters</h2>
-            <button type="button" className={s.new} onClick={onNew}>
-              Keep what is staged
-            </button>
+            <span className={s.actions}>
+              <button type="button" className={s.new} onClick={() => setEditing((v) => !v)}>
+                {editing ? "Hide" : "Build one"}
+              </button>
+              <button type="button" className={s.new} onClick={onNew}>
+                Keep what is staged
+              </button>
+            </span>
           </div>
 
           {/*
@@ -122,7 +133,14 @@ export function Prep({
             * DM already assembled on the table is a different act from
             * planning one cold, days before anybody sits down.
             */}
-          <EncounterBuilder partyLevels={partyLevels} onSave={onSaveEncounter} />
+          {editing && (
+            <EncounterEditor
+              partyLevels={partyLevels}
+              onSave={onSaveEncounter}
+              onSend={onSendEncounter}
+              onClose={() => setEditing(false)}
+            />
+          )}
 
           {encounters.length === 0 ? (
             <p className={s.empty} data-testid="prep-empty">

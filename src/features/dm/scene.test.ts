@@ -164,3 +164,30 @@ describe("opening one, in a press", () => {
     expect(f.combatants).toEqual([]);
   });
 });
+
+describe("whose environment wins", () => {
+  const dark = { light: "dark" as const, terrain: [] };
+  const foggy = { light: "bright" as const, terrain: ["obscured" as const] };
+  const id = (i: number) => `c${String(i)}`;
+  const place: Scene = { id: "s1", name: "The cellar", room: dark, encounter: "e1" };
+  const base: Encounter = { id: "e1", name: "Ghouls", place: "", entries: [] };
+
+  it("the encounter's, when it has one", () => {
+    /* A place's room is what it is like to walk into; an encounter's is what
+       it is like when THIS fight starts — the same cellar with the lanterns
+       knocked out. The more specific one wins. */
+    const f = fightFrom(openActs(place, { ...base, room: foggy }, id).map(fight));
+    expect(f.room).toEqual(foggy);
+  });
+
+  it("the place's, when the encounter says nothing", () => {
+    expect(fightFrom(openActs(place, base, id).map(fight)).room).toEqual(dark);
+  });
+
+  it("and open ground on an encounter is silence, not a choice", () => {
+    /* Every encounter has a room by default. Treating that default as an
+       override would silently switch the lights on in a dark cellar. */
+    const f = fightFrom(openActs(place, { ...base, room: OPEN_GROUND }, id).map(fight));
+    expect(f.room).toEqual(dark);
+  });
+});

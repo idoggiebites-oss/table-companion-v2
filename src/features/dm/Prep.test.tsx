@@ -9,7 +9,8 @@ afterEach(() => phone?.destroy());
 
 const nothing = () => {};
 const noop = {
-  onStage: nothing, onForget: nothing, onNew: nothing, onSaveEncounter: nothing,
+  onStage: nothing, onForget: nothing, onNew: nothing,
+  onSaveEncounter: nothing, onSendEncounter: nothing,
   onSaveSession: nothing, onForgetSession: nothing,
   onPrepare: nothing, onForgetScene: nothing, onOpenScene: nothing,
   onSaveNpc: nothing, onForgetNpc: nothing,

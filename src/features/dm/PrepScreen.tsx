@@ -37,6 +37,24 @@ export function PrepScreen({ events, fight, nav, record, onOpened }: {
     onOpened(sc.id);
   };
 
+  /**
+   * Save it, then put it on the table.
+   *
+   * The encounter object goes straight to `openActs` rather than being looked
+   * up by id the way `open` does. That is not a shortcut: `record` appends to
+   * the log and the fold behind `events` has not run yet when this line
+   * executes, so a lookup would miss the encounter that was saved a
+   * microsecond earlier and stage an empty fight. Passing the object is the
+   * only version of this that is correct on the first press.
+   */
+  const send = (e: Encounter) => {
+    const sc = { ...blankScene(`st${Date.now().toString(36)}`), encounter: e.id };
+    for (const a of openActs(sc, e, (i) => `${e.id}-${String(i)}-${String(Date.now())}`)) {
+      record(FIGHT, a as unknown as Record<string, unknown>);
+    }
+    onOpened(sc.id);
+  };
+
   /*
    * A table plans one session at a time even though the log can hold many —
    * `save` always appends past an edit, so the LAST one is whichever session
@@ -56,6 +74,7 @@ export function PrepScreen({ events, fight, nav, record, onOpened }: {
   return (
     <Prep
       session={session}
+      onSendEncounter={send}
       onSaveSession={(sn) => record(SESSION, { act: "save", session: sn } as unknown as Record<string, unknown>)}
       onForgetSession={(id) => record(SESSION, { act: "forget", id })}
       encounters={prepFrom(events).encounters}

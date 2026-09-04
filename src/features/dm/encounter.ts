@@ -1,4 +1,6 @@
 import { fold } from "../../core/fold";
+import type { Room } from "../../rules/5e/terrain";
+import type { Band } from "../../rules/5e/encounter";
 import type { Event } from "../../core/types";
 import type { Combatant, Disclosure } from "./fight";
 
@@ -28,12 +30,52 @@ export type Entry = {
   readonly disclosure: Disclosure;
 };
 
+/**
+ * What kind of scene this is.
+ *
+ * A prepared encounter is not always a fight — the mockup's own list has a
+ * "Prison Cells / Social · Exploration" row with no creatures in it, and a DM
+ * who can only prepare combat has to keep the other two thirds of the night
+ * somewhere else.
+ */
+export const ENCOUNTER_KINDS = ["combat", "social", "exploration"] as const;
+export type EncounterKind = (typeof ENCOUNTER_KINDS)[number];
+
 export type Encounter = {
   readonly id: string;
   readonly name: string;
   /** Where it happens, in the DM's own words. "Forest Road". */
   readonly place: string;
   readonly entries: readonly Entry[];
+  readonly kind?: EncounterKind;
+  /**
+   * What the room is like when this one starts.
+   *
+   * On the encounter and not only on the place, because the mockup puts
+   * Environment in the encounter editor and because it is true: the same
+   * cellar is a different fight in the dark. `openActs` prefers this over the
+   * place's when it has been set — see the precedence note there.
+   */
+  readonly room?: Room;
+  /** What the party is trying to do. "Survive the ambush." */
+  readonly objective?: string;
+  /** What the DM tells themselves about it, in a line. */
+  readonly summary?: string;
+  /** What it is worth, in the DM's own words rather than a coin model. */
+  readonly rewards?: string;
+  /** Anything else. "Yazuk retreats when reduced below half." */
+  readonly notes?: string;
+  /**
+   * The DM disagreeing with the gauge.
+   *
+   * `rules/5e/encounter.ts` computes a band from the party's own levels, and
+   * it is right about the arithmetic and blind to everything else: a party at
+   * half hit points, reinforcements two rooms away, a bridge that collapses.
+   * So the computed band is what shows unless this is set, and this is never
+   * written by the app. Advice, not enforcement — the same shape as
+   * `Recommended.tsx`.
+   */
+  readonly difficulty?: Band;
 };
 
 /** A fresh encounter, before anything has been added to it. */

@@ -1,0 +1,73 @@
+.wrap {
+  display: flex; flex-direction: column; gap: var(--s-4);
+  padding: var(--s-5); background: var(--surface-1);
+  border: var(--panel-border); border-radius: var(--r-card);
+}
+
+/* Five tabs that wrap rather than scroll: on a phone two rows of five short
+   words read faster than one row you have to swipe. */
+.tabs { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+
+.tab {
+  min-height: var(--tap); padding: 0 var(--s-5); font-size: var(--t-sm);
+  color: var(--ink-dim); background: none;
+  border: 1px solid var(--hairline); border-radius: var(--r-pill);
+}
+.on { color: var(--ink); background: var(--gold-wash); border-color: var(--gold-fill); }
+
+.panel { display: flex; flex-direction: column; gap: var(--s-3); min-width: 0; }
+
+.field { display: flex; flex-direction: column; gap: var(--s-2); min-width: 0; }
+
+.tag {
+  font-size: var(--t-note); letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--ink-dim);
+}
+
+.text, .note {
+  font: inherit; font-size: var(--t-sm); color: var(--ink);
+  background: var(--surface-2); border: 1px solid var(--hairline);
+  border-radius: var(--r-control); padding: var(--s-4) var(--s-5); min-width: 0;
+}
+.text { min-height: var(--tap); }
+.note { resize: vertical; }
+
+/* Three exclusive choices read as one control. */
+.seg { display: flex; }
+.seg .pick { flex: 1; border-radius: 0; text-transform: capitalize; }
+.seg .pick:first-child { border-radius: var(--r-control) 0 0 var(--r-control); }
+.seg .pick:last-child { border-radius: 0 var(--r-control) var(--r-control) 0; }
+.seg .pick + .pick { border-left: none; }
+
+.pick {
+  min-height: var(--tap); font-size: var(--t-sm); color: var(--ink);
+  background: var(--surface-1); border: 1px solid var(--hairline);
+}
+
+/* The working, kept on every tab: it is the number every other field is being
+   adjusted against. */
+.working {
+  margin: 0; font-family: var(--font-mono); font-size: var(--t-aside);
+  color: var(--ink-dim);
+}
+
+.row { display: flex; flex-wrap: wrap; gap: var(--s-3); align-items: center; }
+
+.keep, .send {
+  min-height: var(--tap); padding: 0 var(--s-5); font-size: var(--t-sm);
+  border-radius: var(--r-control);
+}
+.keep {
+  color: var(--ink); background: var(--surface-1); border: 1px solid var(--hairline);
+}
+/* The gold one is the one this screen exists for. */
+.send {
+  color: var(--on-gold); background: var(--gold-fill); border: 1px solid var(--gold-edge);
+}
+.keep:disabled, .send:disabled { opacity: 0.45; }
+
+.cancel {
+  min-height: var(--tap); padding: 0 var(--s-5); font-size: var(--t-sm);
+  color: var(--ink-dim); background: none;
+  border: 1px solid var(--hairline); border-radius: var(--r-control);
+}
