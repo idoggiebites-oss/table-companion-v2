@@ -136,8 +136,11 @@ discretion — *"exp or milestone"*, so both.
 
 ## Phase 10b — the consequences
 
-*(Tasks 63 and 64 — legendary and lair — folded into Task 56, where V1 keeps
-them: the same `Combat` record, tracked per round.)*
+*(Task 63, legendary actions, shipped inside Task 56 — V1 keeps them in the
+same record and so does this. **Task 64, lair actions, is still open:** the
+count they fire on lives in the detail file, and the fight only carries the
+index's boolean, so the number has to be plumbed before anything can watch
+for it.)*
 
 ## Task 65 · **Sonnet**: A goblin with a name and a different axe
 Deriving from an existing statblock, which is a different and easier thing than

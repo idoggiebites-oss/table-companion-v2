@@ -1,0 +1,35 @@
+/* The statblock panel under a staged row: the toggle, what is left of a
+   legendary budget, and the block itself. Split out of `Combatant.module.css`
+   at its budget, along the seam that was already there — this is its own
+   component with its own state and its own fetch. */
+/* The statblock sits under the row and spans it, because a paragraph of prose
+   in one grid cell of a control row is unreadable at any width. */
+.book { grid-column: 1 / -1; display: flex; flex-direction: column; }
+
+.bookOpen {
+  align-self: flex-start;
+  min-height: var(--tap);
+  /* --s-2 is 4px, which wrapped "Hide statblock" onto two lines inside a
+     50px box. A control this quiet still has to read as one word. */
+  padding: 0 var(--s-5);
+  white-space: nowrap;
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-pill);
+  background: none;
+  color: var(--ink-dim);
+  font-family: var(--font-sans);
+  font-size: var(--t-micro);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.bookNone { margin: var(--s-2) 0 0; color: var(--ink-dim); font-size: var(--t-note); }
+
+.legLeft {
+  align-self: flex-start;
+  padding: var(--s-1) 0;
+  color: var(--gold-ink);
+  font-size: var(--t-micro);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}

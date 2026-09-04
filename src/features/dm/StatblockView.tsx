@@ -23,10 +23,19 @@ import s from "./StatblockView.module.css";
  * not the detail file. The fight has the name and the AC on the combatant
  * already and does not load 141KB of index to caption one goblin.
  */
-export function StatblockView({ block, head }: {
+export function StatblockView({ block, head, onTake }: {
   readonly block: Statblock;
   /** "Large dragon · AC 19 (natural armor) · 195 hp" — whatever the caller knows. */
   readonly head?: string;
+  /**
+   * Given, a legendary option becomes something to take.
+   *
+   * The one place in this view that is a control rather than prose, and it
+   * earns it: a legendary action is taken on somebody ELSE's turn, from a
+   * budget, and the text saying what it does is right here. The fight passes
+   * this only when the rule allows it — never on the creature's own turn.
+   */
+  readonly onTake?: (option: Option) => void;
 }) {
   const senses = sensesText(block.senses);
   const speed = speedText(block.speed);
@@ -59,7 +68,7 @@ export function StatblockView({ block, head }: {
       <Block title="Traits" entries={block.traits} />
       <Block title="Actions" entries={block.actions} />
       <Block title="Reactions" entries={block.reactions} />
-      <Legendary options={block.legendary} />
+      <Legendary options={block.legendary} {...(onTake === undefined ? {} : { onTake })} />
       {block.lair !== null && (
         /* Its own block because it acts on its own initiative count, and a DM
            who has forgotten that is the reason the number is in the heading. */
@@ -106,13 +115,17 @@ function Block({ title, entries }: { title: string; entries: readonly Entry[] })
   );
 }
 
-function Legendary({ options }: { options: readonly Option[] }) {
+function Legendary({ options, onTake }: {
+  options: readonly Option[];
+  onTake?: (option: Option) => void;
+}) {
   if (options.length === 0) return null;
   return (
     <section className={s.block}>
       <h4 className={s.head}>Legendary actions</h4>
-      {options.map((o) => (
-        <div className={s.entry} key={o.name}>
+      {options.map((o) => {
+        const inner = (
+          <>
           <p className={s.name}>
             {o.name}
             {/* The book prints "(Costs 2 Actions)" only on the ones that cost
@@ -120,8 +133,18 @@ function Legendary({ options }: { options: readonly Option[] }) {
             {o.cost > 1 && <span className={s.cost}>costs {o.cost}</span>}
           </p>
           <p className={s.desc}>{o.desc}</p>
-        </div>
-      ))}
+          </>
+        );
+        return onTake === undefined ? (
+          <div className={s.entry} key={o.name}>{inner}</div>
+        ) : (
+          <button type="button" className={`${s.entry} ${s.take}`} key={o.name}
+                  data-testid="legendary-option"
+                  aria-label={`Take ${o.name}`} onClick={() => { onTake(o); }}>
+            {inner}
+          </button>
+        );
+      })}
     </section>
   );
 }

@@ -109,25 +109,27 @@
 }
 .picker { display: flex; flex-wrap: wrap; gap: var(--s-2); grid-column: 1 / -1; }
 
-/* The statblock sits under the row and spans it, because a paragraph of prose
-   in one grid cell of a control row is unreadable at any width. */
-.book { grid-column: 1 / -1; display: flex; flex-direction: column; }
+/* The three, laid out as three. Spent reads as spent — struck through and
+   dimmed — because "has that one used its bonus action" is the question this
+   row exists to answer at a glance, six goblins at a time. */
+.econ { grid-column: 1 / -1; display: flex; gap: var(--s-2); }
 
-.bookOpen {
-  align-self: flex-start;
+.econStep {
+  flex: 1;
   min-height: var(--tap);
-  /* --s-2 is 4px, which wrapped "Hide statblock" onto two lines inside a
-     50px box. A control this quiet still has to read as one word. */
-  padding: 0 var(--s-5);
-  white-space: nowrap;
   border: 1px solid var(--hairline);
-  border-radius: var(--r-pill);
-  background: none;
+  border-radius: var(--r-control);
+  background: var(--surface-2);
   color: var(--ink-dim);
   font-family: var(--font-sans);
   font-size: var(--t-micro);
   letter-spacing: 0.06em;
   text-transform: uppercase;
+  cursor: pointer;
 }
 
-.bookNone { margin: var(--s-2) 0 0; color: var(--ink-dim); font-size: var(--t-note); }
+.econGone {
+  background: none;
+  color: var(--steel);
+  text-decoration: line-through;
+}

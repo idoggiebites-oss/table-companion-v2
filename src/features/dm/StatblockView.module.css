@@ -73,3 +73,17 @@
   font-size: var(--t-micro);
   font-weight: 400;
 }
+
+/* A legendary option is the one thing in here you press, so it looks pressable
+   — and only when the fight has handed it a way to be taken. */
+.take {
+  width: 100%;
+  text-align: start;
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--gold-edge);
+  border-radius: var(--r-control);
+  background: var(--gold-wash);
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}

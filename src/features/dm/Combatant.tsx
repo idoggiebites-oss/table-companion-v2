@@ -1,17 +1,37 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { DISCLOSURE, type Act, type Combatant as Row } from "./fight";
 import { hpOf } from "./disclosure";
 import { CONDITIONS, conditionById } from "../../rules/5e/conditions";
-import { statblock, type Statblock } from "./creatures";
-import { StatblockView } from "./StatblockView";
+import { CreatureBook } from "./CreatureBook";
+import { ECONOMY, spentBy, legendaryUsed } from "./economy";
+import { mayTake, type Option } from "../../content/legendary";
+import type { Fight } from "./fight";
 import s from "./Combatant.module.css";
 
 /** How much of this one the table can see, and a way off the table. */
-export function Staged({ c, onAct, now }: {
+export function Staged({ c, onAct, now, fight }: {
   c: Row; onAct: (a: Act) => void; now: boolean;
+  /** Given once the fight runs: what this one has spent, and what it has left. */
+  fight?: Fight;
 }) {
   const at = hpOf(c);
   const [picking, setPicking] = useState(false);
+
+  /*
+   * Legendary actions, and the rule that makes them a threat: they are taken
+   * on somebody ELSE's turn, from a budget that only comes back when this
+   * creature's own turn opens. `content/legendary.ts` has held `mayTake` with
+   * exactly that since the content layer was written, and nothing called it —
+   * 702 shipped creatures have them.
+   *
+   * The budget travels on the combatant from the index row; the options and
+   * their text arrive with the statblock, which is where they are taken.
+   */
+  const budget = c.source.kind === "creature" ? c.source.legendary ?? 0 : 0;
+  const used = fight === undefined ? 0 : legendaryUsed(fight, c.id);
+  const left = budget === 0 ? null : Math.max(0, budget - used);
+  const mayLegendary = fight !== undefined && fight.phase === "active"
+    && mayTake({ budget, spent: used, isTheirTurn: now });
   return (
     <li className={`${s.row} ${now ? s.now : ""}`} data-testid="staged-row"
         aria-current={now ? "true" : undefined}>
@@ -107,56 +127,38 @@ export function Staged({ c, onAct, now }: {
           ))}
         </span>
       )}
-      {c.source.kind === "creature" && <Book id={c.source.statblock} name={c.name} />}
+      {/*
+        * The economy, and only while a fight is running. Before that there are
+        * no turns to spend anything in, and a row of unpressable boxes on the
+        * staging screen is furniture.
+        */}
+      {fight !== undefined && fight.phase === "active" && (
+        <span className={s.econ} role="group" aria-label={`What ${c.name} has spent`}>
+          {ECONOMY.map((kind) => {
+            const gone = spentBy(fight, c.id)[kind];
+            return (
+              <button key={kind} type="button"
+                      className={`${s.econStep} ${gone ? s.econGone : ""}`}
+                      aria-pressed={gone} data-testid={`econ-${kind}`}
+                      aria-label={`${c.name}: ${kind} ${gone ? "spent" : "in hand"}`}
+                      onClick={() => onAct({ act: "spend", id: c.id, kind, on: !gone })}>
+                {kind}
+              </button>
+            );
+          })}
+        </span>
+      )}
+      {c.source.kind === "creature" && (
+        <CreatureBook
+          id={c.source.statblock} name={c.name}
+          {...(left === null ? {} : { left })}
+          {...(mayLegendary
+            ? { onTake: (o: Option) => { onAct({ act: "legendary", id: c.id, cost: o.cost }); } }
+            : {})}
+        />
+      )}
       <button type="button" className={s.off} aria-label={`Take ${c.name} off the table`}
               onClick={() => onAct({ act: "unstage", id: c.id })}>×</button>
     </li>
-  );
-}
-
-/**
- * What this creature can do, on the screen the DM cannot leave.
- *
- * Closed by default and fetched on first open. One statblock is 1KB at the
- * median; all 6,633 are 2.3MB gzipped, which is why `creatures.ts` splits the
- * index from the detail and why staging three goblins must not pay for the
- * other six thousand.
- *
- * It is inside the DM's own row, so the disclosure ladder is untouched — a
- * player never renders `Staged`. That is the same argument the Book tab makes:
- * whoever can read the statblock knows the armour class, which is exactly what
- * the ladder exists to withhold.
- */
-function Book({ id, name }: { id: string; name: string }) {
-  const [open, setOpen] = useState(false);
-  const [block, setBlock] = useState<Statblock | null>(null);
-  const [missing, setMissing] = useState(false);
-
-  useEffect(() => {
-    if (!open || block !== null || missing) return;
-    let live = true;
-    void statblock(id).then((b) => {
-      if (!live) return;
-      if (b === null) setMissing(true); else setBlock(b);
-    });
-    return () => { live = false; };
-  }, [open, id, block, missing]);
-
-  return (
-    <span className={s.book}>
-      <button type="button" className={s.bookOpen} aria-expanded={open}
-              data-testid="statblock-toggle"
-              onClick={() => setOpen((o) => !o)}>
-        {open ? "Hide statblock" : "Statblock"}
-      </button>
-      {open && block !== null && <StatblockView block={block} />}
-      {/* An SRD-only build ships no detail files at all, so this is a normal
-          state rather than an error, and it says which of the two it is. */}
-      {open && missing && (
-        <p className={s.bookNone} data-testid="statblock-missing">
-          No statblock for {name} in this build.
-        </p>
-      )}
-    </span>
   );
 }

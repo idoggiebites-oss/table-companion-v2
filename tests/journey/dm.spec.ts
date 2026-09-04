@@ -716,3 +716,56 @@ test("reinforcements join a fight without wiping it", async ({ page }) => {
   await expect(page.getByTestId("staged")).toContainText("Adult Red Dragon");
   await expect(page.getByTestId("staged-row")).not.toHaveCount(1);
 });
+
+test("a creature's turn is spent, and a dragon acts on somebody else's", async ({ page }) => {
+  /*
+   * V1's combat.ts, the half V2 never had. Its own note on why the economy
+   * exists: before it, "a DM running six goblins tracked 'has that one used
+   * its bonus action' in their head, six times, every round."
+   *
+   * And the legendary rule that makes a dragon a dragon — taken on somebody
+   * ELSE's turn, never its own, from a budget that only returns when its turn
+   * opens. `content/legendary.ts` has held `mayTake` with that rule since the
+   * content layer was written and nothing ever called it.
+   */
+  await hub(page);
+  await bar(page).getByRole("button", { name: "Combat" }).click();
+
+  await page.getByTestId("bestiary-search").fill("adult red dragon");
+  await page.getByTestId("bestiary-row").first().click();
+  await page.getByTestId("bestiary-search").fill("goblin");
+  await page.getByTestId("bestiary-row").first().click();
+
+  const dragon = page.getByTestId("staged-row").first();
+  const goblin = page.getByTestId("staged-row").nth(1);
+  await dragon.getByTestId("initiative").fill("20");
+  await goblin.getByTestId("initiative").fill("5");
+
+  /* Nothing to spend before there are turns to spend it in. */
+  await expect(page.getByTestId("econ-action")).toHaveCount(0);
+  await page.getByRole("button", { name: /^Begin/ }).click();
+  await expect(dragon.getByTestId("econ-action")).toBeVisible();
+
+  /* The dragon is up, so it may NOT take a legendary action: "a dragon that
+     legendary-acts on its own turn is taking four actions instead of one." */
+  await expect(dragon.getByTestId("legendary-left")).toContainText("3 legendary left");
+  await dragon.getByTestId("statblock-toggle").click();
+  await expect(dragon.getByTestId("legendary-option")).toHaveCount(0);
+
+  /* Spend its action; the goblin's is untouched — the whole point of one
+     economy per creature rather than one for the table. */
+  await dragon.getByTestId("econ-action").click();
+  await expect(dragon.getByTestId("econ-action")).toHaveAttribute("aria-pressed", "true");
+  await expect(goblin.getByTestId("econ-action")).toHaveAttribute("aria-pressed", "false");
+
+  /* Now the goblin's turn — and the dragon's options become things to take. */
+  await page.getByRole("button", { name: /^Next:/ }).click();
+  await expect(dragon.getByTestId("legendary-option").first()).toBeVisible();
+  await dragon.getByTestId("legendary-option").first().click();
+  await expect(dragon.getByTestId("legendary-left")).toContainText("2 legendary left");
+
+  /* Round the table: the dragon's own turn opens and everything comes back. */
+  await page.getByRole("button", { name: /^Next:/ }).click();
+  await expect(dragon.getByTestId("legendary-left")).toContainText("3 legendary left");
+  await expect(dragon.getByTestId("econ-action")).toHaveAttribute("aria-pressed", "false");
+});

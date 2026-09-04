@@ -160,7 +160,8 @@ export function Staging({ fight, party = [], note, place, nav, onAct }: {
                         act: "stage",
                         id: `${c.id}-${String(Date.now())}-${String(Math.random()).slice(2, 6)}`,
                         name: c.name,
-                        source: { kind: "creature", statblock: c.id, max: c.hp, ac: c.ac, cr: c.cr },
+                        source: { kind: "creature", statblock: c.id, max: c.hp, ac: c.ac, cr: c.cr,
+                                  ...(c.legendary > 0 ? { legendary: c.legendary } : {}) },
                       })}>
                 <span className={s.hitName}>{c.name}</span>
                 <span className={s.hitNote}>{describe(c)}</span>
@@ -236,7 +237,7 @@ export function Staging({ fight, party = [], note, place, nav, onAct }: {
           ) : (
             <ul className={s.staged} data-testid="staged">
               {order.map((c) => (
-                <Staged key={c.id} c={c} onAct={onAct} now={active?.id === c.id} />
+                <Staged key={c.id} c={c} onAct={onAct} now={active?.id === c.id} fight={fight} />
               ))}
             </ul>
           )}

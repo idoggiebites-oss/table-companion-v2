@@ -3,6 +3,7 @@ import type { Event } from "../../core/types";
 import { OPEN_GROUND, type Room } from "../../rules/5e/terrain";
 import type { Claim } from "./claim";
 import { keepingTurn, orderOf, REORDERS } from "./turnorder";
+import { openingTurn, spentBy, type Economy, type EconomyKind } from "./economy";
 
 export const FIGHT = "fight.act";
 
@@ -35,6 +36,11 @@ export type Source =
          arithmetic this exists to do, wrong quietly. Optional so a fight
          staged before this existed still replays. */
       readonly cr?: number;
+      /* How many legendary actions a round. From the INDEX row, which carries
+         it as a count — the options' names and costs are in the detail file
+         and arrive with the statblock panel. Optional so a fight staged before
+         this existed still replays; absent means none. */
+      readonly legendary?: number;
     };
 
 export type Combatant = {
@@ -86,10 +92,15 @@ export type Fight = {
    * lights just went out" is not editing a prepared place.
    */
   readonly room: Room;
+  /** Spent this TURN, per creature. The reasoning is in `economy.ts`. */
+  readonly spent: Readonly<Record<string, Economy>>;
+  /** Legendary actions used this ROUND, per creature. Also `economy.ts`. */
+  readonly legendarySpent: Readonly<Record<string, number>>;
 };
 
 export const NO_FIGHT: Fight = {
   phase: "staging", round: 0, turn: 0, combatants: [], claims: [], room: OPEN_GROUND,
+  spent: {}, legendarySpent: {},
 };
 
 /** What the DM does to a fight while assembling it. */
@@ -123,6 +134,11 @@ export type Act =
    */
   | { readonly act: "room"; readonly room: Room }
   | { readonly act: "begin" }
+  /* Spent or handed back. `on: false` because a DM mis-taps, and correcting a
+     checkbox mid-turn should not go through the log. */
+  | { readonly act: "spend"; readonly id: string; readonly kind: EconomyKind; readonly on: boolean }
+  /* `cost` because the book prints "(Costs 2 Actions)" on some of them. */
+  | { readonly act: "legendary"; readonly id: string; readonly cost: number }
   /**
    * `from` is the turn the presser could see. Without it a DM and a player
    * both ending the same turn advance it twice and somebody's go vanishes —
@@ -237,17 +253,34 @@ function apply(f: Fight, a: Act): Fight {
          table is still rolling initiative, which is when there is time to.
          Beginning the fight reset it to open ground, so the room was only ever
          kept if it was said late. */
-      return { ...f, phase: "active", round: 1, turn: 0,
+      /* Fresh economies all round: whatever was pressed while staging was
+         rehearsal, and round 1 has not happened yet. */
+      return { ...f, phase: "active", round: 1, turn: 0, spent: {}, legendarySpent: {},
         combatants: f.combatants.filter((c) => c.initiative !== null) };
     case "advance": {
       if (f.phase !== "active") return f;
       if (f.combatants.length === 0) return f;
       if (a.from !== f.turn) return f; // a turn already ended by somebody else
       const next = f.turn + 1;
-      return next >= f.combatants.length
-        ? { ...f, turn: 0, round: f.round + 1 }
-        : { ...f, turn: next };
+      const wraps = next >= f.combatants.length;
+      /* Everything the opening creature spends per turn comes back as its turn
+         opens — including its legendary actions, which is the half of that
+         rule that makes them a threat on everybody else's turn. */
+      const back = openingTurn(f, wraps ? 0 : next);
+      return wraps
+        ? { ...f, ...back, turn: 0, round: f.round + 1 }
+        : { ...f, ...back, turn: next };
     }
+    case "spend": {
+      const was = spentBy(f, a.id);
+      if (was[a.kind] === a.on) return f; // idempotent: two devices may say it
+      return { ...f, spent: { ...f.spent, [a.id]: { ...was, [a.kind]: a.on } } };
+    }
+    case "legendary":
+      return { ...f, legendarySpent: {
+        ...f.legendarySpent,
+        [a.id]: (f.legendarySpent[a.id] ?? 0) + a.cost,
+      } };
     case "clear":
       return NO_FIGHT;
   }
