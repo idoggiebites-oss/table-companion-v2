@@ -4,6 +4,9 @@ import { Scenes } from "./Scenes";
 import type { Scene } from "./scene";
 import { Npcs } from "./Npcs";
 import type { Npc } from "./npc";
+import { SessionRail } from "./SessionRail";
+import { HowReady } from "./HowReady";
+import type { Prepared } from "./session";
 import type { ReactNode } from "react";
 import s from "./Prep.module.css";
 
@@ -33,13 +36,18 @@ import s from "./Prep.module.css";
  *     decision of its own rather than arriving inside a port.
  */
 export function Prep({
-  encounters, scenes, npcs, nav, onStage, onForget, onNew,
+  session, encounters, scenes, npcs, nav, onStage, onForget, onNew,
+  onSaveSession, onForgetSession,
   onPrepare, onForgetScene, onOpenScene, onSaveNpc, onForgetNpc,
 }: {
+  /** The session being planned, or none started yet — see `SessionRail`. */
+  session: Prepared | null;
   encounters: readonly Encounter[];
   scenes: readonly Scene[];
   npcs: readonly Npc[];
   nav?: ReactNode;
+  onSaveSession: (session: Prepared) => void;
+  onForgetSession: (id: string) => void;
   onStage: (e: Encounter) => void;
   onForget: (id: string) => void;
   onNew: () => void;
@@ -55,6 +63,27 @@ export function Prep({
       below={nav}
       rail={
         <>
+          {/*
+            * The mockup's hero image would sit between these two. Skipped —
+            * image storage is Task 35 — and with no placeholder box, for the
+            * same reason the outline below omits unbuilt rows: an empty frame
+            * reads as broken rather than as "not yet".
+            */}
+          <SessionRail session={session} onSave={onSaveSession} onForget={onForgetSession} />
+
+          <HowReady
+            session={session}
+            have={{ encounters: encounters.length, places: scenes.length, people: npcs.length }}
+            {...(session === null ? {} : {
+              onToggle: (id, done) => {
+                onSaveSession({
+                  ...session,
+                  checklist: session.checklist.map((c) => (c.id === id ? { ...c, done } : c)),
+                });
+              },
+            })}
+          />
+
           <h2 className={s.railHead}>Session outline</h2>
           <ul className={s.outline}>
             {/* Only what is built, and in the order the column below reads.

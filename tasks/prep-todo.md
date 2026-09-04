@@ -95,11 +95,16 @@ is authored, the other observed, and conflating them breaks the recap.
 the outline with live counts.
 
 **Acceptance criteria:**
-- [ ] Counts only what is built, so no row promises an unbuilt screen
-- [ ] Reads on a phone as the first stacked card
+- [x] Counts only what is built, so no row promises an unbuilt screen
+- [x] Reads on a phone as the first stacked card
 
 **Verification:** component test at both widths; `mislabelled()` empty
 **Dependencies:** 25, 27 · **Scope:** M
+
+**Done.** `SessionRail.tsx` carries the title, number and date and a compact
+inline editor, because a rail that can only display a session nobody can create
+is useless. No hero image and no placeholder for one: an empty frame reads as
+broken rather than as not-yet.
 
 ---
 
@@ -109,12 +114,21 @@ the outline with live counts.
 percentage goes stale the moment anything changes.
 
 **Acceptance criteria:**
-- [ ] Every line names a fact that is true from the log
-- [ ] An unbuilt area can never appear in it
-- [ ] With nothing prepared it says so in words rather than showing 0%
+- [x] Every line names a fact that is true from the log
+- [x] An unbuilt area can never appear in it
+- [x] With nothing prepared it draws nothing at all — the rail above already says it
 
 **Verification:** domain test over the derivation
 **Dependencies:** 27 · **Scope:** S
+
+**What it threw out of the mockup, and why.** "Boss treasure" and "Session
+ending notes" point at loot and notes, neither built — and a percentage that can
+never reach 100 is a permanent accusation rather than an overview. "3 encounters
+prepared" went too: three is not a rule of the game or of this table, so the
+derived checks ask whether a thing exists, never how many. The DM's own
+checklist leads, because those are the only lines certainly about tonight, and
+the derived ones are statements rather than controls — ticking "An opening to
+read out" without writing one would make the meter lie on request.
 
 ---
 

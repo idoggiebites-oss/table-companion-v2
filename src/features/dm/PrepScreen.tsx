@@ -2,6 +2,7 @@ import { Prep } from "./Prep";
 import { prepFrom, keepFrom, PREP } from "./encounter";
 import { blankScene, scenesFrom, openActs, SCENE, type Scene } from "./scene";
 import { peopleFrom, NPC } from "./npc";
+import { sessionsFrom, SESSION, type Prepared } from "./session";
 import { FIGHT, type Fight } from "./fight";
 import type { Event } from "../../core/types";
 import type { ReactNode } from "react";
@@ -35,8 +36,20 @@ export function PrepScreen({ events, fight, nav, record, onOpened }: {
     onOpened(sc.id);
   };
 
+  /*
+   * A table plans one session at a time even though the log can hold many —
+   * `save` always appends past an edit, so the LAST one is whichever session
+   * was most recently touched, with no separate "current session" concept to
+   * keep in sync.
+   */
+  const sessions = sessionsFrom(events).sessions;
+  const session: Prepared | null = sessions.length > 0 ? sessions[sessions.length - 1]! : null;
+
   return (
     <Prep
+      session={session}
+      onSaveSession={(sn) => record(SESSION, { act: "save", session: sn } as unknown as Record<string, unknown>)}
+      onForgetSession={(id) => record(SESSION, { act: "forget", id })}
       encounters={prepFrom(events).encounters}
       scenes={scenesFrom(events).scenes}
       npcs={peopleFrom(events).npcs}

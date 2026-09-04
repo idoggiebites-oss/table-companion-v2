@@ -1,0 +1,45 @@
+.wrap { display: flex; flex-direction: column; gap: var(--s-3); }
+
+.head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-4); }
+
+.label {
+  font-size: var(--t-note); letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--ink-dim);
+}
+
+.percent {
+  font-family: var(--font-mono); font-size: var(--t-sm);
+  font-variant-numeric: tabular-nums; color: var(--ink);
+}
+
+/* Gold, because it is progress rather than a warning. Nothing here is red:
+   an unfinished session is not an error. */
+.track {
+  height: 6px; border-radius: var(--r-pill);
+  background: var(--surface-2); overflow: hidden;
+}
+.fill { display: block; height: 100%; background: var(--gold-fill); }
+
+.said { margin: 0; font-size: var(--t-aside); color: var(--ink-dim); }
+
+.checks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+
+.check {
+  display: flex; align-items: center; gap: var(--s-4);
+  width: 100%; min-height: var(--tap); padding: 0;
+  text-align: left; background: none; border: none; color: var(--ink);
+  font: inherit; font-size: var(--t-aside);
+}
+
+/* A ring that fills, rather than a tick glyph: the icons in this app are SVG
+   and a check character renders as colour emoji on some platforms. */
+.mark {
+  flex: none; width: 13px; height: 13px; border-radius: 50%;
+  border: 1.5px solid var(--ink-dim);
+}
+.on { background: var(--gold-fill); border-color: var(--gold-edge); }
+
+.text { min-width: 0; }
+
+/* Derived lines are statements, so they do not offer a pointer. */
+.check[data-derived="yes"] { cursor: default; }
