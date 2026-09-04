@@ -84,8 +84,7 @@ DM → player. Same seam, arrow turned round. V1's `checks` (51) is the model, a
 **Accepts:**
 - [x] The DM asks one player, several, or the table for a roll
 - [x] Each answer arrives back attributed, and the DM sees who has not answered
-- [ ] It nudges — `nudge.ts` names this as its third moment and still does not
-      fire it; the seam exists now, the buzz does not
+- [x] It nudges — `nudge.ts`'s third moment, the one V1 could not build
 **Verification:** domain test on the ask/answer fold; a room journey across two
 devices · **Scope:** L · **Deps:** none
 

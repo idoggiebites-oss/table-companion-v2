@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { onTurn, onRolling } from "./nudge";
+import { onTurn, onRolling, onAsked } from "./nudge";
 import { fightFrom, FIGHT, type Act } from "./fight";
 import { asDevice, type Event } from "../../core/types";
 
@@ -55,5 +55,44 @@ describe("who the table is waiting on to roll", () => {
   it("says nothing once the fight is running", () => {
     const f = fightFrom([ev(bree), ev({ act: "roll", id: "c1", value: 9 }), ev({ act: "begin" })]);
     expect(onRolling(f)).toEqual([]);
+  });
+});
+
+describe("the DM asking for a roll", () => {
+  it("buzzes everybody it names, and nobody else", () => {
+    /*
+     * The third of V1's three, and the one it could not build: the other two
+     * are the table waiting on you in a FIGHT, and this is the DM waiting on
+     * you at any moment at all.
+     */
+    const one = onAsked(
+      { id: "a1", who: ["bree"], name: "Stealth", ability: "dex" },
+      ["bree", "brom"],
+    );
+    expect(one.map((n) => n.to)).toEqual(["bree"]);
+  });
+
+  it("buzzes the whole table when nobody was named", () => {
+    const all = onAsked({ id: "a1", who: [], name: "Perception", ability: "wis" }, ["bree", "brom"]);
+    expect(all.map((n) => n.to)).toEqual(["bree", "brom"]);
+  });
+
+  it("says what the roll is, not that there is one", () => {
+    /* "The DM wants a roll" tells you to open the app; "Perception check — DC
+       14" tells you what is about to happen. */
+    const [n] = onAsked({ id: "a1", who: [], name: "Perception", ability: "wis", dc: 14 }, ["bree"]);
+    expect(n?.body).toBe("Perception check — DC 14");
+  });
+
+  it("says nothing about a difficulty the DM kept to themselves", () => {
+    const [n] = onAsked({ id: "a1", who: [], name: "Perception", ability: "wis" }, ["bree"]);
+    expect(n?.body).toBe("Perception check");
+  });
+
+  it("calls a saving throw a saving throw", () => {
+    const [n] = onAsked(
+      { id: "a1", who: [], kind: "save", name: "Dexterity", ability: "dex", dc: 15 }, ["bree"],
+    );
+    expect(n?.body).toBe("Dexterity saving throw — DC 15");
   });
 });

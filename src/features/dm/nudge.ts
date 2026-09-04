@@ -1,4 +1,5 @@
 import { orderOf, activeOf, type Fight } from "./fight";
+import { addressees, type Ask } from "../room/ask";
 
 /**
  * The moments a phone should buzz.
@@ -14,8 +15,9 @@ import { orderOf, activeOf, type Fight } from "./fight";
  * mattered goes with it.*
  *
  * V1 names three: your turn has come round, initiative is being rolled and
- * yours is not in, and the DM has asked YOU for a roll. The third needs the
- * claim seam to run the other way and is not built; the first two are here.
+ * yours is not in, and the DM has asked YOU for a roll. All three are here now
+ * — the third waited on the claim seam running the other way, which `ask.ts`
+ * built.
  *
  * Worked out on the device that APPENDS the event rather than in the room
  * server, which holds a log and has never had to understand it. That device is
@@ -38,6 +40,27 @@ export function onTurn(fight: Fight): Nudge | null {
     title: "Your turn",
     body: `Round ${String(fight.round)} — everyone is waiting on you.`,
   };
+}
+
+/**
+ * Everyone the DM has just asked for a roll.
+ *
+ * The sharpest of the three, and the one V1 could not build: the other two are
+ * the table waiting on you in a fight, and this is the DM waiting on you at any
+ * moment at all — mid-conversation, phone in a pocket, everybody looking over.
+ *
+ * The ask's own words, not a generic line. "The DM wants a roll" tells you to
+ * open the app; "Perception — DC 14" tells you what is about to happen, which
+ * is the difference between a notification worth reading and one worth
+ * swiping away.
+ */
+export function onAsked(ask: Ask, party: readonly string[]): readonly Nudge[] {
+  const what = `${ask.name} ${ask.kind === "save" ? "saving throw" : "check"}`;
+  return addressees(ask, party).map((to) => ({
+    to,
+    title: "The DM is asking for a roll",
+    body: ask.dc === undefined ? what : `${what} — DC ${String(ask.dc)}`,
+  }));
 }
 
 /**

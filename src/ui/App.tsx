@@ -39,7 +39,7 @@ import { Fight as PlayerFight } from "../features/room/Fight";
 import { scoresOf } from "../features/creation/scores";
 import { BLANK } from "../rules/5e/abilities";
 import { fightFrom, FIGHT, type Act } from "../features/dm/fight";
-import { onTurn } from "../features/dm/nudge";
+import { onTurn, onAsked } from "../features/dm/nudge";
 import { SeatControl } from "../features/room/SeatControl";
 import { PushToggle } from "../features/room/PushToggle";
 import { membersIn } from "../features/dm/members";
@@ -113,16 +113,15 @@ export function App({ dbName }: { dbName?: string }) {
       if (who !== undefined) setCharacter(who);
     }
   };
-  /* The Interrupt sits beside the bar because the bar is the one thing every
-     screen draws — so a DM's ask lands wherever the player already is. */
+  /* The Interrupt sits beside the bar: the bar is the one thing every screen
+     draws, so an ask lands wherever the player already is. */
   const nav = (at: string) => (<>
     <TabBar tabs={tabs} current={currentOf(at, tabs)} onGo={go} />
     <Interrupt events={events} character={character} dm={dm} record={record} />
   </>);
 
-  /* One control, two homes. A player reaches it on the hub; a DM reaches it on
-     Party, because Task 26 took Characters off the DM's bar. Built once so the
-     two cannot drift apart. */
+  /* One control, two homes: the hub for a player, Party for a DM (Task 26 took
+     Characters off the DM's bar). Built once so the two cannot drift apart. */
   const seatControl = (
     <SeatControl
       seat={seat} mine={mine} all={roster.map((r) => r.id)}
@@ -305,8 +304,15 @@ export function App({ dbName }: { dbName?: string }) {
   if (mode === "party") {
     return (
       <Party
-        onAsk={(a) => record(ASK, { act: "ask",
-          ask: { ...a, id: `ask${Date.now().toString(36)}` } } as unknown as Record<string, unknown>)}
+        onAsk={(a) => {
+          const ask = { ...a, id: `ask${Date.now().toString(36)}` };
+          record(ASK, { act: "ask", ask } as unknown as Record<string, unknown>);
+          /* Worked out here, like every nudge: this device is awake by
+             definition — the DM just pressed Ask. */
+          for (const n of onAsked(ask, roster.map((r) => r.id))) {
+            say({ kind: "nudge", to: n.to, title: n.title, body: n.body });
+          }
+        }}
         events={events}
         nav={nav("party")}
         /* The seat control, reachable now that the DM's bar has no Characters
@@ -338,8 +344,7 @@ export function App({ dbName }: { dbName?: string }) {
     );
   }
 
-  /* The hub is a screen, not routing — moved out at the budget, the same seam
-     `PrepScreen` and `LogScreen` were split along. */
+  /* The hub is a screen, not routing — split like `PrepScreen` and `LogScreen`. */
   if (mode === "hub") {
     return (
       <HubScreen
