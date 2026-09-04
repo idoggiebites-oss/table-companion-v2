@@ -16,12 +16,15 @@
  * need positions, and this table keeps its positions on the table. The reasons
  * listed are partial by design and never contradict the DM.
  *
- * Not yet ported, because the things they read do not exist in V2 yet: light
- * and darkvision (no senses on a combatant), the room's own effects (slice 9),
- * and the per-turn tags — helped, dodging, hidden — which belong to the turn
- * economy. Each is listed here so its absence is a known gap rather than a
- * silent one.
+ * The room's own effects ARE here now — the fog, the gale, the footing — and
+ * they arrive as reasons like any other, so "Disadvantage: the wind is against
+ * you" reads the same as "Disadvantage: you are poisoned". Still absent, and
+ * listed so each is a known gap rather than a silent one: light and darkvision
+ * (no senses on a combatant, so `terrain.ts` carries light without consulting
+ * it), and the per-turn tags — helped, dodging, hidden — which belong to the
+ * turn economy.
  */
+import { roomEffects, type Room } from "./terrain";
 
 export type Stance = "advantage" | "straight" | "disadvantage";
 
@@ -63,10 +66,12 @@ const ATTACKER_HAS_DISADVANTAGE: readonly string[] = [
 const THE = (name: string) => (name.toLowerCase() === "you" ? "you are" : `${name} is`);
 
 /** Everything the app can see about how this attack rolls. */
-export function stanceFor({ attacker, target, range }: {
+export function stanceFor({ attacker, target, range, room }: {
   attacker: Roller;
   target: Roller;
   range: AttackRange;
+  /** Where it is happening. Absent means nothing has been said about it. */
+  room?: Room;
 }): { stance: Stance; reasons: readonly StanceReason[] } {
   const reasons: StanceReason[] = [];
   const adv = (because: string) => reasons.push({ effect: "advantage", because });
@@ -89,6 +94,10 @@ export function stanceFor({ attacker, target, range }: {
 
   if (target.conditions.includes("invisible")) dis(`you cannot see ${target.name}`);
   if (attacker.conditions.includes("invisible")) adv(`${THE(attacker.name)} unseen`);
+
+  /* Last, so the reasons read outward: what is true of the two of you, then
+     what is true of the room you are both standing in. */
+  if (room !== undefined) reasons.push(...roomEffects(room, { range }));
 
   return { stance: combine(reasons), reasons };
 }

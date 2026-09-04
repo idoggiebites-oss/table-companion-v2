@@ -98,3 +98,42 @@ describe("saying it in a way that teaches the rule", () => {
     expect(describeStance("advantage")).toBe("Roll two d20s and take the higher");
   });
 });
+
+describe("and the room you are both standing in", () => {
+  it("adds its reasons alongside everybody's conditions", () => {
+    const { stance, reasons } = stanceFor({
+      attacker: { name: "you", conditions: [] },
+      target: { name: "the goblin", conditions: [] },
+      range: "Ranged",
+      room: { light: "bright", terrain: ["wind"] },
+    });
+    expect(stance).toBe("disadvantage");
+    expect(reasons.map((r) => r.because)).toEqual(["the wind is against you"]);
+  });
+
+  it("cancels against them like any other reason", () => {
+    /*
+     * The rule nobody believes the first time: one of each is a straight roll.
+     * A prone goblin in fog is not "mostly advantage" — it is one d20, and the
+     * player is told both halves so they know why.
+     */
+    const { stance, reasons } = stanceFor({
+      attacker: { name: "you", conditions: [] },
+      target: { name: "the goblin", conditions: ["prone"] },
+      range: "Melee",
+      room: { light: "bright", terrain: ["obscured"] },
+    });
+    expect(stance).toBe("straight");
+    expect(describeReasons(stance, reasons))
+      .toBe("They cancel: the goblin is prone, and you cannot see through it. Roll one d20");
+  });
+
+  it("says nothing extra when nothing has been said about the room", () => {
+    const { reasons } = stanceFor({
+      attacker: { name: "you", conditions: [] },
+      target: { name: "the goblin", conditions: [] },
+      range: "Melee",
+    });
+    expect(reasons).toEqual([]);
+  });
+});

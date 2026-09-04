@@ -29,7 +29,8 @@ import { useSeat } from "../features/room/useSeat";
 import { Party } from "../features/dm/Party";
 import { Staging } from "../features/dm/Staging";
 import { Prep } from "../features/dm/Prep";
-import { prepFrom, staging, PREP } from "../features/dm/encounter";
+import { prepFrom, keepFrom, PREP } from "../features/dm/encounter";
+import { blankScene, scenesFrom, openActs, SCENE, type Scene } from "../features/dm/scene";
 import { Fight as PlayerFight } from "../features/room/Fight";
 import { scoresOf } from "../features/creation/scores";
 import { BLANK } from "../rules/5e/abilities";
@@ -65,6 +66,25 @@ export function App({ dbName }: { dbName?: string }) {
 
 
   const newId = () => `c${Math.random().toString(36).slice(2, 8)}`;
+
+  /*
+   * Which place is open, kept by the app rather than in the log.
+   *
+   * V1's call, and it is right: opening one with a fight in it moves the DM to
+   * the fight tab, so the note has to be readable from THERE — and "which
+   * scene am I looking at" is not a fact about the campaign that a device
+   * replaying the log a week later should re-derive.
+   */
+  const [openScene, setOpenScene] = useState<string | null>(null);
+
+  /** One press: clear, stage what is waiting, set the room. See `openActs`. */
+  const openPlace = (sc: Scene) => {
+    const e = prepFrom(events).encounters.find((x) => x.id === sc.encounter);
+    for (const a of openActs(sc, e, (i) => `${sc.id}-${String(i)}-${String(Date.now())}`)) {
+      record(FIGHT, a as unknown as Record<string, unknown>);
+    }
+    setOpenScene(sc.id);
+  };
 
   /*
    * The one navigation, computed here because this is where the state is.
@@ -201,47 +221,21 @@ export function App({ dbName }: { dbName?: string }) {
     return (
       <Prep
         encounters={prepFrom(events).encounters}
+        scenes={scenesFrom(events).scenes}
         nav={nav("prep")}
+        onPrepare={(sc) => record(SCENE, { act: "prepare", scene: sc } as unknown as Record<string, unknown>)}
+        onForgetScene={(id) => record(SCENE, { act: "forget", id })}
+        onOpenScene={(sc) => { openPlace(sc); setMode("fight"); }}
         onStage={(e) => {
-          /* Fresh every time: nothing carries over from the last run. The
-             fight is cleared first so putting one on the table is putting
-             THAT one on the table, not adding to whatever was left. */
-          record(FIGHT, { act: "clear" } as unknown as Record<string, unknown>);
-          for (const row of staging(e, (i) => `${e.id}-${String(i)}-${String(Date.now())}`)) {
-            record(FIGHT, {
-              act: "stage", id: row.id, name: row.name, disclosure: row.disclosure,
-              source: { kind: "creature", statblock: row.statblock, max: row.max, ac: row.ac },
-            } as unknown as Record<string, unknown>);
-          }
+          /* An encounter with no place is a place with nothing said about the
+             room — the same one press, so it is the same code path. */
+          openPlace({ ...blankScene(`st${Date.now().toString(36)}`), encounter: e.id });
           setMode("fight");
         }}
         onForget={(id) => record(PREP, { act: "forget", id })}
         onNew={() => {
-          /* What is on the table now, kept. The DM has already assembled it —
-             asking them to build it again in a second form would be asking
-             twice for the same thing. */
-          const live = fight.combatants.filter((c) => c.source.kind === "creature");
-          if (live.length === 0) return;
-          const entries = live.map((c) => ({
-            statblock: c.source.kind === "creature" ? c.source.statblock : "",
-            name: c.name.replace(/ \d+$/, ""),
-            count: 1,
-            max: c.source.kind === "creature" ? c.source.max : 0,
-            ac: c.source.kind === "creature" ? c.source.ac : 0,
-            cr: c.source.kind === "creature" ? c.source.cr ?? 0 : 0,
-            disclosure: c.disclosure,
-          }));
-          /* Named for what is in it, not for how many. "2 creatures" told the
-             DM nothing they could not already see, and repeated the line
-             underneath it. */
-          const kinds = [...new Set(entries.map((x) => x.name))];
-          const name = kinds.length === 1
-            ? `${kinds[0]!}${entries.length > 1 ? ` ×${String(entries.length)}` : ""}`
-            : `${kinds[0]!} and ${String(kinds.length - 1)} more`;
-          record(PREP, { act: "keep", encounter: {
-            id: `enc${Math.random().toString(36).slice(2, 8)}`,
-            name, place: "", entries,
-          } } as unknown as Record<string, unknown>);
+          const kept = keepFrom(fight.combatants, `enc${Math.random().toString(36).slice(2, 8)}`);
+          if (kept !== null) record(PREP, { act: "keep", encounter: kept } as unknown as Record<string, unknown>);
         }}
       />
     );
@@ -269,7 +263,19 @@ export function App({ dbName }: { dbName?: string }) {
       const n = onTurn(next);
       if (n !== null) say({ kind: "nudge", to: n.to, title: n.title, body: n.body });
     };
-    if (dm) return <Staging fight={fight} party={membersIn(events)} nav={nav("fight")} onAct={act} />;
+    if (dm) {
+      /* The line the DM meant to read when the door opened. Gone the moment
+         the fight is cleared, because it belongs to that place and not to
+         whatever is on the table next. */
+      const place = scenesFrom(events).scenes.find((x) => x.id === openScene);
+      return (
+        <Staging
+          fight={fight} party={membersIn(events)} nav={nav("fight")} onAct={act}
+          {...(place?.note === undefined || place.note.trim() === ""
+            ? {} : { note: place.note, place: place.name })}
+        />
+      );
+    }
     const build = current;
     return (
       <PlayerFight

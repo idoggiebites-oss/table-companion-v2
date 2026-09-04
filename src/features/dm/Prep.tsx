@@ -1,5 +1,7 @@
 import { Shell } from "../../ui/Shell";
 import { creatureCount, rawXp, type Encounter } from "./encounter";
+import { Scenes } from "./Scenes";
+import type { Scene } from "./scene";
 import type { ReactNode } from "react";
 import s from "./Prep.module.css";
 
@@ -18,20 +20,28 @@ import s from "./Prep.module.css";
  *     Random Tables, References and Locations; none are built. `tabs.ts` holds
  *     the rule this follows — *what is not built is not drawn* — because a row
  *     reading "Quests 2" that goes nowhere is a promise the app cannot keep.
+ *     Places joined it the day places existed.
  *   - **Scenes are a drawer, not a running order.** The mockup numbers them
  *     1-5 with drag handles. V1 refuses that: *"deliberately not a map and not
- *     a sequence… a table goes where it goes."* Reversible if the running
- *     order turns out to be what a real session wants.
+ *     a sequence… a table goes where it goes."* Built as the drawer, on that
+ *     reasoning; reversible if a real session says otherwise.
  *   - **No readiness percentage or checklist.** A good idea, and a NEW one —
  *     nothing in V1 frames prep as a completion metric. It wants to be a
  *     decision of its own rather than arriving inside a port.
  */
-export function Prep({ encounters, nav, onStage, onForget, onNew }: {
+export function Prep({
+  encounters, scenes, nav, onStage, onForget, onNew,
+  onPrepare, onForgetScene, onOpenScene,
+}: {
   encounters: readonly Encounter[];
+  scenes: readonly Scene[];
   nav?: ReactNode;
   onStage: (e: Encounter) => void;
   onForget: (id: string) => void;
   onNew: () => void;
+  onPrepare: (s: Scene) => void;
+  onForgetScene: (id: string) => void;
+  onOpenScene: (s: Scene) => void;
 }) {
   return (
     <Shell title="Prep" below={nav}>
@@ -39,7 +49,11 @@ export function Prep({ encounters, nav, onStage, onForget, onNew }: {
         <aside className={s.rail} aria-label="This session">
           <h2 className={s.railHead}>Session outline</h2>
           <ul className={s.outline}>
-            {/* Only what is built. Scenes and NPCs join as they land. */}
+            {/* Only what is built. NPCs join as they land. */}
+            <li className={s.line}>
+              <span>Places</span>
+              <span className={s.count}>{scenes.length}</span>
+            </li>
             <li className={s.line}>
               <span>Encounters</span>
               <span className={s.count}>{encounters.length}</span>
@@ -95,6 +109,16 @@ export function Prep({ encounters, nav, onStage, onForget, onNew }: {
               ))}
             </ul>
           )}
+
+          {/*
+            * Places below encounters, because a place is assembled FROM one:
+            * you keep the three ghouls, then say which cellar they are in. The
+            * order on screen is the order of the work.
+            */}
+          <Scenes
+            scenes={scenes} encounters={encounters}
+            onPrepare={onPrepare} onForget={onForgetScene} onOpen={onOpenScene}
+          />
         </section>
       </div>
     </Shell>

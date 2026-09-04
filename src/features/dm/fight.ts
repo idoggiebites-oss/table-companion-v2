@@ -1,6 +1,6 @@
 import { fold } from "../../core/fold";
 import type { Event } from "../../core/types";
-import { healthStep, VAGUE } from "../../rules/5e/vitals";
+import { OPEN_GROUND, type Room } from "../../rules/5e/terrain";
 import type { Claim } from "./claim";
 
 export const FIGHT = "fight.act";
@@ -77,9 +77,19 @@ export type Fight = {
   readonly combatants: readonly Combatant[];
   /** Unanswered swings, oldest first. */
   readonly claims: readonly Claim[];
+  /**
+   * Where it is being fought.
+   *
+   * On the FIGHT rather than on the scene that set it, because the scene is
+   * prep and this is the table's current state: a DM who says "actually, the
+   * lights just went out" is not editing a prepared place.
+   */
+  readonly room: Room;
 };
 
-export const NO_FIGHT: Fight = { phase: "staging", round: 0, turn: 0, combatants: [], claims: [] };
+export const NO_FIGHT: Fight = {
+  phase: "staging", round: 0, turn: 0, combatants: [], claims: [], room: OPEN_GROUND,
+};
 
 /** What the DM does to a fight while assembling it. */
 export type Act =
@@ -105,6 +115,12 @@ export type Act =
    * rule this app has never heard of is still true at the table.
    */
   | { readonly act: "verdict"; readonly claim: string; readonly lands: boolean }
+  /**
+   * What the room is like. One act for the whole room rather than one per
+   * fact, because that is how a DM sets a scene in a breath — and because
+   * taking it back should take back the room rather than one detail of it.
+   */
+  | { readonly act: "room"; readonly room: Room }
   | { readonly act: "begin" }
   /**
    * `from` is the turn the presser could see. Without it a DM and a player
@@ -204,11 +220,17 @@ function reduce(f: Fight, e: Event): Fight {
         return { ...c, damage: Math.min(c.source.max, Math.max(0, c.damage + claim.damage)) };
       }) };
     }
+    case "room":
+      return { ...f, room: a.room };
     case "begin":
       /* Anyone who never rolled is dropped rather than placed arbitrarily.
          V1's reason, kept: a fight that starts with somebody at a made-up
          position is worse than one that starts without them, and they can be
          staged again. */
+      /* The room survives, and V1 had to learn that: a DM sets it while the
+         table is still rolling initiative, which is when there is time to.
+         Beginning the fight reset it to open ground, so the room was only ever
+         kept if it was said late. */
       return { ...f, phase: "active", round: 1, turn: 0,
         combatants: f.combatants.filter((c) => c.initiative !== null) };
     case "advance": {
@@ -262,37 +284,3 @@ export function activeOf(f: Fight): Combatant | null {
 }
 
 export const fightFrom = (events: readonly Event[]): Fight => fold(events, reduce, NO_FIGHT);
-
-/** A creature's hit points, or null for a character — theirs are on their sheet. */
-export function hpOf(c: Combatant): { hp: number; max: number } | null {
-  if (c.source.kind !== "creature") return null;
-  return { hp: c.source.max - c.damage, max: c.source.max };
-}
-
-/**
- * What a seat may be told about a creature's health, by its rung.
- *
- * A player asking "how hurt is that ogre" gets a WORD, never a number, until
- * the DM decides the mystery has stopped being fun — `healthStep` and `VAGUE`
- * already exist in `rules/5e/vitals.ts` for exactly that, and are the same
- * words the party screen uses, so the two sides of the table cannot end up
- * describing the same creature differently.
- */
-export type HealthShown =
-  | { readonly kind: "none" }
-  | { readonly kind: "word"; readonly word: string }
-  | { readonly kind: "numbers"; readonly hp: number; readonly max: number };
-
-export function healthShown(dm: boolean, c: Combatant): HealthShown {
-  const at = hpOf(c);
-  if (at === null) return { kind: "none" };
-  if (showsNumbers(dm, c)) return { kind: "numbers", hp: at.hp, max: at.max };
-  if (c.disclosure === "vague") return { kind: "word", word: VAGUE[healthStep(at.hp, at.max)] };
-  return { kind: "none" };
-}
-
-/** Whether a seat may be shown this combatant at all. */
-export const visibleTo = (dm: boolean, c: Combatant): boolean => dm || c.disclosure !== "hidden";
-
-/** What a seat is allowed to know about a combatant's health. */
-export const showsNumbers = (dm: boolean, c: Combatant): boolean => dm || c.disclosure === "exact";

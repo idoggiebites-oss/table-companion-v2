@@ -1,5 +1,7 @@
 import type { Event, DeviceId } from "../../core/types";
 import { FIGHT } from "../dm/fight";
+import { PREP } from "../dm/encounter";
+import { SCENE } from "../dm/scene";
 
 /**
  * What a player's log is allowed to say.
@@ -51,11 +53,31 @@ export const BEHIND_THE_SCREEN = new Set([
 const AT_THE_TABLE = new Set([
   "roll",     // "roll for initiative" is said out loud
   "begin",
+  /* Setting the room live IS public, and the distinction is the whole of the
+     rule: the table can see that it is dark and the floor is rubble. What they
+     may not see is the DM preparing that place an hour earlier. */
+  "room",
   "advance",  // whose turn it is, is the whole table's business
   "claim",    // the player rolled and announced it
   "verdict",  // the DM said "that hits" out loud
   "clear",
 ]);
+
+/**
+ * Kinds that are prep from end to end, whatever act they carry.
+ *
+ * The fight is one kind whose acts split by audience, so it is filtered act by
+ * act. These do not split: **every** act on them happens behind the screen an
+ * hour before anybody sits down, and there is no such thing as a public one.
+ *
+ * They are named because the default above is public, and that default was
+ * quietly wrong for keeping an encounter: V1 puts `encounterSaved` behind the
+ * screen and V2's log printed it to the table. A player who reads that the DM
+ * just prepared something has been told what is coming — and for a scene, whose
+ * one line is "the cellar · dark · a note", they have been told rather more.
+ * Fixed here rather than per feature, so Task 20's NPCs need only join the set.
+ */
+const PREP_KINDS = new Set<string>([PREP, SCENE]);
 
 const actOf = (e: Event): string | null =>
   e.kind === FIGHT ? String((e.data as Record<string, unknown>)["act"] ?? "") : null;
@@ -70,10 +92,12 @@ const actOf = (e: Event): string | null =>
  * therefore documents what is known-private rather than deciding it — a test
  * holds the two in agreement so the list cannot rot into a comment.
  *
- * Non-fight events are public: a character's own choices, levels and hit
- * points are things the table watches happen.
+ * Non-fight events are public by default: a character's own choices, levels
+ * and hit points are things the table watches happen. `PREP_KINDS` is the
+ * exception, and it had to be — see below.
  */
 export function isDmOnly(e: Event): boolean {
+  if (PREP_KINDS.has(e.kind)) return true;
   const act = actOf(e);
   if (act === null) return false;
   return !AT_THE_TABLE.has(act);

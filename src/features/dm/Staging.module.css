@@ -105,3 +105,39 @@
   color: var(--ink); background: var(--surface-2);
   border: var(--panel-border); border-radius: var(--r-pill);
 }
+
+
+/* ── the place that was opened ──────────────────────────────────────────── */
+
+/* Prose, because it is about to be read out loud rather than scanned. */
+.note {
+  margin: 0 var(--card-pad) var(--s-5);
+  padding: var(--s-5) var(--s-6);
+  font-family: var(--font-display); font-size: var(--t-8); line-height: 1.55;
+  color: var(--ink); background: var(--gold-wash);
+  border-left: 3px solid var(--gold-edge); border-radius: 0 var(--r-card) var(--r-card) 0;
+  max-width: 46em;
+}
+
+.place {
+  display: block; font-family: var(--font-sans); font-size: var(--t-note);
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold-ink);
+  margin-bottom: var(--s-2);
+}
+
+.room { margin: 0 var(--card-pad) var(--s-5); }
+
+.roomHead {
+  display: flex; align-items: center; gap: var(--s-4); width: 100%;
+  min-height: var(--tap); padding: 0 var(--s-5); text-align: left;
+  background: var(--surface-1); border: var(--panel-border);
+  border-radius: var(--r-control); color: var(--ink);
+}
+
+.roomTag {
+  font-size: var(--t-note); letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.roomSaid { flex: 1; font-size: var(--t-sm); color: var(--ink); }
+.roomMark { font-family: var(--font-mono); color: var(--ink-dim); }

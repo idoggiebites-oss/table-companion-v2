@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { fightFrom, nameFor, visibleTo, showsNumbers, orderOf, awaiting, activeOf, hpOf, healthShown, DISCLOSURE, FIGHT, NO_FIGHT, type Act, type Combatant } from "./fight";
+import { fightFrom, nameFor, orderOf, awaiting, activeOf, DISCLOSURE, FIGHT, NO_FIGHT, type Act, type Combatant } from "./fight";
+import { visibleTo, showsNumbers, hpOf, healthShown } from "./disclosure";
 import { verdictFor, describeVerdict, acOf, type Claim } from "./claim";
 import type { Event } from "../../core/types";
 import { CONDITIONS } from "../../rules/5e/conditions";

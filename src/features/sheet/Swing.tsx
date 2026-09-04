@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { ResolvedAttack } from "../../rules/5e/attack";
 import type { Combatant } from "../dm/fight";
 import { stanceFor, describeReasons } from "../../rules/5e/stance";
+import type { Room } from "../../rules/5e/terrain";
 import s from "./Swing.module.css";
 
 /**
@@ -21,11 +22,13 @@ import s from "./Swing.module.css";
  * because the player is about to add their d20 to it and a box that already
  * contained a guess at the whole answer would be one they had to correct.
  */
-export function Swing({ attack, targets, mine = [], onClaim, onCancel }: {
+export function Swing({ attack, targets, mine = [], room, onClaim, onCancel }: {
   attack: ResolvedAttack;
   targets: readonly Combatant[];
   /** The conditions on the person swinging — half of what decides the dice. */
   mine?: readonly string[];
+  /** And the room they are both standing in, which is the other half. */
+  room?: Room;
   onClaim: (targetId: string, toHit: number, damage: number) => void;
   onCancel: () => void;
 }) {
@@ -47,6 +50,7 @@ export function Swing({ attack, targets, mine = [], onClaim, onCancel }: {
     attacker: { name: "you", conditions: mine },
     target: { name: at.name, conditions: at.conditions },
     range: attack.range ?? "Melee",
+    ...(room === undefined ? {} : { room }),
   });
 
   return (

@@ -5,6 +5,8 @@ import { bestiary, describe, crName } from "./creatures";
 import { orderOf, awaiting, activeOf, type Act, type Fight } from "./fight";
 import { describeVerdict, verdictFor, acOf } from "./claim";
 import { Staged } from "./Combatant";
+import { RoomPicker } from "./RoomPicker";
+import { describeRoom, isOpenGround } from "../../rules/5e/terrain";
 import type { CreatureEntry } from "../../content/schema";
 import type { ReactNode } from "react";
 import s from "./Staging.module.css";
@@ -19,13 +21,23 @@ import s from "./Staging.module.css";
  * Tablet-first: the bestiary and the table sit side by side where there is
  * room, and stack on a phone. The DM side has to work on both.
  */
-export function Staging({ fight, party = [], nav, onAct }: {
+export function Staging({ fight, party = [], note, place, nav, onAct }: {
   fight: Fight;
   /** The table's own characters, so they can be put in the order too. */
   party?: readonly { id: string; name: string }[];
+  /**
+   * What the DM meant to say when the door opened, if a place was opened.
+   *
+   * Here rather than on the prep screen because opening a place moves the DM
+   * to this tab — a note rendered back there would vanish at the exact moment
+   * it is meant to be read.
+   */
+  note?: string;
+  place?: string;
   nav?: ReactNode;
   onAct: (a: Act) => void;
 }) {
+  const [roomOpen, setRoomOpen] = useState(false);
   const [all, setAll] = useState<readonly CreatureEntry[]>([]);
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(true);
@@ -76,6 +88,33 @@ export function Staging({ fight, party = [], nav, onAct }: {
         </ButtonRow>
       )}
     >
+      {note !== undefined && (
+        /* The line to read when the door opens. Reads as prose because it is
+           prose — it is going to be said out loud, not scanned. */
+        <p className={s.note} data-testid="scene-note">
+          {place !== undefined && <span className={s.place}>{place}</span>}
+          {note}
+        </p>
+      )}
+
+      <div className={s.room}>
+        <button
+          type="button" className={s.roomHead} aria-expanded={roomOpen}
+          aria-label="The room" onClick={() => setRoomOpen((v) => !v)}
+        >
+          <span className={s.roomTag}>The room</span>
+          {/* What the table can see. Public, unlike everything else on this
+              screen — the players know it is dark. */}
+          <span className={s.roomSaid}>
+            {isOpenGround(fight.room) ? "open ground" : describeRoom(fight.room)}
+          </span>
+          <span className={s.roomMark}>{roomOpen ? "−" : "+"}</span>
+        </button>
+        {roomOpen && (
+          <RoomPicker room={fight.room} onChange={(r) => onAct({ act: "room", room: r })} />
+        )}
+      </div>
+
       <div className={`${s.split} ${fight.phase === "active" ? s.running : ""}`}>
         <section className={s.pane} aria-label="The bestiary">
           {party.length > 0 && (

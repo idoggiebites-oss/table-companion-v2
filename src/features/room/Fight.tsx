@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Shell } from "../../ui/Shell";
-import { orderOf, activeOf, visibleTo, healthShown, type Fight as State, type Act } from "../dm/fight";
+import { orderOf, activeOf, type Fight as State, type Act } from "../dm/fight";
+import { visibleTo, healthShown } from "../dm/disclosure";
 import { resolveAttack } from "../../rules/5e/attack";
 import { proficiency } from "../../rules/5e/skills";
 import { signed, type Scores } from "../../rules/5e/abilities";
@@ -103,7 +104,8 @@ export function Fight({ state, me, attacks, scores, level, conditions = [], nav,
                     </button>
                   )}
                   {swinging === a.name && (
-                    <Swing attack={r} targets={targets} mine={conditions} onCancel={() => setSwinging(null)}
+                    <Swing attack={r} targets={targets} mine={conditions} room={state.room}
+                           onCancel={() => setSwinging(null)}
                            onClaim={(targetId, toHit, damage) => {
                              onAct({ act: "claim", claim: {
                                id: `${me ?? ""}-${a.name}-${String(Date.now())}`,

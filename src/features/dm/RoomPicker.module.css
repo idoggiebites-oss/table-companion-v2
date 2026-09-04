@@ -1,0 +1,42 @@
+.wrap { display: flex; flex-direction: column; gap: var(--s-2); }
+
+.label {
+  font-size: var(--t-note); letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink-dim); margin-top: var(--s-2);
+}
+
+/* Three exclusive choices read as one control, not three buttons. */
+.seg { display: flex; }
+.seg .pick { flex: 1; border-radius: 0; }
+.seg .pick:first-child { border-radius: var(--r-control) 0 0 var(--r-control); }
+.seg .pick:last-child { border-radius: 0 var(--r-control) var(--r-control) 0; }
+.seg .pick + .pick { border-left: none; }
+
+/* A hairline, not `--panel-border`: that token is transparent in the light
+   theme, which is right for a card sitting on a tinted ground and wrong for a
+   control you are being asked to choose between. Same edge the creation
+   steps' choices use. */
+.pick {
+  min-height: var(--tap); font-size: var(--t-sm); color: var(--ink);
+  background: var(--surface-1); border: 1px solid var(--hairline);
+}
+
+.rows { display: flex; flex-direction: column; gap: var(--s-2); }
+
+.row {
+  display: flex; flex-direction: column; gap: var(--s-1); text-align: left;
+  padding: var(--s-3) var(--s-4); background: var(--surface-1);
+  border: 1px solid var(--hairline); border-radius: var(--r-control); color: var(--ink);
+}
+
+/* Gold marks what is ON, the same way a picked choice does in creation. */
+.on { background: var(--gold-wash); border-color: var(--gold-fill); color: var(--ink); }
+
+.nm { font-size: var(--t-sm); font-weight: 600; }
+.what { font-size: var(--t-aside); color: var(--ink-dim); }
+
+.clear {
+  align-self: flex-start; min-height: var(--tap); padding: 0 var(--s-4);
+  margin-top: var(--s-2); font-size: var(--t-sm); color: var(--ink-dim);
+  background: none; border: 1px solid var(--hairline); border-radius: var(--r-control);
+}

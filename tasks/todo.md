@@ -783,10 +783,23 @@ sequence. Scenes are a drawer you reach into, not a track a session runs
 along — a table goes where it goes."
 
 **Acceptance criteria:**
-- [ ] A scene holds a name, a note, an optional encounter, and what the room is like
-- [ ] Putting it live stages the encounter AND sets the room in one press
-- [ ] Preparing one is behind the screen; setting it live is public (`visibility.ts` already draws that line — a player reading "Prepared the cellar · dark · a note" has been told what is coming)
-- [ ] Scenes are a drawer: no order, no next, no session track
+- [x] A scene holds a name, a note, an optional encounter, and what the room is like
+- [x] Putting it live stages the encounter AND sets the room in one press
+- [x] Preparing one is behind the screen; setting it live is public
+- [x] Scenes are a drawer: no order, no next, no session track
+
+**What it turned up.** `visibility.ts` did NOT already draw that line: it
+returns public for every non-fight event, so Task 18's kept encounters were
+already being printed to the table. Fixed at the root with `PREP_KINDS` rather
+than per feature, so Task 20's NPCs need only join the set.
+
+The room came with it — a scene without one is not V1's scene, and `stance.ts`
+named the room's effects as a slice-9 gap. `checkEffects` and `movementCost`
+did not: no skill-check screen, no speed on a combatant. Both named absent in
+`terrain.ts` rather than written in advance of a caller.
+
+The mockup's numbered running order was refused on V1's reasoning — *"a table
+goes where it goes"* — and a test holds the drawer to it.
 
 **Dependencies:** Task 18
 **Estimated scope:** M

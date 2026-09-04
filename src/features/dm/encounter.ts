@@ -1,6 +1,6 @@
 import { fold } from "../../core/fold";
 import type { Event } from "../../core/types";
-import type { Disclosure } from "./fight";
+import type { Combatant, Disclosure } from "./fight";
 
 export const PREP = "prep.act";
 
@@ -116,4 +116,40 @@ export function staging(e: Encounter, id: (n: number) => string) {
     }
   }
   return out.map((x, i) => ({ ...x, id: id(i) }));
+}
+
+/**
+ * What is on the table now, as something worth keeping.
+ *
+ * The DM has already assembled it; asking them to build the same thing again
+ * in a second form would be asking twice for the same thing. Null when there
+ * is nothing but characters out there — a saved encounter of the party is not
+ * an encounter.
+ *
+ * Named for what is IN it rather than for how many: "2 creatures" told the DM
+ * nothing they could not already see, and repeated the line underneath it.
+ */
+export function keepFrom(
+  combatants: readonly Combatant[],
+  id: string,
+): Encounter | null {
+  const entries: Entry[] = [];
+  for (const c of combatants) {
+    if (c.source.kind !== "creature") continue;
+    entries.push({
+      statblock: c.source.statblock,
+      /* The fight numbers duplicates — "Goblin 2" — and an encounter counts
+         them instead, so the suffix comes back off. */
+      name: c.name.replace(/ \d+$/, ""),
+      count: 1,
+      max: c.source.max, ac: c.source.ac, cr: c.source.cr ?? 0,
+      disclosure: c.disclosure,
+    });
+  }
+  if (entries.length === 0) return null;
+  const kinds = [...new Set(entries.map((x) => x.name))];
+  const name = kinds.length === 1
+    ? `${kinds[0]!}${entries.length > 1 ? ` \u00d7${String(entries.length)}` : ""}`
+    : `${kinds[0]!} and ${String(kinds.length - 1)} more`;
+  return { id, name, place: "", entries };
 }

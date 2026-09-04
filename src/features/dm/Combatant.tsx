@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { DISCLOSURE, hpOf, type Act, type Combatant as Row } from "./fight";
+import { DISCLOSURE, type Act, type Combatant as Row } from "./fight";
+import { hpOf } from "./disclosure";
 import { CONDITIONS, conditionById } from "../../rules/5e/conditions";
 import s from "./Combatant.module.css";
 

@@ -147,7 +147,7 @@ commit messages that already cite these ids.*
 
 ### Phase 5: Prep (slice 9)
 - [x] Task 18: An encounter, saved and put live — built to the mockup; three of its elements deliberately absent and recorded
-- [ ] Task 19: A scene — the place, not the parts
+- [x] Task 19: A scene — the place, not the parts
 - [ ] Task 20: NPCs, notes first
 - [ ] Task 21: Homebrew items the app reads as items
 
