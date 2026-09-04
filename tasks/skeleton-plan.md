@@ -56,6 +56,68 @@ disagrees with `PORT.md`, the code won.
 
 ---
 
+## Arturo's correction: V1's encounter and combat systems were more complete
+
+*Added after he said "Look at V1 encounters… that system was more complete" and
+"same thing with the combat." He is right, and the numbers are not close.*
+
+### Combat: 579 lines in V1, 286 in V2
+
+V1's `domain/combat.ts` against V2's `features/dm/fight.ts`. V2 has the roster,
+the disclosure ladder, initiative, damage and conditions. **Everything below is
+in V1 and absent from V2:**
+
+| V1 | What it is |
+|---|---|
+| `Economy` + `spent` | Action / bonus / reaction **per creature**, cleared when its turn opens. V1's note: before it, *"a DM running six goblins tracked 'has that one used its bonus action' in their head, six times, every round."* |
+| `joinCombat(combat, arrival)` | **Arriving mid-fight.** This is exactly Arturo's "creature group added to an established encounter" — V1 already solved it and V2 cannot do it at all: `openActs` always begins with `clear`. |
+| `legendarySpent`, `legendaryBudget`, `legendaryOptions` | Wired into the fight, per ROUND, with the DM able to state a budget the book omitted. V2 parses legendary options and calls `mayTakeOne` from nowhere. **702 shipped creatures have them.** |
+| lair state + `lairAction` | Fires on its initiative count, tracked per round. V2 renders the text and watches no count. |
+| `surprised` + `isSurprised` | Surprise rounds, called for one SIDE. V2 has no concept. |
+| `movementLeft`, `moved`, `speed` | Feet per round. |
+| `hasReaction`, `ReactionOffer` | Reactions offered on other people's turns. |
+| `StanceTag` (`dodging`/`helped`/`hidden`) | What `rules/5e/stance.ts` already names as its own missing half. |
+| `controls`, `mayEndTurn` | Who may act, by seat. |
+| `turnsUntil` | "You are three turns away." |
+
+### Encounters: V1's builder is 402 lines, V2's is 151
+
+V2's `EncounterBuilder.tsx` **documents its own drops in its header** — they
+were deliberate, and together they add up to the less complete system Arturo is
+describing:
+
+- **Initiative is not rolled for creatures.** V1's `dropIntoInitiative` rolls
+  each group once and puts the party in the order too: *"monster initiative is a
+  hidden DM roll, which the design notes put squarely in the app's half of the
+  labour."* V2 stages everything at `initiative: null` and the DM types every
+  number by hand.
+- **No `hpMode`.** V1 offers average or rolled per group, because *"2d6 per
+  goblin is a minute of nothing during a session and one tap beforehand, and it
+  makes 'the one on the left is nearly down' a true statement."*
+- **No visual gauge.** V1 draws budget ticks and a pin; V2 prints the working as
+  a line of text.
+- **No kind/CR-band piles in the builder.** V1's argument is specifically about
+  building rather than looking up: *"building an encounter is usually the other
+  way round — 'something undead, and not too hard'."* This is the same filter
+  Task 47 dropped from the Book; **that drop is now overturned.**
+- **No XP award.** V1 puts "Award N XP" in the builder, raw never adjusted, with
+  the per-character split beside it.
+
+### What this changes
+
+**Task 55 was going to invent an Encounter/Group split. It should port
+`joinCombat` instead** — V1 already models arrival mid-fight, and "a Group" is
+then just entries staged without a `clear`.
+
+**Task 56 stops being a design job and becomes a port.** V1's turn economy,
+legendary, lair and surprise are one coherent system that already works
+together; building them as five separate V2 inventions would be five chances to
+get the seams wrong. Tasks 63 and 64 fold into it.
+
+**The rule stands: read V1's file in full, and argue in a comment wherever V2's
+event-sourced shape makes a V1 shape wrong.** V1 holds `Combat` as a mutable
+struct; V2 folds it from acts. That is the one real translation.
+
 ## The five foundations
 
 Fourteen of the twenty-two lines above are not independent features. They are

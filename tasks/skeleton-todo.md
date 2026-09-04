@@ -18,22 +18,49 @@ an audit that produces tests, not a rewrite.
 **Accepts:** a table of every creation rule checked, each pass/fail cited; each
 failure either fixed or filed with a reason. **Scope:** M · **Deps:** none
 
-## Task 55 · **Opus**: An Encounter and a Group are different things
-**Description:** The one new modelling decision — see the plan. `Entry` is
-shared; an Encounter is prepared and survives, a Group is made now and dies with
-the fight. A Group can be thrown onto a running fight; an Encounter replaces one.
+## Task 55 · **Opus**: Arriving mid-fight
+**Description:** *Revised — this was going to invent an Encounter/Group split.
+V1 already solved it: `joinCombat(combat, arrival)`.* V2 cannot add anything to
+a running fight, because `openActs` always begins with `clear`. Port the
+arrival, and the Group falls out of it: an Encounter **replaces** the table, a
+Group **joins** it, and both are the same entries expanded the same way.
 **Accepts:**
-- [ ] A group of creatures can be made and staged without touching prep
-- [ ] A group can be added to a fight already running
-- [ ] Existing encounters fold forward untouched
-**Verification:** fold tests both kinds; a journey that adds a group mid-fight
-**Scope:** M · **Deps:** none — **and it blocks 49, 53 and 64**
+- [ ] Creatures join a fight already running, in the right place in the order
+- [ ] A prepared encounter can either replace the table or join it
+- [ ] Existing encounters and fights fold forward untouched
+**Verification:** fold tests for arrival mid-round; a journey that adds a group
+to a running fight · **Scope:** M · **Deps:** none — **blocks 49, 53, 65**
 
-## Task 56 · **Opus**: The turn economy
-**Description:** V1's `actions.ts` (166). `PORT.md`: *"needs the turn economy,
-which V2 has not built"*, and `stance.ts` names the same hole from the other
-side. Action / bonus action / reaction / movement, and what is left of each.
-The DM's fight first, because that screen already works.
+## Task 55b · **Opus**: The encounter builder V1 had
+**Description:** V2's builder is 151 lines to V1's 402 and **its own header
+lists what it dropped.** Together the drops are why Arturo says V1's system was
+more complete.
+**Accepts:**
+- [ ] Creature initiative is rolled by the app, once per group, and the party
+      joins the order — *"a hidden DM roll, squarely in the app's half of the
+      labour"*
+- [ ] Average or rolled hit points, per group (`hpMode`)
+- [ ] Kind and CR-band piles in the builder — *"something undead, and not too
+      hard"*. **This overturns Task 47's drop of the bands.**
+- [ ] The gauge is drawn, not printed as a sentence
+**Verification:** domain tests on rolled HP and the initiative expansion; a
+journey that builds by browsing rather than searching
+**Scope:** L · **Deps:** 55
+
+## Task 56 · **Opus**: V1's combat system
+**Description:** *Revised — a port, not a design job.* V1's `combat.ts` is 579
+lines to V2's 286, and the missing half is one coherent system: `Economy`
+(action/bonus/reaction **per creature**), `movementLeft`, `hasReaction`,
+`surprised`/`isSurprised`, `controls`, `mayEndTurn`, `turnsUntil`, and
+`advance`'s resets. Plus `actions.ts` (166) on top.
+
+Building these as five separate V2 inventions is five chances to get the seams
+wrong. **Tasks 63 (legendary) and 64 (lair) fold in here** — V1 holds them in
+the same `Combat` record, per round, with a DM-stated budget where the book is
+silent. 702 shipped creatures have legendary actions.
+
+The one real translation: V1 holds `Combat` as a struct it mutates; V2 folds it
+from acts. Say so in a comment wherever that changes a shape.
 **Accepts:**
 - [ ] A creature's turn shows what it has spent and what remains
 - [ ] Ending a turn restores it; a reaction survives into others' turns
@@ -108,16 +135,8 @@ discretion — *"exp or milestone"*, so both.
 
 ## Phase 10b — the consequences
 
-## Task 63 · **Sonnet**: Legendary actions, in the fight
-`content/legendary.ts` already resolves the options and holds `mayTakeOne` with
-the right rule — never on its own turn. Nothing calls it.
-**Accepts:** the DM is offered them between turns, never on the creature's own,
-and the budget is spent down · **Scope:** S-M · **Deps:** 56
-
-## Task 64 · **Sonnet**: Lair actions, on the count
-Task 46 renders `{at: 20, text}`. Nothing watches initiative count 20.
-**Accepts:** it arrives on its count and is dismissible — *"unless the DM
-ignores it"* · **Scope:** S · **Deps:** 56
+*(Tasks 63 and 64 — legendary and lair — folded into Task 56, where V1 keeps
+them: the same `Combat` record, tracked per round.)*
 
 ## Task 65 · **Sonnet**: A goblin with a name and a different axe
 Deriving from an existing statblock, which is a different and easier thing than
