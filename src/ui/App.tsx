@@ -49,14 +49,14 @@ import { waitingOn } from "../features/sheet/waiting";
 export function App({ dbName }: { dbName?: string }) {
   const [room, setRoom] = useState<string | undefined>(undefined);
   const { showing: theme, flip } = useTheme();
-  const { events, add, record, pushMany, undo, reset, say, claimDm, mayBeDm, clock, link, ready } = useLog(dbName, room);
+  const { events, record, pushMany, undo, reset, say, claimDm, mayBeDm, clock, link, ready } = useLog(dbName, room);
   const [mode, setMode] = useState<"hub" | "log" | "create" | "sheet" | "levelup" | "party" | "fight" | "prep" | "book">("hub");
   const [character, setCharacter] = useState<string>("");
   const [onlyGames, setOnlyGames] = useState(true);
   // The spellbook is fetched when somebody is building, not on arrival.
   /* The spellbook is 1.2MB of the 1.5MB a device pulls, so it waits — but the
      level-up needs it too, not only creation: a bard reaching 2 learns a spell. */
-  const { content, rows, hidden } = useCreationContent(onlyGames, mode === "create" || mode === "levelup");
+  const { content, hidden } = useCreationContent(onlyGames, mode === "create" || mode === "levelup");
   /* Hooks cannot live inside a branch, and both the sheet and the level-up
      want this. One class file is ~6KB, fetched only for the classes held. */
   const current = buildFrom(events, character);
@@ -356,12 +356,11 @@ export function App({ dbName }: { dbName?: string }) {
   return (
     <Shell
       title="The log"
-      counter={
-        <>
-          <span>{live(events).length} live</span>
-          <span>{rows === 0 ? "SRD only" : `${rows} from the compendium`}</span>
-        </>
-      }
+      /* No counters and no Append: "7 live · 941 from the compendium" and a
+         button that wrote a meaningless event were Slice 1's debug rig, left
+         on a screen a player opens. What stays is not debug — Theme is a
+         preference, Characters is the only route to the seat control from a DM
+         screen, Clear starts a campaign over. */
       actions={
         <ButtonRow>
           <Button onClick={flip}>Theme</Button>
@@ -372,9 +371,6 @@ export function App({ dbName }: { dbName?: string }) {
             </Button>
           )}
           <Button onClick={() => setMode("hub")}>Characters</Button>
-          <Button tone="gold" onClick={() => add("tick")}>
-            Append
-          </Button>
         </ButtonRow>
       }
     >

@@ -2,6 +2,7 @@ import { describe, it, expect, afterEach } from "vitest";
 import { mountPhone, type Phone } from "../../tests/phone";
 import { App } from "./App";
 import { Clock, live } from "../core/log";
+import { openLog } from "../core/persist";
 import { fold } from "../core/fold";
 import { asDevice, type Event } from "../core/types";
 import "../design/tokens.css";
@@ -14,17 +15,33 @@ const settle = () => new Promise((r) => setTimeout(r, 60));
 const tap = (p: Phone, name: string) =>
   [...p.doc.querySelectorAll("button")].find((b) => (b.getAttribute("aria-label") ?? b.textContent) === name)!.click();
 
+/**
+ * Events, seeded straight into the store.
+ *
+ * There used to be an "Append" button on the log screen and these tests
+ * pressed it. It was Slice 1's debug rig on a screen a player opens, so it is
+ * gone — and a test that needs a long log should not need a button in the
+ * product to make one. The events are real `tick`s, the same thing that button
+ * wrote, put where it would have put them.
+ */
+const seed = async (name: string, n: number) => {
+  const store = await openLog(name);
+  const clock = new Clock(asDevice("seed"));
+  await store.append(Array.from({ length: n }, () => clock.issue("tick", {})));
+  store.close();
+};
+
 /** The app opens on the hub; the log is a screen away. */
 const toLog = async (p: Phone) => { tap(p, "Log"); await settle(); };
 
 describe("the shell, on the reference phone", () => {
   it("puts every tap target at 44px", async () => {
-    phone = await mountPhone(<App dbName={db()} />);
+    const name = db();
+    await seed(name, 1);
+    phone = await mountPhone(<App dbName={name} />);
     await settle();
     expect(phone.smallTargets()).toEqual([]); // the hub
     await toLog(phone);
-    tap(phone, "Append");
-    await settle();
     expect(phone.smallTargets()).toEqual([]); // and the log
   });
 
@@ -37,11 +54,11 @@ describe("the shell, on the reference phone", () => {
   it("holds its chrome however long the log gets", async () => {
     // A list is allowed to scroll; the header and the action bar are not
     // allowed to leave. You may never scroll to find out what you can do.
-    phone = await mountPhone(<App dbName={db()} />);
+    const name = db();
+    await seed(name, 40);
+    phone = await mountPhone(<App dbName={name} />);
     await settle();
     await toLog(phone);
-    for (let i = 0; i < 40; i++) tap(phone, "Append");
-    await settle();
     const foot = phone.doc.querySelector("footer")!.getBoundingClientRect();
     const head = phone.doc.querySelector("header")!.getBoundingClientRect();
     expect(head.top).toBeGreaterThanOrEqual(0);
@@ -62,32 +79,33 @@ describe("the shell, on the reference phone", () => {
 
 describe("the log, through the screen", () => {
   it("shows an undone event still sitting there", async () => {
-    phone = await mountPhone(<App dbName={db()} />);
+    const name = db();
+    await seed(name, 2);
+    phone = await mountPhone(<App dbName={name} />);
     await settle();
     await toLog(phone);
-    tap(phone, "Append");
-    tap(phone, "Append");
-    await settle();
 
-    tap(phone, "Undo event 1");
+    tap(phone, "Undo: Marked the log");
     await settle();
 
     const rows = [...phone.doc.querySelectorAll('[data-testid="event"]')];
-    // Three rows: two ticks and the undo marker. Nothing was removed.
-    expect(rows).toHaveLength(3);
+    /*
+     * Two rows, one struck through. The undo marker is no longer a row of its
+     * own — V1's rule, and the reason is that a log which prints its own
+     * bookkeeping reads as bookkeeping: "the marker shows on the event it
+     * undid, not on its own". Nothing was removed; the tick is still there,
+     * struck through, which is what makes "undo is not deletion" credible.
+     */
+    expect(rows).toHaveLength(2);
     expect(rows.filter((r) => r.getAttribute("data-undone") === "yes")).toHaveLength(1);
-    expect(phone.doc.body.textContent).toContain("1 live");
   });
 
   it("survives being closed and reopened", async () => {
     const name = db();
+    await seed(name, 3);
     phone = await mountPhone(<App dbName={name} />);
     await settle();
     await toLog(phone);
-    tap(phone, "Append");
-    tap(phone, "Append");
-    tap(phone, "Append");
-    await settle();
 
     phone.destroy();
     phone = await mountPhone(<App dbName={name} />);
@@ -95,7 +113,6 @@ describe("the log, through the screen", () => {
     await toLog(phone);
 
     expect(phone.doc.querySelectorAll('[data-testid="event"]')).toHaveLength(3);
-    expect(phone.doc.body.textContent).toContain("3 live");
   });
 });
 

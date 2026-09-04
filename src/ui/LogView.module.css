@@ -17,24 +17,21 @@
   box-shadow: var(--lift-1);
 }
 
-.seq {
+/* The wall clock, not the sequence number. A person scanning a log back to
+   "when did that happen" is looking for a time of day; `seq` is the ordering
+   key the app sorts by and means nothing to a reader. */
+.at {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: var(--t-note);
-  color: var(--ink-dim);
-}
-
-.kind { font-size: var(--t-sm); }
-
-.by {
-  font-family: var(--font-mono);
   font-size: var(--t-aside);
   color: var(--ink-dim);
 }
 
+.what { font-size: var(--t-sm); }
+
 /* Undone is stated, not implied: the event is still there. */
 .undone { color: var(--ink-dim); }
-.undone .kind { text-decoration: line-through; }
+.undone .what { text-decoration: line-through; }
 
 .mark {
   font-size: var(--t-micro);
@@ -49,15 +46,27 @@
   padding: var(--s-7) 0;
 }
 
+/*
+ * Quiet, because there is one on every row.
+ *
+ * It was a filled box with a border, and forty of them down a page made undo
+ * the loudest thing in a log whose job is to be READ. The capability is
+ * unchanged — the tap target is still 44px, it is still reachable, it is still
+ * the thing that makes "anyone may fix anyone's number" safe. It just stops
+ * competing with the sentence beside it.
+ */
 .undo {
   min-height: var(--tap);
   min-width: var(--tap);
-  padding: 0 var(--s-5);
-  border: 1px solid var(--hairline);
-  border-radius: var(--r-control);
-  background: var(--surface-2);
-  color: var(--ink);
-  font-size: var(--t-note);
+  padding: 0 var(--s-3);
+  border: 0;
+  background: none;
+  color: var(--ink-dim);
+  font-size: var(--t-micro);
   font-family: var(--font-sans);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   cursor: pointer;
 }
+
+.undo:disabled { cursor: default; opacity: 0.55; }

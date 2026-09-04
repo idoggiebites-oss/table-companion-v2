@@ -29,10 +29,18 @@ test("keeps a character through an offline reload", async ({ page, context }) =>
   // asynchronously and a click that lands first appends into nothing.
   await expect(page.getByRole("button", { name: /Guided creation/ })).toBeVisible();
   await page.getByRole("button", { name: "Log", exact: true }).click();
-  await expect(page.getByRole("button", { name: "Append" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Clear" })).toBeVisible();
   await page.getByRole("button", { name: "Clear" }).click();
   await expect(page.getByTestId("event")).toHaveCount(0);
-  for (let i = 0; i < 2; i++) await page.getByRole("button", { name: "Append" }).click();
+  /* Staging creatures, because the "Append" button that wrote a meaningless
+     tick was Slice 1's debug rig and is gone. The bestiary index is
+     precached, so this works with the network down — which is the point. */
+  await page.getByRole("button", { name: "Characters" }).click();
+  await page.getByTestId("tabbar").getByRole("button", { name: "Combat" }).click();
+  await page.getByTestId("bestiary-search").fill("goblin");
+  await page.getByTestId("bestiary-row").first().waitFor({ timeout: 30_000 });
+  for (let i = 0; i < 2; i++) await page.getByTestId("bestiary-row").first().click();
+  await page.getByTestId("tabbar").getByRole("button", { name: "Log" }).click();
   await expect(page.getByTestId("event")).toHaveCount(2);
 
   /*

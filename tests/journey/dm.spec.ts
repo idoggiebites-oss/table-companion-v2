@@ -412,8 +412,13 @@ test("the log reads differently per person", async ({ page }) => {
   await bar(page).getByRole("button", { name: "Log" }).click();
   const dmRows = await page.getByTestId("event").count();
   expect(dmRows).toBeGreaterThan(0);
+  /* Asserted on the SENTENCES now, not on the raw event kind. The old version
+     looked for "fight.act", which was the debug view the log used to be — and
+     a test that reads a kind string cannot tell whether a person could read
+     the row. */
   const dmText = await page.getByTestId("rows").innerText();
-  expect(dmText).toContain("fight.act");
+  expect(dmText).toContain("is on the table");
+  expect(dmText).toContain("took 3");
 
   /* The player does not. Staging, damage and the ladder are all prep — and
      the fight screen hiding a creature is worth nothing if this names it. */
@@ -422,7 +427,8 @@ test("the log reads differently per person", async ({ page }) => {
   await page.getByTestId("seat").selectOption({ label: "Bree Thorn" });
   await bar(page).getByRole("button", { name: "Log" }).click();
   const playerText = await page.getByTestId("rows").innerText().catch(() => "");
-  expect(playerText).not.toContain("fight.act");
+  expect(playerText).not.toContain("is on the table");
+  expect(playerText).not.toContain("took 3");
   expect(await page.getByTestId("event").count()).toBeLessThan(dmRows);
 
   await page.screenshot({ path: "shots/log-player.png", fullPage: true });

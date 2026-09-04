@@ -28,9 +28,26 @@ const join = async (page: Page, code: string) => {
   await expect(page.getByTestId("link")).toHaveText("Everyone sees this");
 };
 
+/*
+ * Real events, from a real action.
+ *
+ * This pressed an "Append" button that wrote a meaningless `tick`. It was
+ * Slice 1's debug rig on a screen a player opens and it is gone, so these
+ * tests stage creatures instead — one tap, one event, and a thing a DM
+ * actually does.
+ */
 const appendOn = async (page: Page, n: number) => {
-  await page.getByRole("button", { name: "Log", exact: true }).click();
-  for (let i = 0; i < n; i++) await page.getByRole("button", { name: "Append" }).click();
+  await page.getByTestId("tabbar").getByRole("button", { name: "Combat" }).click();
+  await page.getByTestId("bestiary-search").fill("goblin");
+  await page.getByTestId("bestiary-row").first().waitFor({ timeout: 30_000 });
+  /* Staging is PRIVATE — `visibility.ts` keeps it behind the screen — so it
+     buys one row on this device and none on anyone else's. */
+  await page.getByTestId("bestiary-row").first().click();
+  /* Rolling initiative is public: "roll for initiative" is said out loud. n of
+     them is n rows everywhere. */
+  const init = page.getByTestId("staged-row").first().getByTestId("initiative");
+  for (let i = 0; i < n; i++) await init.fill(String(10 + i));
+  await page.getByTestId("tabbar").getByRole("button", { name: "Log" }).click();
 };
 
 const CODE = () => {
@@ -54,12 +71,14 @@ test("what one device writes, the other sees", async ({ browser }) => {
   await join(player, code);
 
   await appendOn(dm, 3);
-  await expect(dm.getByText("3 live")).toBeVisible();
+  /* Four here: the staging the DM alone may see, and the three rolls. */
+  await expect(dm.getByTestId("event")).toHaveCount(4);
 
   // The other device did not write these and has never met the first one.
   await player.getByRole("button", { name: "Log", exact: true }).click();
+  /* Three there: everything public crossed, and the staging did not — which is
+     the disclosure ladder holding across devices rather than only on a screen. */
   await expect(player.getByTestId("event")).toHaveCount(3);
-  await expect(player.getByText("3 live")).toBeVisible();
 });
 
 test("a device that arrives late catches up on everything", async ({ browser }) => {
@@ -71,7 +90,7 @@ test("a device that arrives late catches up on everything", async ({ browser }) 
   const late = await device(browser);
   await join(late, code);
   await late.getByRole("button", { name: "Log", exact: true }).click();
-  await expect(late.getByTestId("event")).toHaveCount(4);
+  await expect(late.getByTestId("event")).toHaveCount(4);  // the four public rolls
 });
 
 test("undo crosses the table", async ({ browser }) => {
@@ -83,14 +102,18 @@ test("undo crosses the table", async ({ browser }) => {
 
   await appendOn(a, 2);
   await b.getByRole("button", { name: "Log", exact: true }).click();
-  await expect(b.getByTestId("event")).toHaveCount(2);
+  await expect(b.getByTestId("event")).toHaveCount(2);  // the two public rolls
 
   // Taking something back is an append, so it travels like anything else —
   // and the event it hides is still there on both devices.
-  await a.getByRole("button", { name: "Undo event 1" }).click();
-  await expect(b.getByTestId("event")).toHaveCount(3);
+  /* The LAST row, which is a roll — the first is the staging, and undoing
+     something the far device never saw proves nothing about travelling. */
+  await a.getByTestId("event").last().getByRole("button", { name: /^Undo/ }).click();
+  /* Still two rows on the far device, one struck through: the marker travels
+     and is applied, but is not drawn as a row of its own. */
+  await expect(b.getByTestId("event")).toHaveCount(2);
   await expect(b.locator('[data-undone="yes"]')).toHaveCount(1);
-  await expect(b.getByText("1 live")).toBeVisible();
+
 });
 
 test("a character built on one device appears on the other", async ({ browser }) => {

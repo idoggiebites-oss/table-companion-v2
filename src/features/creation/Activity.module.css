@@ -20,7 +20,18 @@
   color: var(--ink-dim);
 }
 
-.more { color: var(--gold-ink); font-size: var(--t-note); background: none; border: 0; cursor: pointer; }
+/* 44px, like everything else you can press. It was 58×17 and no test reached
+   it: the harness only sees this panel once the log has something in it, and
+   the check that would have caught it ran against an empty one. */
+.more {
+  min-height: var(--tap);
+  padding: 0 var(--s-2);
+  color: var(--gold-ink);
+  font-size: var(--t-note);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
 
 .line { position: relative; display: flex; flex-direction: column; gap: var(--s-5); padding-left: var(--s-7); }
 

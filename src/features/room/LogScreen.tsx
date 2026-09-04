@@ -53,7 +53,15 @@ export function LogScreen({
           encounters: prepFrom(events).encounters.length,
         })}
       />
-      <LogView events={mine} onUndo={onUndo} mayUndo={(e) => mayRevert(e, dm, device)} />
+      {/* One lookup for both: a character by id, and a creature by its
+          combatant id — so a fight row can say "Goblin 2 took 5" rather than
+          "a creature took 5" wherever the fight still holds the name. */}
+      <LogView
+        events={mine}
+        nameOf={(id) => fight.combatants.find((c) => c.id === id)?.name ?? nameOf(id)}
+        onUndo={onUndo}
+        mayUndo={(e) => mayRevert(e, dm, device)}
+      />
     </>
   );
 }
