@@ -93,12 +93,61 @@ describe("hit dice and rests", () => {
     expect(diceLeft(build(), s.now())[0]).toEqual({ die: 10, left: 4, total: 5 });
   });
 
-  it("gives back half the dice on a long rest, rounded down", () => {
+  it("gives back half your TOTAL dice on a long rest, not half of what you spent", () => {
+    /*
+     * The rule is a budget against the whole pool — "up to half your total,
+     * minimum one" — and this halved what had been SPENT, which is a different
+     * sum. It was wrong in both directions: a fighter who spent all five got
+     * three back where the rule gives two, and one who spent three of ten got
+     * two back where the rule gives all three.
+     */
     const s = sheet();
     for (let i = 0; i < 5; i++) s.act({ act: "hitdie", die: 10, rolled: 1 });
     expect(diceLeft(build(), s.now())[0]!.left).toBe(0);
     s.act({ act: "rest", length: "long" });
-    expect(diceLeft(build(), s.now())[0]!.left).toBe(3); // 5 spent -> 2 still spent
+    expect(diceLeft(build(), s.now())[0]!.left).toBe(2);
+  });
+
+  it("gives back everything spent when the budget covers it", () => {
+    const b = build({ classes: [{ id: "fighter", level: 10, subclass: null }], level: 10 });
+    const s = sheet(b);
+    for (let i = 0; i < 3; i++) s.act({ act: "hitdie", die: 10, rolled: 1 });
+    s.act({ act: "rest", length: "long" });
+    expect(diceLeft(b, s.now())[0]!.left).toBe(10);
+  });
+
+  it("gives back at least one die to a first-level character", () => {
+    /* floor(1/2) is zero, and a level-one character who spent their only die
+       would never get it back. The minimum is the rule, not a rounding fix. */
+    const b = build({ classes: [{ id: "fighter", level: 1, subclass: null }], level: 1 });
+    const s = sheet(b);
+    s.act({ act: "hitdie", die: 10, rolled: 1 });
+    expect(diceLeft(b, s.now())[0]!.left).toBe(0);
+    s.act({ act: "rest", length: "long" });
+    expect(diceLeft(b, s.now())[0]!.left).toBe(1);
+  });
+
+  it("spends a multiclass budget on the largest dice first", () => {
+    /*
+     * The rules let the player choose which spent dice come back. V1 dodged
+     * the question by keeping one undifferentiated pool; V2 splits by die size
+     * because a multiclass character needs to know whether a d10 or a d6 is
+     * left, so the choice has to be made somewhere. Largest first is what a
+     * player picking for themselves would take.
+     */
+    const b = build({
+      classes: [{ id: "fighter", level: 5, subclass: null }, { id: "wizard", level: 2, subclass: null }],
+      level: 7,
+    });
+    const s = sheet(b);
+    for (let i = 0; i < 5; i++) s.act({ act: "hitdie", die: 10, rolled: 1 });
+    for (let i = 0; i < 2; i++) s.act({ act: "hitdie", die: 6, rolled: 1 });
+    /* Seven total, so three come back — all three to the d10 pool. */
+    s.act({ act: "rest", length: "long" });
+    expect(diceLeft(b, s.now())).toEqual([
+      { die: 10, left: 3, total: 5 },
+      { die: 6, left: 0, total: 2 },
+    ]);
   });
 
   it("restores everything else on a long rest, and sheds one exhaustion", () => {

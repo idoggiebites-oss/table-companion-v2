@@ -31,7 +31,7 @@ const ev = (v: Vital): Event =>
   ({ id: `x${Math.random()}`, seq: 1, by: asDevice("t"), at: 0, kind: VITAL, data: v as unknown as Record<string, unknown> });
 
 const vitals = (build: Build, acts: readonly Vital[]): Vitals =>
-  acts.reduce((v, a) => reduceVitals(v, ev(a)), startingVitals(build));
+  acts.reduce((v, a) => reduceVitals(v, ev(a), build), startingVitals(build));
 
 const LOADED: readonly Vital[] = [
   { act: "damage", n: 120 },

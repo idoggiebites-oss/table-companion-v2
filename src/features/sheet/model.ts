@@ -64,7 +64,41 @@ export function startingVitals(build: Build): Vitals {
 const withDeath = (v: Vitals, fails: number): Vitals =>
   fails === 0 ? v : { ...v, deaths: { ...v.deaths, failures: Math.min(3, v.deaths.failures + fails) } };
 
-export function reduceVitals(v: Vitals, e: Event): Vitals {
+/**
+ * How many spent hit dice a long rest gives back, and which ones.
+ *
+ * The rule is "up to half your TOTAL, minimum one" — a budget against the
+ * whole pool. V2 halved what had been SPENT instead, which is a different
+ * sum and quietly wrong for every character who had not spent them all: ten
+ * hit dice, three spent, should come back to none spent and came back to one.
+ * It only agreed with the rule at the extremes, which is why it survived.
+ *
+ * V1 avoided the question by keeping hit dice as a single pool sized to total
+ * level. V2 splits them by die size — which is the better shape, because a
+ * multiclass character rolls a d10 or a d6 and needs to know which are left —
+ * so the budget has to be spent somewhere. **Largest die first**, since that
+ * is what a player choosing for themselves would take and the rules leave the
+ * choice to them.
+ */
+function afterLongRest(
+  spent: Readonly<Record<number, number>>, build: Build,
+): Record<number, number> {
+  const pools = hitDice(build.classes);
+  const total = pools.reduce((n, p) => n + p.count, 0);
+  let budget = Math.max(1, Math.floor(total / 2));
+  const out: Record<number, number> = { ...spent };
+  /* `hitDice` already sorts by die size descending. */
+  for (const { die } of pools) {
+    if (budget <= 0) break;
+    const was = out[die] ?? 0;
+    const back = Math.min(was, budget);
+    out[die] = was - back;
+    budget -= back;
+  }
+  return out;
+}
+
+export function reduceVitals(v: Vitals, e: Event, build: Build): Vitals {
   if (e.kind !== VITAL) return v;
   const a = e.data as unknown as Vital;
   switch (a.act) {
@@ -93,14 +127,12 @@ export function reduceVitals(v: Vitals, e: Event): Vitals {
       if (a.length === "short") return v;
       // A long rest: all hit points, half the hit dice back, one exhaustion
       // shed, and death saves forgotten.
-      const spent: Record<number, number> = {};
-      for (const [die, n] of Object.entries(v.spent)) spent[Number(die)] = Math.floor(n / 2);
       return {
         ...v,
         health: { ...v.health, hp: v.health.max, temp: 0, dying: false },
         deaths: EMPTY_DEATHS,
         exhaustion: clampExhaustion(v.exhaustion - 1),
-        spent,
+        spent: afterLongRest(v.spent, build),
       };
     }
     case "condition":
@@ -127,7 +159,7 @@ export function reduceVitals(v: Vitals, e: Event): Vitals {
 /** This character's vitals, folded from the log over the build it started from. */
 export function vitalsFrom(events: readonly Event[], character: string, build: Build): Vitals {
   const mine = events.filter((e) => e.kind !== VITAL || e.data["character"] === character);
-  return fold(mine, reduceVitals, startingVitals(build));
+  return fold(mine, (v, e) => reduceVitals(v, e, build), startingVitals(build));
 }
 
 /** Hit dice left, by die. */
