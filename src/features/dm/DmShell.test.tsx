@@ -54,6 +54,16 @@ describe("the DM shell", () => {
       .toBeGreaterThan(wide);
   });
 
+  it("gives the work the room when there is no rail either", async () => {
+    /* The bestiary has neither a rail nor a library — reference material, not
+       a session's own furniture — so a lone `<main>` must not land in the
+       15rem cell a rail would have taken. */
+    phone = await mountPhone(shell({ rail: false }), "light", DESK);
+    expect(phone.doc.querySelector('[aria-label="This session"]')).toBeNull();
+    expect(phone.doc.querySelector("main")!.getBoundingClientRect().width)
+      .toBeGreaterThan(15 * 16);
+  });
+
   it("never scrolls sideways, at either width", async () => {
     for (const size of [undefined, DESK]) {
       const p = await mountPhone(shell({ library: true }), "light", size);

@@ -57,7 +57,17 @@ export function tabsFor({ dm, waiting, owed, fighting }: {
         { id: "fight", label: "Combat", icon: "sword" },
         /* Prep is the DM's alone: staging a fight is not a player's job, which
            is the same line the Combat tab draws by seat. */
-        { id: "prep", label: "Prep", icon: "book" },
+        { id: "prep", label: "Prep", icon: "clipboard" },
+        /*
+         * The bestiary. DM-only for the same reason a creature can be staged
+         * `hidden`: a player who can look up the statblock knows the armour
+         * class and the hit points, which is exactly what the disclosure
+         * ladder exists to withhold — Task 47's argument, and V1's before it.
+         * Task 48 opens this tab to players once spells join it; nothing
+         * about the seat check changes, only what a player is allowed to see
+         * once inside.
+         */
+        { id: "book", label: "Book", icon: "book" },
         /* No Characters here: `Party.tsx`'s rows are already buttons wired to
            `onOpen`, and `App.tsx` (~line 288) wires that to
            `claim(id); setCharacter(id); setMode("sheet")`. The DM reaches any

@@ -1,0 +1,60 @@
+/* No rail, no library — see `DmShell.tsx`'s `.noRail`. This is reference
+   material, not a session's own furniture, so the work takes the width. */
+
+.controls { display: flex; gap: var(--s-3); flex-wrap: wrap; }
+
+.search {
+  flex: 2 1 200px; min-height: var(--tap); padding: 0 var(--s-5);
+  border: 1px solid var(--hairline); border-radius: var(--r-pill);
+  background: var(--surface-1); color: var(--ink);
+  font-family: var(--font-sans); font-size: var(--t-body);
+}
+
+.crInput {
+  flex: 0 0 8rem; min-height: var(--tap); padding: 0 var(--s-5);
+  border: 1px solid var(--hairline); border-radius: var(--r-pill);
+  background: var(--surface-1); color: var(--ink);
+  font-family: var(--font-sans); font-size: var(--t-body);
+}
+
+.kinds { display: flex; gap: var(--s-2); flex-wrap: wrap; }
+
+.kind {
+  min-height: var(--tap); padding: 0 var(--s-4); font-size: var(--t-sm);
+  color: var(--ink); background: var(--surface-1);
+  border: var(--panel-border); border-radius: var(--r-pill);
+  text-transform: capitalize;
+}
+
+.kind[aria-pressed="true"] {
+  color: var(--on-gold); background: var(--gold-fill); border-color: var(--gold-edge);
+}
+
+.n { font-family: var(--font-mono); font-variant-numeric: tabular-nums; opacity: 0.75; }
+
+.more { font-size: var(--t-aside); color: var(--ink-dim); margin: 0; }
+
+.results { display: flex; flex-direction: column; gap: var(--s-2); }
+
+.entry { display: flex; flex-direction: column; }
+
+.row {
+  display: grid; gap: var(--s-1); text-align: start;
+  padding: var(--s-4) var(--s-5); min-height: var(--tap);
+  border: var(--panel-border); border-radius: var(--r-card);
+  background: var(--surface-1); box-shadow: var(--lift-1);
+  font-family: var(--font-sans); color: var(--ink);
+}
+
+.name { font-weight: 600; font-size: var(--t-sm); }
+.note { font-size: var(--t-aside); color: var(--ink-dim); }
+
+.marks { display: flex; gap: var(--s-2); flex-wrap: wrap; }
+
+.mark {
+  font-size: var(--t-micro); letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--gold-ink); border: 1px solid var(--gold-edge);
+  border-radius: var(--r-pill); padding: 0 var(--s-3);
+}
+
+.none { font-size: var(--t-sm); color: var(--ink-dim); margin: var(--s-2) var(--s-5); }

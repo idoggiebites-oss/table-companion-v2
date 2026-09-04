@@ -37,6 +37,16 @@ export function DmShell({ title, trail, rail, library, below, children }: {
   below?: ReactNode;
   children: ReactNode;
 }) {
+  /*
+   * Every caller so far (`Prep`) has a rail, so this collapse was never
+   * needed until the bestiary — reference material with nothing session-
+   * specific to put beside it. Without `.noRail` a lone `<main>` lands in
+   * CSS Grid's first cell, which at 46rem is the 15rem track meant for the
+   * rail: the work column would be squeezed to card-index width. Mirrors the
+   * `.noLibrary` collapse already here for the same reason on the other side.
+   */
+  const cols = [s.columns, rail === undefined ? s.noRail : "", library === undefined ? s.noLibrary : ""]
+    .filter(Boolean).join(" ");
   return (
     <div className={s.shell}>
       {/* The same slot pattern as the player header, for the same reason: a
@@ -51,10 +61,7 @@ export function DmShell({ title, trail, rail, library, below, children }: {
         * `data-testid="scroll"` so `mountPhone().screens()` measures this the
         * way it measures the player shell — one harness, both surfaces.
         */}
-      <div
-        className={library === undefined ? `${s.columns} ${s.noLibrary}` : s.columns}
-        data-testid="scroll"
-      >
+      <div className={cols} data-testid="scroll">
         {rail !== undefined && (
           <aside className={s.rail} aria-label="This session">{rail}</aside>
         )}

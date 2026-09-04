@@ -44,9 +44,9 @@ up the statblock knows the armour class and the hit points, which is exactly
 what the disclosure ladder exists to withhold."*
 
 **Acceptance criteria:**
-- [ ] Search and filter over the whole bestiary, rendered with Task 46's view
-- [ ] Behind the DM's seat, like every other disclosure decision
-- [ ] Loads on first open, not with the app — 141KB gzipped
+- [x] Search and filter over the whole bestiary, rendered with Task 46's view
+- [x] Behind the DM's seat, like every other disclosure decision
+- [x] Loads on first open, not with the app — 141KB gzipped
 
 **Verification:** component test with an injected fetcher (`bestiary` takes one);
 a journey that a player has no route to it

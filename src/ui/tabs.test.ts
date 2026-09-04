@@ -7,7 +7,7 @@ describe("the bar turns with the seat, and stays one bar", () => {
   it("gives the DM a party and no sheet", () => {
     /* V1's model: one navigation whose entries depend on who you are. A DM
        has no Sheet because a DM has no character. */
-    expect(ids({ dm: true })).toEqual(["party", "fight", "prep", "log"]);
+    expect(ids({ dm: true })).toEqual(["party", "fight", "prep", "book", "log"]);
   });
 
   it("gives a player a sheet and no party", () => {

@@ -598,6 +598,39 @@ test("an encounter built with an environment arrives on the table with it", asyn
   await expect(page.getByTestId("encounters")).toContainText("The dark cellar");
 });
 
+test("the bestiary is behind the DM's seat, and nowhere else", async ({ page }) => {
+  /*
+   * V1's reason, ported whole: a player who can look up the statblock knows
+   * the armour class and the hit points, which is exactly what the
+   * disclosure ladder exists to withhold. So the tab itself must not exist
+   * on a player's bar — not merely be unreachable once there.
+   */
+  await hub(page);
+  await make(page, "Bree Thorn");
+  await expect(bar(page).getByRole("button", { name: "Book" })).toHaveCount(0);
+
+  await bar(page).getByRole("button", { name: "Characters" }).click();
+  await page.getByTestId("seat").selectOption({ value: "dm" });
+  await bar(page).getByRole("button", { name: "Book" }).click();
+  /* The index is 141KB and pulled on first open, so the rows arriving IS the
+     loaded signal — a placeholder is a string that can be reworded. */
+  await expect(page.getByTestId("book-row").first()).toBeVisible({ timeout: 30_000 });
+
+  await page.getByTestId("book-search").fill("adult black dragon");
+  const hit = page.getByTestId("book-row").first();
+  await expect(hit).toContainText("CR 14");
+  await hit.getByRole("button").click();
+  await expect(hit.getByTestId("statblock")).toContainText("Multiattack");
+
+  /* Back to the player, and the tab is gone again — it never survives a seat
+     change, the same rule every other disclosure decision follows. Via
+     `toHub`, because the DM's bar has no Characters: Task 26 dropped it, and
+     reaching the seat control from a DM screen goes through the log. */
+  await toHub(page);
+  await page.getByTestId("seat").selectOption({ label: "Bree Thorn" });
+  await expect(bar(page).getByRole("button", { name: "Book" })).toHaveCount(0);
+});
+
 test("a staged creature shows everything it can do", async ({ page }) => {
   /*
    * The gap this closes. `creatures.ts` has had a `statblock()` loader since

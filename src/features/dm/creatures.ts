@@ -91,3 +91,32 @@ export function crName(cr: number): string {
 const SIZE: Record<string, string> = {
   T: "Tiny", S: "Small", M: "Medium", L: "Large", H: "Huge", G: "Gargantuan",
 };
+
+/**
+ * What kind of thing a creature is, with the subtype dropped.
+ *
+ * Ported from V1's `domain/creature.ts`: the compendium ships 6,633 monsters
+ * under 416 distinct `type` strings — "humanoid (any race)", "fiend (demon)",
+ * "humanoid (elf)" — because the files keep the subtype inside the type. That
+ * is 416 piles, which is a second search rather than a filter. The rulebook
+ * has fourteen, and normalising to them is what turns the list into one a DM
+ * can scan before opening the search box.
+ *
+ * V1 also bands CR into "is this a fair fight" buckets (fodder/standard/
+ * deadly/legendary) as a filter alongside a raw ceiling. Not ported: this
+ * task names only the ceiling and the kind, and a numeric max already answers
+ * the same question the bands do — a second control that says it again is not
+ * a decision, it is a duplicate.
+ */
+export const CREATURE_KINDS = [
+  "aberration", "beast", "celestial", "construct", "dragon", "elemental",
+  "fey", "fiend", "giant", "humanoid", "monstrosity", "ooze", "plant", "undead",
+] as const;
+
+export type CreatureKind = (typeof CREATURE_KINDS)[number];
+
+/** Unrecognised returns null rather than forcing a homebrew type into a pile it is not in. */
+export function creatureKind(type: string): CreatureKind | null {
+  const head = type.split("(")[0]!.trim().toLowerCase();
+  return (CREATURE_KINDS as readonly string[]).includes(head) ? (head as CreatureKind) : null;
+}

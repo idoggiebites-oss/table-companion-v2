@@ -70,6 +70,9 @@
   }
   .rail, .work, .library { overflow-y: auto; min-height: 0; }
   .library { grid-column: 2; }
+  /* No rail: the work is the only child, and a bare 2-track grid would put it
+     in the 15rem cell meant for the rail rather than filling the row. */
+  .noRail { grid-template-columns: minmax(0, 1fr); }
 
   /*
    * The work stops widening at a readable measure.
@@ -85,6 +88,23 @@
    * 46rem was tried first and changed nothing: it was wider than the track.
    */
   .work { max-width: 34rem; }
+
+  /*
+   * Centred when there is no rail beside it.
+   *
+   * The measure is right and the alignment was not: a 544px column pinned to
+   * the left of a 992px track leaves 448px of void on one side, which reads as
+   * a screen that failed to load rather than one that chose its width. With a
+   * rail the column is already balanced by the furniture; without one it has
+   * to balance itself. The player `Shell` has done this from the start.
+   *
+   * `width: 100%` is not decoration. An auto inline margin makes a grid item
+   * resolve to fit-content instead of stretching to its track, so on its own
+   * this centres a column that has shrunk to whatever text it happens to hold
+   * — 62px in a shell test with one short child. The width restores the
+   * stretch and `max-width` still caps it at the measure.
+   */
+  .noRail .work { width: 100%; margin-inline: auto; }
 }
 
 /* ── three columns ────────────────────────────────────────────────────────
@@ -97,6 +117,11 @@
   /* A screen with nothing reusable to show does not get an empty third track
      — the work takes the room instead. */
   .noLibrary { grid-template-columns: 15rem minmax(0, 1fr); }
+  /* Same idea, the other side. Only paired with `.noLibrary` so far — the
+     bestiary has neither — so a rail-less screen WITH a library is not a
+     combination this rule covers; add `.noRail .library{grid-column:2}` if
+     one ever needs it. */
+  .noRail.noLibrary { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* Always rendered, empty or not — three declared rows need three children. */

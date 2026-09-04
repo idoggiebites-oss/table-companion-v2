@@ -29,6 +29,7 @@ import { useSeat } from "../features/room/useSeat";
 import { Party } from "../features/dm/Party";
 import { Staging } from "../features/dm/Staging";
 import { PrepScreen } from "../features/dm/PrepScreen";
+import { Bestiary } from "../features/dm/Bestiary";
 import { scenesFrom } from "../features/dm/scene";
 import { homebrewFrom, HOMEBREW } from "../features/sheet/homebrew";
 import { Fight as PlayerFight } from "../features/room/Fight";
@@ -49,7 +50,7 @@ export function App({ dbName }: { dbName?: string }) {
   const [room, setRoom] = useState<string | undefined>(undefined);
   const { showing: theme, flip } = useTheme();
   const { events, add, record, pushMany, undo, reset, say, claimDm, mayBeDm, clock, link, ready } = useLog(dbName, room);
-  const [mode, setMode] = useState<"hub" | "log" | "create" | "sheet" | "levelup" | "party" | "fight" | "prep">("hub");
+  const [mode, setMode] = useState<"hub" | "log" | "create" | "sheet" | "levelup" | "party" | "fight" | "prep" | "book">("hub");
   const [character, setCharacter] = useState<string>("");
   const [onlyGames, setOnlyGames] = useState(true);
   // The spellbook is fetched when somebody is building, not on arrival.
@@ -101,7 +102,7 @@ export function App({ dbName }: { dbName?: string }) {
     const to = currentOf(id, tabs);
     setMode(to === "log" ? "log" : to === "sheet" ? "sheet"
       : to === "party" ? "party" : to === "fight" ? "fight"
-      : to === "prep" ? "prep" : "hub");
+      : to === "prep" ? "prep" : to === "book" ? "book" : "hub");
     /* A player's sheet is the character they are SITTING in — the seat is what
        decides whose sheet this is, not whichever one was opened last. */
     if (to === "sheet") {
@@ -236,6 +237,10 @@ export function App({ dbName }: { dbName?: string }) {
       />
     );
   }
+
+  /* No events, no wiring — the bestiary reads the compendium, not the log.
+     `tabs.ts` keeps this DM-only, which is the only gate it needs. */
+  if (mode === "book") return <Bestiary nav={nav("book")} />;
 
   if (mode === "fight") {
     /*
