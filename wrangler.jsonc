@@ -62,7 +62,19 @@
   "durable_objects": {
     "bindings": [{ "name": "ROOMS", "class_name": "Room" }]
   },
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Room"] }]
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Room"] }],
+
+  /*
+   * Pictures the table put there — a session's hero, an NPC's face. Bound as
+   * IMAGES, and `worker/images.ts` treats it as OPTIONAL: unbind this and the
+   * app still runs, with every card falling back to the icon set. That is the
+   * same rule the push keys follow, and it is why a fresh clone of this repo
+   * works against a Cloudflare account that has never enabled R2.
+   *
+   * The keys are SHA-256 hashes of the bytes, so an object is immutable and
+   * served `immutable` for a year. Nothing here ever needs invalidating.
+   */
+  "r2_buckets": [{ "binding": "IMAGES", "bucket_name": "table-companion-images" }]
 
   /*
    * No `compatibility_flags: ["nodejs_compat"]`. V1 sets it, but nothing here

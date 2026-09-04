@@ -239,9 +239,9 @@ upload and serve **behind the gate** — unlike `/gate/`, this is campaign
 content. Ids in the log, bytes in R2.
 
 **Acceptance criteria:**
-- [ ] An image survives a reload and appears on a second device
-- [ ] Served only to an authenticated request
-- [ ] The app still runs with the bucket unbound
+- [~] Bytes round-trip through the live Worker; the second-device check waits on the upload UI
+- [x] Served only to an authenticated request — verified live: 401 without the cookie, 201 with it
+- [x] The app still runs with the bucket unbound — both routes answer 404 and cards fall back to icons
 
 **Verification:** worker test for the route; room journey across two contexts
 **Dependencies:** none · **Scope:** M
