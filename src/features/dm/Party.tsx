@@ -1,4 +1,7 @@
+import { useState } from "react";
 import { Shell } from "../../ui/Shell";
+import { AskFor } from "./AskFor";
+import { askedFrom, addressees, type Ask } from "../room/ask";
 import { VAGUE } from "../../rules/5e/vitals";
 import { membersIn, type Member } from "./members";
 import type { Event } from "../../core/types";
@@ -19,7 +22,7 @@ import s from "./Party.module.css";
  * columns as the width allows and collapses to one on a phone, because the DM
  * side has to work on both without being two designs.
  */
-export function Party({ events, nav, who, onOpen, onHit }: {
+export function Party({ events, nav, who, onOpen, onHit, onAsk }: {
   events: readonly Event[];
   nav?: ReactNode;
   /**
@@ -43,8 +46,13 @@ export function Party({ events, nav, who, onOpen, onHit }: {
    * change is attributed and reversible — see `permissions.ts`.
    */
   onHit?: (character: string, amount: number) => void;
+  /** "Everyone roll Perception." See `features/room/ask.ts`. */
+  onAsk?: (ask: Omit<Ask, "id">) => void;
 }) {
   const party = membersIn(events);
+  const [asking, setAsking] = useState(false);
+  const asked = askedFrom(events);
+  const ids = party.map((m) => m.id);
   return (
     <Shell title="The party" below={nav} trail={who} wide>
       {party.length === 0 ? (
@@ -57,6 +65,36 @@ export function Party({ events, nav, who, onOpen, onHit }: {
           {party.map((m) => <Row key={m.id} m={m} {...(onHit === undefined ? {} : { onHit })} {...(onOpen === undefined ? {} : { onOpen })} />)}
         </div>
       )}
+
+      {/*
+        * Asking is the DM's, and it lives here because this is the screen with
+        * the table on it — choosing who rolls is choosing among these faces.
+        */}
+      {onAsk !== undefined && party.length > 0 && (
+        asking ? (
+          <AskFor party={party} onAsk={onAsk} onClose={() => setAsking(false)} />
+        ) : (
+          <button type="button" className={s.ask} data-testid="ask-open"
+                  onClick={() => setAsking(true)}>Ask for a roll</button>
+        )
+      )}
+
+      {/* What came back, and who is still being waited on — the whole reason
+          an ask is a thing in the log rather than a sentence said aloud. */}
+      {asked.open.map((ask) => (
+        <p key={ask.id} className={s.answers} data-testid="ask-answers">
+          <span className={s.askName}>{ask.name}</span>
+          {addressees(ask, ids).map((id) => {
+            const a = asked.answers[ask.id]?.[id];
+            const name = party.find((m) => m.id === id)?.name ?? "Someone";
+            return (
+              <span key={id} className={s.answer}>
+                {name} {a === undefined ? "…" : a === null ? "passed" : String(a)}
+              </span>
+            );
+          })}
+        </p>
+      ))}
     </Shell>
   );
 }

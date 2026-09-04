@@ -832,3 +832,51 @@ test("a player is taught what a turn holds, not just what they can swing", async
   await expect(page.getByTestId("whose-turn")).toHaveText("Your turn");
   await expect(page.getByTestId("pip-action")).not.toContainText("spent");
 });
+
+test("the DM asks for a roll and it arrives over whatever the player is doing", async ({ page }) => {
+  /*
+   * The claim seam, turned round. V2's claim ran player → DM only, and
+   * `nudge.ts` recorded the consequence in writing: "the DM has asked YOU for
+   * a roll — needs the claim seam to run the other way and is not built."
+   */
+  await hub(page);
+  await make(page, "Bree Thorn");
+  await bar(page).getByRole("button", { name: "Characters" }).click();
+  await page.getByTestId("seat").selectOption({ value: "dm" });
+
+  await bar(page).getByRole("button", { name: "Party" }).click();
+  await page.getByTestId("ask-open").click();
+  await page.getByTestId("ask-dc").fill("14");
+  await page.getByTestId("ask-flavour").fill("You scan the ruins for hidden details.");
+  /* Nobody ticked means the whole table — what a DM says most of the time. */
+  await expect(page.getByTestId("ask-for")).toContainText("the whole table rolls");
+  await page.getByTestId("ask-send").click();
+
+  /* The DM is never asked: they are the one asking. */
+  await expect(page.getByTestId("roll-request")).toHaveCount(0);
+  await expect(page.getByTestId("ask-answers")).toContainText("Bree Thorn …");
+
+  /* Sitting in Bree, it is already waiting — no tab to visit, no badge to
+     notice. And it takes the screen: the scrim swallows the tab bar, which is
+     what "interrupts" has to mean or it is just another thing to miss. */
+  await page.getByTestId("seat").selectOption({ label: "Bree Thorn" });
+  const modal = page.getByTestId("roll-request");
+  await expect(modal).toBeVisible();
+  await expect(modal).toContainText("Perception Check");
+  await expect(modal).toContainText("ability check");
+  await expect(modal).toContainText("You scan the ruins for hidden details.");
+  await expect(modal.getByTestId("dc")).toHaveText("14");
+
+  /* It rolls nothing. The total comes off a die on the table. */
+  await expect(modal).toContainText("Roll a physical die");
+  await expect(page.getByTestId("roll-submit")).toBeDisabled();
+  await page.getByTestId("roll-total").fill("17");
+  await page.getByTestId("roll-submit").click();
+
+  /* Answered, so it is gone — and the DM has the number. */
+  await expect(page.getByTestId("roll-request")).toHaveCount(0);
+  await toHub(page);
+  await page.getByTestId("seat").selectOption({ value: "dm" });
+  await bar(page).getByRole("button", { name: "Party" }).click();
+  await expect(page.getByTestId("ask-answers")).toContainText("Bree Thorn 17");
+});

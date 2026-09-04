@@ -1,0 +1,42 @@
+.wrap { display: flex; flex-direction: column; gap: var(--s-3); }
+.field { display: flex; align-items: center; gap: var(--s-3); }
+
+.label {
+  min-width: 4rem; font-size: var(--t-micro); letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--ink-dim);
+}
+
+.select, .dc, .flavour {
+  flex: 1; min-height: var(--tap); padding: 0 var(--s-3);
+  border: 1px solid var(--hairline); border-radius: var(--r-control);
+  background: var(--surface-1); font-family: var(--font-sans);
+  font-size: var(--t-sm); color: var(--ink);
+}
+
+.dc { flex: 0 0 6rem; }
+.who { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+
+.name {
+  min-height: var(--tap); padding: 0 var(--s-4);
+  border: 1px solid var(--hairline); border-radius: var(--r-pill);
+  background: var(--surface-2); font-family: var(--font-sans);
+  font-size: var(--t-note); color: var(--ink-dim); cursor: pointer;
+}
+
+.on { border-color: var(--gold-edge); background: var(--gold-fill); color: var(--on-gold); }
+.everyone { margin: 0; font-size: var(--t-aside); color: var(--ink-dim); }
+.actions { display: flex; gap: var(--s-3); }
+
+.ask {
+  flex: 1; min-height: var(--tap);
+  border: 1px solid var(--gold-ink); border-radius: var(--r-control);
+  background: var(--gold-fill); color: var(--on-gold);
+  font-family: var(--font-sans); font-size: var(--t-sm);
+  letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer;
+}
+
+.cancel {
+  min-height: var(--tap); padding: 0 var(--s-4); border: 0; background: none;
+  color: var(--ink-dim); font-family: var(--font-sans); font-size: var(--t-note);
+  cursor: pointer;
+}

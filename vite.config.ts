@@ -46,7 +46,10 @@ export default defineConfig({
          * Precaching everything would make the first visit pay for the whole
          * compendium on a phone in a basement.
          */
-        globPatterns: ["**/*.{js,css,html,woff2}", "art/**/*.jpg", "icon-*.png"],
+        /* `.webp` joined for the roll-request modal's art: it arrives over
+           whatever a player is looking at, mid-session, and a table with no
+           signal is the normal case rather than the edge one. 136KB. */
+        globPatterns: ["**/*.{js,css,html,woff2}", "art/**/*.{jpg,webp}", "icon-*.png"],
         /* The push handlers. Workbox writes the precache and the routing and
            has no opinion about notifications; this adds the two listeners it
            does not generate, without taking over the whole service worker. */

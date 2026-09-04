@@ -12,7 +12,7 @@ import { CHOICE } from "../features/creation/model";
 import type { Choice } from "../features/creation/choices";
 import { asking } from "../features/creation/facts";
 import { adopt } from "../features/creation/transfer";
-import { Hub } from "../features/creation/Hub";
+import { HubScreen } from "../features/creation/HubScreen";
 import { RoomBar } from "../features/room/RoomBar";
 import { Sheet } from "../features/sheet/Sheet";
 import { buildFrom, charactersIn } from "../features/creation/log";
@@ -27,6 +27,9 @@ import { tabsFor, currentOf } from "./tabs";
 import { dmKeyFor } from "../features/room/useSeat";
 import { useSeat } from "../features/room/useSeat";
 import { Party } from "../features/dm/Party";
+import { Interrupt } from "../features/room/Interrupt";
+import { ASK } from "../features/room/ask";
+
 import { Staging } from "../features/dm/Staging";
 import { PrepScreen } from "../features/dm/PrepScreen";
 import { BookScreen } from "../features/book/BookScreen";
@@ -110,9 +113,12 @@ export function App({ dbName }: { dbName?: string }) {
       if (who !== undefined) setCharacter(who);
     }
   };
-  const nav = (at: string) => (
+  /* The Interrupt sits beside the bar because the bar is the one thing every
+     screen draws — so a DM's ask lands wherever the player already is. */
+  const nav = (at: string) => (<>
     <TabBar tabs={tabs} current={currentOf(at, tabs)} onGo={go} />
-  );
+    <Interrupt events={events} character={character} dm={dm} record={record} />
+  </>);
 
   /* One control, two homes. A player reaches it on the hub; a DM reaches it on
      Party, because Task 26 took Characters off the DM's bar. Built once so the
@@ -299,6 +305,8 @@ export function App({ dbName }: { dbName?: string }) {
   if (mode === "party") {
     return (
       <Party
+        onAsk={(a) => record(ASK, { act: "ask",
+          ask: { ...a, id: `ask${Date.now().toString(36)}` } } as unknown as Record<string, unknown>)}
         events={events}
         nav={nav("party")}
         /* The seat control, reachable now that the DM's bar has no Characters
@@ -330,28 +338,16 @@ export function App({ dbName }: { dbName?: string }) {
     );
   }
 
+  /* The hub is a screen, not routing — moved out at the budget, the same seam
+     `PrepScreen` and `LogScreen` were split along. */
   if (mode === "hub") {
     return (
-      <Hub
-        room={<RoomBar dmKey={room === undefined ? null : dmKeyFor(room)}
-        room={room} link={link} onJoin={setRoom} onLeave={() => setRoom(undefined)} />}
-        events={events}
-        onNew={() => { setCharacter(newId()); enter(); setMode("create"); }}
-        onOpen={(id) => { setCharacter(id); setMode("sheet"); }}
-        onEdit={(id) => { setCharacter(id); enter(); setMode("create"); }}
-        onImport={(imported) => pushMany(adopt(imported, clock, newId()))}
-        onLog={() => setMode("log")}
-        nav={nav("characters")}
-        who={seatControl}
-        theme={theme}
-        onTheme={flip}
-        push={
-          <PushToggle
-            characters={mine}
-            onSubscribe={(sub) => say({ kind: "subscribe", sub, characters: mine })}
-            onUnsubscribe={(endpoint) => say({ kind: "unsubscribe", endpoint })}
-          />
-        }
+      <HubScreen
+        events={events} theme={theme} mine={mine} clock={clock} link={link}
+        room={room} nav={nav("characters")} who={seatControl}
+        onRoom={setRoom} onTheme={flip} onSay={say} onPushMany={pushMany}
+        newId={newId}
+        onGo={(to, id) => { if (id !== undefined) setCharacter(id); if (to === "create") enter(); setMode(to); }}
       />
     );
   }

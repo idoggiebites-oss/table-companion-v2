@@ -24,7 +24,11 @@
 }
 
 .pick {
-  /* A long character name must not push the crest around. */
+  /* A long character name must not push the crest around — nor the header off
+     the screen, which it did at 390px: `max-width` alone leaves a flex item
+     with its content's intrinsic minimum, so the row grew to 454 and the page
+     scrolled sideways. Found by measuring, not by looking. */
+  min-width: 0;
   max-width: 12rem;
   text-overflow: ellipsis;
   min-height: var(--tap);

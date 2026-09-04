@@ -110,3 +110,15 @@
   color: var(--ink); background: var(--surface-2);
   border: var(--panel-border); border-radius: var(--r-control);
 }
+
+.ask {
+  align-self: flex-start; min-height: var(--tap); padding: 0 var(--s-5);
+  border: 1px solid var(--gold-edge); border-radius: var(--r-pill);
+  background: none; color: var(--gold-ink); font-family: var(--font-sans);
+  font-size: var(--t-micro); letter-spacing: 0.08em; text-transform: uppercase;
+  cursor: pointer;
+}
+
+.answers { display: flex; flex-wrap: wrap; gap: var(--s-3); margin: 0; align-items: baseline; }
+.askName { font-size: var(--t-micro); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-dim); }
+.answer { font-family: var(--font-mono); font-size: var(--t-note); color: var(--ink); }

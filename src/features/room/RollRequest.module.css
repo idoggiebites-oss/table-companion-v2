@@ -1,0 +1,144 @@
+/*
+ * The mockup's proportions, in tokens rather than in pixels.
+ *
+ * The gold is V2's own (`--gold-*`), not the sheet's: the two are within a few
+ * points of each other and this app already runs a contrast invariant over its
+ * palette. A modal is not the place to fork it.
+ */
+:root { --shield: polygon(0 0, 100% 0, 100% 62%, 50% 100%, 0 62%); }
+
+.scrim {
+  position: fixed; inset: 0; z-index: 60;
+  display: grid; place-items: center;
+  padding: var(--s-5); overflow-y: auto; background: rgb(0 0 0 / 0.45);
+}
+
+.card {
+  position: relative; width: min(30rem, 100%);
+  display: flex; flex-direction: column; align-items: center; gap: var(--s-4);
+  padding: var(--s-8) var(--s-6); /* room at the top for the crest */
+  margin-block: var(--s-8);
+  border: 1px solid var(--gold-edge); border-radius: var(--r-card); background: var(--gold-wash);
+  box-shadow: 0 0 0 3px var(--gold-wash), 0 0 0 4px var(--gold-edge), var(--lift-2);
+}
+
+/* The crest hangs over the top edge; the banner clears it. They collided,
+   and "DM REQUEST" read as "DM ... EST". */
+.crest { position: absolute; top: -1.9rem; width: 4.2rem; }
+.banner { width: 13rem; margin-top: 1.6rem; }
+
+/* The banner carries the words as art; this is the same words for anyone not
+   looking at pictures. */
+.eyebrow {
+  position: absolute; width: 1px; height: 1px;
+  margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%);
+}
+
+.scene {
+  position: relative; width: 100%; text-align: center; padding: var(--s-6) var(--s-4);
+  display: flex; flex-direction: column; align-items: center; gap: var(--s-2);
+}
+
+.scene::before {
+  content: ""; position: absolute; inset: 0;
+  background: url("/art/roll/ruins.webp") center / cover no-repeat;
+  /* Fades into the parchment rather than sitting on it in a box. */
+  /* Fades to nothing on every edge — a hard rectangle of art in the middle of
+     parchment reads as a pasted-in picture. */
+  -webkit-mask-image: radial-gradient(75% 65% at 50% 45%, #000 0%, transparent 100%);
+  mask-image: radial-gradient(75% 65% at 50% 45%, #000 0%, transparent 100%);
+  opacity: 0.5; pointer-events: none;
+}
+.scene > * { position: relative; }
+.title {
+  margin: 0; font-family: var(--font-display); font-size: var(--t-d3);
+  font-weight: 400; color: var(--ink); text-wrap: balance;
+}
+.sub { margin: 0; font-size: var(--t-sm); color: var(--ink); }
+.flavour { margin: 0; font-family: var(--font-display); font-style: italic; font-size: var(--t-note); color: var(--ink-dim); }
+.rule { width: 11rem; opacity: 0.9; }
+.facts {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+  gap: var(--s-6); width: 100%;
+}
+.ability { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.abilityName { font-family: var(--font-display); font-size: var(--t-d1); color: var(--ink); }
+
+.abilityKind, .dcLabel {
+  font-size: var(--t-micro); letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--ink-dim);
+}
+.dc { display: flex; flex-direction: column; align-items: center; gap: var(--s-1); }
+
+/* The shield, drawn rather than cut: the sheet bakes "14" into it. */
+.dcShield {
+  display: grid; place-items: center; width: 3rem; height: 3.6rem;
+  background: var(--gold-edge); clip-path: var(--shield);
+}
+
+.dcFace {
+  /* The point eats the bottom third, so the number sits in the top two. */
+  display: grid; place-items: center; padding-bottom: 1rem;
+  width: calc(100% - 4px); height: calc(100% - 4px);
+  background: var(--surface-1); clip-path: var(--shield);
+  font-family: var(--font-display); font-size: var(--t-d1); color: var(--ink);
+}
+
+.panel {
+  width: 100%; gap: var(--s-3); padding: var(--s-5) var(--s-4);
+  display: flex; flex-direction: column; align-items: center;
+  border: 1px solid var(--gold-edge); border-radius: var(--r-control); background: var(--surface-1);
+}
+
+.enter {
+  font-size: var(--t-micro); letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--ink-dim);
+}
+
+.input {
+  width: 100%; min-height: var(--tap); padding: 0 var(--s-4);
+  border: 1px solid var(--gold-edge); border-radius: var(--r-control);
+  background: var(--gold-wash); text-align: center;
+  font-family: var(--font-display); font-size: var(--t-d1); color: var(--ink);
+  appearance: textfield; -moz-appearance: textfield; /* the die is on the table */
+}
+.input::-webkit-outer-spin-button, .input::-webkit-inner-spin-button { appearance: none; margin: 0; }
+.hint { margin: 0; font-size: var(--t-aside); color: var(--ink-dim); text-align: center; }
+.bonuses { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--s-2); width: 100%; }
+
+.bonus {
+  flex: 1 1 5rem; gap: 1px; padding: var(--s-2) var(--s-1);
+  display: flex; flex-direction: column; align-items: center;
+  border: 1px solid var(--hairline); border-radius: var(--r-control);
+}
+.bonusStrong { border-color: var(--gold-edge); background: var(--gold-wash); }
+.bonusLabel { font-size: var(--t-micro); color: var(--ink-dim); }
+.bonusValue { font-family: var(--font-display); font-size: var(--t-sm); color: var(--ink); }
+
+.submit {
+  display: flex; align-items: center; justify-content: center; gap: var(--s-4);
+  width: 100%; min-height: 3rem;
+  border: 1px solid var(--gold-ink); border-radius: var(--r-control);
+  background: linear-gradient(180deg, #d9b567 0%, var(--gold-fill) 45%, #a97f34 100%);
+  color: var(--on-gold); font-family: var(--font-sans); font-size: var(--t-sm);
+  letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer;
+}
+.submit:disabled { filter: grayscale(0.7); opacity: 0.6; cursor: default; }
+.spark { width: 1rem; } .submit:disabled .spark { opacity: 0.5; }
+
+.cancel {
+  min-height: var(--tap); padding: 0 var(--s-5); border: 0; background: none;
+  color: var(--ink-dim); font-family: var(--font-sans); font-size: var(--t-micro);
+  letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer;
+}
+.corner { position: absolute; bottom: var(--s-2); width: 2.2rem; opacity: 0.8; pointer-events: none; }
+.cornerL { left: var(--s-2); } .cornerR { right: var(--s-2); transform: scaleX(-1); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .card { animation: rise var(--m-sheet, 180ms) var(--m-ease-out, ease-out); }
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(8px) scale(0.99); }
+  to { opacity: 1; transform: none; }
+}

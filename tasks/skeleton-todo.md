@@ -82,13 +82,14 @@ not knowing what is on the menu."*
 DM → player. Same seam, arrow turned round. V1's `checks` (51) is the model, and
 `nudge.ts` has been waiting for it in writing.
 **Accepts:**
-- [ ] The DM asks one player, several, or the table for a roll
-- [ ] Each answer arrives back attributed, and the DM sees who has not answered
-- [ ] It nudges, because `nudge.ts` already says this is one of the three
+- [x] The DM asks one player, several, or the table for a roll
+- [x] Each answer arrives back attributed, and the DM sees who has not answered
+- [ ] It nudges — `nudge.ts` names this as its third moment and still does not
+      fire it; the seam exists now, the buzz does not
 **Verification:** domain test on the ask/answer fold; a room journey across two
 devices · **Scope:** L · **Deps:** none
 
-## Task 59 · **Sonnet**: The roll prompt
+## Task 59 · **Opus**: The roll prompt — **done**, built to Arturo's mockup
 **Description:** The BG3-style arrival: the ask lands on the player's screen as
 a thing to answer, not a line in a log.
 **Accepts:** it interrupts, it says who asked and what for, it is dismissible,
