@@ -55,3 +55,11 @@
   font-size: var(--t-note);
   cursor: pointer;
 }
+
+/* Shown only to a device that is already a DM — it is the thing they read out
+   to seat a second one. */
+.key {
+  display: inline-flex; align-items: baseline; gap: var(--s-3);
+  font-family: var(--font-mono); font-size: var(--t-aside);
+  letter-spacing: 0.08em; color: var(--gold-ink);
+}

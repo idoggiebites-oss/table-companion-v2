@@ -50,3 +50,11 @@
   font-size: var(--t-note);
   color: var(--ink-dim);
 }
+
+/* Only shown to a device in somebody else's room that has no key yet. */
+.claim {
+  min-height: var(--tap); padding: 0 var(--s-5);
+  font: inherit; font-size: var(--t-aside); color: var(--ink-dim);
+  background: none; border: 1px solid var(--hairline);
+  border-radius: var(--r-control);
+}

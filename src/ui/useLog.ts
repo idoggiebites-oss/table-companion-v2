@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Clock, order } from "../core/log";
+import { mayBeDm, rememberDmKey } from "../features/room/useSeat";
 import { connect, type Sync, type SyncState } from "../core/sync";
 import { openLog, type Store } from "../core/persist";
 import { asDevice, type Event, type EventId } from "../core/types";
@@ -16,6 +17,10 @@ function thisDevice(): string {
 }
 
 export function useLog(dbName?: string, room?: string) {
+  /* Recomputed when the room changes: a device can be the DM of one table and
+     a player at another. */
+  const [dm, setDm] = useState(() => mayBeDm(room ?? null));
+  useEffect(() => { setDm(mayBeDm(room ?? null)); }, [room]);
   const [events, setEvents] = useState<readonly Event[]>([]);
   const [clock] = useState(() => new Clock(asDevice(thisDevice())));
   const [store, setStore] = useState<Store | null>(null);
@@ -57,10 +62,22 @@ export function useLog(dbName?: string, room?: string) {
       local: () => held.current,
       onEvents: absorb,
       onState: setLink,
+      /* Arrives once, to whoever opened a room that did not exist. From then
+         on this device is that table's DM and can read the key back out to
+         seat a second one. */
+      onDmKey: (key) => { rememberDmKey(room, key); setDm(true); },
+      onRole: (ok) => { if (ok) { setDm(true); } },
     });
     sync.current = s;
     return () => { s.close(); sync.current = null; };
   }, [room, store, absorb]);
+
+  /** Ask the room whether this key is the one; the answer arrives via `onRole`. */
+  const claimDm = useCallback((key: string) => {
+    if (room === undefined) return;
+    rememberDmKey(room, key);
+    sync.current?.claim(key);
+  }, [room]);
 
   const push = useCallback(
     (e: Event) => {
@@ -108,5 +125,10 @@ export function useLog(dbName?: string, room?: string) {
     sync.current?.say(message);
   }, []);
 
-  return { events, add, record, pushMany, undo, reset, say, clock, link, ready: store !== null };
+  return {
+    events, add, record, pushMany, undo, reset, say, claimDm, clock, link,
+    /** Whether this device may take the DM's seat here. See `mayBeDm`. */
+    mayBeDm: dm,
+    ready: store !== null,
+  };
 }

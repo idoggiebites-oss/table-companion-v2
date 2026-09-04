@@ -107,3 +107,32 @@ test("a character built on one device appears on the other", async ({ browser })
   // One choice is enough: the character exists the moment the event does.
   await expect(b.getByTestId("character")).toHaveCount(1);
 });
+
+/*
+ * The DM's seat, and the key that guards it.
+ *
+ * Every disclosure rule in this app is enforced by seat — `visibility.ts`
+ * filters the log by it, the fight hides creatures by it, `PREP_KINDS` hides
+ * prep by it. Until Task 43 all of that was honour-system: "The DM" sat in a
+ * dropdown for anyone who joined.
+ */
+test("a second device cannot take the DM's seat without the key", async ({ browser }) => {
+  const dm = await device(browser);
+  await dm.getByRole("button", { name: "Start one" }).click();
+  const code = (await dm.getByTestId("room-code").textContent())!.trim();
+
+  /* The device that OPENED the room is its DM, and is told the key. */
+  await expect(dm.getByTestId("seat")).toBeVisible();
+
+  const player = await device(browser);
+  await join(player, code);
+
+  /* No key, no seat. It is absent rather than disabled: a greyed-out "The DM"
+     invites somebody to wonder what they are missing. */
+  await expect(player.getByTestId("claim-dm")).toBeVisible();
+  const options = await player.locator('[data-testid="seat"] option').allTextContents();
+  expect(options).not.toContain("The DM");
+
+  await player.close();
+  await dm.close();
+});

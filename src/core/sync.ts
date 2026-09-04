@@ -26,6 +26,8 @@ export type Socket = {
 export type SyncState = "offline" | "connecting" | "live";
 
 export type Sync = {
+  /** Present the DM's key. The room replies through `onRole`. */
+  claim: (key: string) => void;
   /** Offer events to the room. Safe to call while offline. */
   push(events: readonly Event[]): void;
   /**
@@ -49,6 +51,13 @@ export type SyncOptions = {
   /** What this device already holds, sent on every connection. */
   local: () => readonly Event[];
   open: (url: string) => Socket;
+  /**
+   * The room handed this device the DM's key, which happens exactly once: to
+   * whoever opens a code that did not exist yet. See `Room.ts`'s `#dmKey`.
+   */
+  onDmKey?: (key: string) => void;
+  /** The room's answer to a claim. */
+  onRole?: (dm: boolean) => void;
   /** Milliseconds between reconnection attempts. */
   retry?: number;
   schedule?: (fn: () => void, ms: number) => void;
@@ -98,13 +107,17 @@ export function connect(code: string, o: SyncOptions): Sync {
     };
 
     s.onmessage = (m) => {
-      let msg: { kind?: string; events?: Event[] };
+      let msg: { kind?: string; events?: Event[]; dmKey?: string; dm?: boolean };
       try {
-        msg = JSON.parse(String(m.data)) as { kind?: string; events?: Event[] };
+        msg = JSON.parse(String(m.data)) as typeof msg;
       } catch { return; }
       if ((msg.kind === "catchup" || msg.kind === "events") && Array.isArray(msg.events)) {
         o.onEvents(msg.events);
       }
+      /* Arrives with the first catchup, and only for the device that opened
+         the room. Everyone else has to be told it by a person. */
+      if (typeof msg.dmKey === "string") o.onDmKey?.(msg.dmKey);
+      if (msg.kind === "role" && typeof msg.dm === "boolean") o.onRole?.(msg.dm);
     };
 
     const dropped = () => {
@@ -120,6 +133,12 @@ export function connect(code: string, o: SyncOptions): Sync {
   open();
 
   return {
+    /** Ask the room whether this key is the one. Answers via `onRole`. */
+    claim(key) {
+      if (socket !== null && state === "live") {
+        socket.send(JSON.stringify({ kind: "claim", key }));
+      }
+    },
     push(events) {
       if (events.length === 0) return;
       if (socket !== null && state === "live") {

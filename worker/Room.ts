@@ -37,6 +37,13 @@ export class Room extends DurableObject<Env> {
        * characters as a list because a device can hold two — a player running
        * a familiar, a DM covering for somebody absent.
        */
+      /*
+       * One row: `dmKey`. See `#dmKey` for why the room, which otherwise
+       * decides nothing, is the only place this can live.
+       */
+      this.ctx.storage.sql.exec(
+        `CREATE TABLE IF NOT EXISTS meta (k TEXT PRIMARY KEY, v TEXT NOT NULL)`,
+      );
       this.ctx.storage.sql.exec(
         `CREATE TABLE IF NOT EXISTS pushes (
            endpoint TEXT PRIMARY KEY, p256dh TEXT NOT NULL, auth TEXT NOT NULL,
@@ -105,6 +112,47 @@ export class Room extends DurableObject<Env> {
     return fresh;
   }
 
+  #meta(k: string): string | null {
+    return this.ctx.storage.sql
+      .exec<{ v: string }>("SELECT v FROM meta WHERE k = ?", k).toArray()[0]?.v ?? null;
+  }
+
+  /**
+   * The key that lets a device take the DM's seat.
+   *
+   * **Why the room holds it.** This file's header says the room decides
+   * nothing, and that is still true of the log — it stores events and hands
+   * them on. But a shared secret has to live somewhere both devices can reach,
+   * and there is nowhere else: the log is public to everyone in the room by
+   * construction, and a device cannot vouch for itself. So the room keeps one
+   * row, and that is the whole of what it knows.
+   *
+   * **Minted on the first connection**, which makes whoever opens a fresh code
+   * its DM. Somebody who guessed an unused code could take that seat, and it
+   * costs nothing: an unused code has no campaign in it. Once a room has
+   * events, the key is already spoken for.
+   *
+   * **What this does NOT do**, and it matters: it gates the SEAT, not the
+   * transport. The room still hands every event to every socket, so a person
+   * with the room code and a terminal can read what the DM has hidden.
+   * Filtering server-side would mean this file folding events and knowing what
+   * a creature is, which is exactly what it refuses to do. So this stops the
+   * accident — a player finding "The DM" in a picker and looking — which is
+   * the thing that actually happens at a table. DM.md law 4, and the same line
+   * `seat.ts` already draws for characters.
+   */
+  #dmKey(): { key: string; minted: boolean } {
+    const had = this.#meta("dmKey");
+    if (had !== null) return { key: had, minted: false };
+    /* The room code's alphabet: no vowels, so it spells nothing, and no
+       look-alikes, because this gets read across a table. */
+    const alphabet = "BCDFGHJKLMNPQRSTVWXYZ23456789";
+    const bytes = crypto.getRandomValues(new Uint8Array(6));
+    const key = [...bytes].map((b) => alphabet[b % alphabet.length]!).join("");
+    this.ctx.storage.sql.exec("INSERT INTO meta (k, v) VALUES (?, ?)", "dmKey", key);
+    return { key, minted: true };
+  }
+
   override async fetch(request: Request): Promise<Response> {
     if (request.headers.get("Upgrade") !== "websocket") {
       return new Response("expected a websocket", { status: 426 });
@@ -118,6 +166,7 @@ export class Room extends DurableObject<Env> {
       let msg: {
         kind?: string; events?: Event[];
         sub?: { endpoint: string; p256dh: string; auth: string };
+        key?: string;
         characters?: string[]; endpoint?: string;
         to?: string; title?: string; body?: string;
       };
@@ -128,8 +177,31 @@ export class Room extends DurableObject<Env> {
       }
 
       if (msg.kind === "hello") {
+        /*
+         * The key travels back only when this connection MINTED it — that is,
+         * only to whoever opened a room that did not exist. Handing it to
+         * every `hello` would make it no secret at all.
+         */
+        const { key, minted } = this.#dmKey();
         // Everything, always. The client merges by id and drops what it has.
-        server.send(JSON.stringify({ kind: "catchup", events: this.#all() }));
+        server.send(JSON.stringify({
+          kind: "catchup", events: this.#all(), ...(minted ? { dmKey: key } : {}),
+        }));
+        return;
+      }
+
+      /*
+       * Claiming is ADDITIVE and never closes — both of V1's rules, and its
+       * reason for the second: "Losing a device is exactly the case this
+       * exists for, and it can happen in week nine." Anyone holding the key is
+       * a DM, so a laptop and a tablet can both be one.
+       */
+      if (msg.kind === "claim") {
+        const want = this.#meta("dmKey");
+        const given = typeof msg.key === "string" ? msg.key.trim().toUpperCase() : "";
+        server.send(JSON.stringify({
+          kind: "role", dm: want !== null && given !== "" && given === want,
+        }));
         return;
       }
 

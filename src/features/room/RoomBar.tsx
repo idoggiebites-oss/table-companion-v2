@@ -16,10 +16,20 @@ const SAYS: Record<SyncState, string> = {
  * dot says the opposite.
  */
 export function RoomBar({
-  room, link, onJoin, onLeave,
+  room, link, dmKey, onJoin, onLeave,
 }: {
   room: string | undefined;
   link: SyncState;
+  /**
+   * The key that seats another device as a DM, shown only to a device that
+   * already is one.
+   *
+   * It has to be readable somewhere or it cannot be shared, and sharing is the
+   * whole point: a laptop and a tablet at one table, or a DM whose phone died
+   * in week nine. Beside the room code because they are read out in the same
+   * breath, and never for a player, who does not have it to show.
+   */
+  dmKey?: string | null;
   onJoin: (code: string) => void;
   onLeave: () => void;
 }) {
@@ -31,6 +41,11 @@ export function RoomBar({
         <span className={s.label}>Room</span>
         <span className={s.code} data-testid="room-code">{room}</span>
         <span className={`${s.state} ${s[link]}`} data-testid="link">{SAYS[link]}</span>
+        {dmKey !== undefined && dmKey !== null && (
+          <span className={s.key} data-testid="dm-key">
+            <span className={s.label}>DM key</span> {dmKey}
+          </span>
+        )}
         <button type="button" className={s.btn} onClick={onLeave}>Leave</button>
       </div>
     );

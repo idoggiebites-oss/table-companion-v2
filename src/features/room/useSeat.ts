@@ -15,6 +15,8 @@ import { DM, seatIn, type Seat } from "./seat";
  */
 const SEAT = "seat";
 const MINE = "myCharacters";
+/** Per room, because a device can be the DM of one table and a player at another. */
+const DM_KEY = (room: string) => `dmKey:${room}`;
 
 const read = <T,>(key: string, fallback: T): T => {
   try {
@@ -29,7 +31,27 @@ const write = (key: string, value: unknown): void => {
   try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* see `read` */ }
 };
 
-export function useSeat(exists: readonly string[]): {
+/**
+ * Whether this device may take the DM's seat in this room.
+ *
+ * Not in a room at all — solo, or before joining — and it may: a device on its
+ * own kitchen table is its own DM, which is what `useSeat` has always
+ * defaulted to. In a room, it may only if it holds that room's key, which it
+ * gets by opening the room or by being told the key by a person.
+ *
+ * `localStorage`, wrapped, like every other device-local fact here.
+ */
+export const mayBeDm = (room: string | null): boolean =>
+  room === null || read<string | null>(DM_KEY(room), null) !== null;
+
+export const rememberDmKey = (room: string, key: string): void => {
+  write(DM_KEY(room), key);
+};
+
+export const dmKeyFor = (room: string): string | null =>
+  read<string | null>(DM_KEY(room), null);
+
+export function useSeat(exists: readonly string[], mayBeDm = true): {
   readonly seat: Seat;
   /** The characters this device says are its own. */
   readonly mine: readonly string[];
@@ -43,9 +65,28 @@ export function useSeat(exists: readonly string[]): {
   const [seat, setSeat] = useState<Seat>(() => read<Seat>(SEAT, DM));
   const [mine, setMine] = useState<readonly string[]>(() => read<string[]>(MINE, []));
 
-  /* A seat pointing at a character who is gone — undone, or on a device that
-     cleared its log — is a device with no sheet and no way back. */
-  const held = seatIn(seat, exists);
+  /*
+   * A seat pointing at a character who is gone — undone, or on a device that
+   * cleared its log — is a device with no sheet and no way back.
+   *
+   * And a DM seat this device may not hold. Hiding "The DM" from the picker is
+   * not enough on its own: this hook defaults every fresh device to the DM, so
+   * a phone that has never been in a room arrives in somebody else's already
+   * sitting there. Without this the option disappears and the device keeps the
+   * seat, which is the same accident with an extra step. It falls back to a
+   * character of its own if it has one, and otherwise to nobody — which
+   * `SeatControl` draws as "Watching".
+   */
+  /*
+   * `seatIn` FIRST, then the eviction — the order is the whole of it. `seatIn`
+   * falls back to the DM for a player seat pointing at nobody, so evicting
+   * first and correcting second put a keyless device straight back in the seat
+   * it had just been moved out of.
+   */
+  const corrected = seatIn(seat, exists);
+  const held: Seat = corrected.kind === "dm" && !mayBeDm
+    ? { kind: "player", character: exists[0] ?? "" }
+    : corrected;
   useEffect(() => {
     if (held !== seat) { setSeat(held); write(SEAT, held); }
   }, [held, seat]);

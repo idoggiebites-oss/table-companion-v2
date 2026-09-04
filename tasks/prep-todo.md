@@ -470,13 +470,28 @@ presenting it. Two rules from V1's own comment:
 > device is exactly the case this exists for, and it can happen in week nine."*
 
 **Acceptance criteria:**
-- [ ] A device in a room cannot take the DM seat without the key
-- [ ] The creator keeps it, and a second device can claim it too
-- [ ] Solo play is unaffected — a device in no room is its own DM, as now
+- [x] A device in a room cannot take the DM seat without the key
+- [x] The creator keeps it, and a second device can claim it too
+- [x] Solo play is unaffected — a device in no room is its own DM, as now
 
 **Verification:** worker tests for claim and refusal; a room journey across two
 contexts where the second is refused and then succeeds with the key
 **Dependencies:** none · **Scope:** M
+
+**What it does not do, and this is the honest limit:** it gates the SEAT, not
+the transport. The room still hands every event to every socket, so somebody
+with the room code and a terminal can read what the DM hid. Filtering
+server-side would mean `Room.ts` folding events and knowing what a creature is,
+which is exactly what its header refuses. This stops the accident — a player
+finding "The DM" in a picker and looking — which is the thing that actually
+happens at a table, and the same line `seat.ts` already draws for characters.
+
+**Two bugs found while building it.** Hiding the option is not enough: `useSeat`
+defaults every fresh device to the DM, so a phone that has never been in a room
+arrives in somebody else's already sitting there. And the eviction has to run
+AFTER `seatIn`, not before — `seatIn` falls back to the DM for a player seat
+pointing at nobody, so the first ordering put a keyless device straight back in
+the seat it had just left.
 
 ---
 

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Shell } from "./Shell";
 import { Button, ButtonRow } from "./Button";
 import { LogScreen } from "../features/room/LogScreen";
@@ -24,6 +24,7 @@ import { useCreationContent } from "../features/creation/useContent";
 import { useTheme } from "./useTheme";
 import { TabBar } from "./TabBar";
 import { tabsFor, currentOf } from "./tabs";
+import { dmKeyFor } from "../features/room/useSeat";
 import { useSeat } from "../features/room/useSeat";
 import { Party } from "../features/dm/Party";
 import { Staging } from "../features/dm/Staging";
@@ -47,7 +48,7 @@ import { waitingOn } from "../features/sheet/waiting";
 export function App({ dbName }: { dbName?: string }) {
   const [room, setRoom] = useState<string | undefined>(undefined);
   const { showing: theme, flip } = useTheme();
-  const { events, add, record, pushMany, undo, reset, say, clock, link, ready } = useLog(dbName, room);
+  const { events, add, record, pushMany, undo, reset, say, claimDm, mayBeDm, clock, link, ready } = useLog(dbName, room);
   const [mode, setMode] = useState<"hub" | "log" | "create" | "sheet" | "levelup" | "party" | "fight" | "prep">("hub");
   const [character, setCharacter] = useState<string>("");
   const [onlyGames, setOnlyGames] = useState(true);
@@ -85,7 +86,8 @@ export function App({ dbName }: { dbName?: string }) {
    * at nothing.
    */
   const roster = charactersIn(events);
-  const { seat, sit, claim, mine } = useSeat(roster.map((r) => r.id));
+  const { seat, sit, claim, mine } = useSeat(roster.map((r) => r.id), mayBeDm);
+
   const dm = seat.kind === "dm";
   const vitals = current === undefined ? null : vitalsFrom(events, character, current);
   const fight = fightFrom(events);
@@ -117,6 +119,7 @@ export function App({ dbName }: { dbName?: string }) {
   const seatControl = (
     <SeatControl
       seat={seat} mine={mine} all={roster.map((r) => r.id)}
+      mayBeDm={mayBeDm} onClaimDm={claimDm}
       nameOf={(id) => roster.find((r) => r.id === id)?.build.identity["name"] ?? "Unnamed"}
       onSit={sit}
     />
@@ -321,7 +324,8 @@ export function App({ dbName }: { dbName?: string }) {
   if (mode === "hub") {
     return (
       <Hub
-        room={<RoomBar room={room} link={link} onJoin={setRoom} onLeave={() => setRoom(undefined)} />}
+        room={<RoomBar dmKey={room === undefined ? null : dmKeyFor(room)}
+        room={room} link={link} onJoin={setRoom} onLeave={() => setRoom(undefined)} />}
         events={events}
         onNew={() => { setCharacter(newId()); enter(); setMode("create"); }}
         onOpen={(id) => { setCharacter(id); setMode("sheet"); }}
