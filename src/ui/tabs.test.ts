@@ -11,8 +11,16 @@ describe("the bar turns with the seat, and stays one bar", () => {
   });
 
   it("gives a player a sheet and no party", () => {
-    /* And no Party either: looking after the table is not their job. */
-    expect(ids({})).toEqual(["sheet", "characters", "log"]);
+    /* And no Party either: looking after the table is not their job. Book is
+       here too, unconditionally — Task 48. */
+    expect(ids({})).toEqual(["sheet", "book", "characters", "log"]);
+  });
+
+  it("gives both seats a Book tab", () => {
+    /* Task 48: spells are not the secret the bestiary is, so the TAB is not
+       seat-gated — only the bestiary section inside `BookScreen.tsx` is. */
+    expect(ids({ dm: true })).toContain("book");
+    expect(ids({})).toContain("book");
   });
 
   it("calls the DM's fight tab Combat, without touching its id", () => {

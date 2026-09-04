@@ -27,6 +27,16 @@ import type { IconName } from "./Icon";
  */
 export type Tab = { readonly id: string; readonly label: string; readonly icon: IconName; readonly dot?: boolean };
 
+/**
+ * The Book. Shared since Task 48 — spells joined the bestiary behind this one
+ * tab, and unlike the bestiary, a spell's text is not something the
+ * disclosure ladder withholds from a player: V1's whole argument for the
+ * screen was a player already reading their own spell while the DM had none.
+ * So the TAB is not seat-gated at all; what stays DM-only is the bestiary
+ * SECTION inside `BookScreen.tsx`, one level in from this file.
+ */
+const book: Tab = { id: "book", label: "Book", icon: "book" };
+
 export function tabsFor({ dm, waiting, owed, fighting }: {
   /**
    * Sitting as the DM rather than in a character.
@@ -58,16 +68,7 @@ export function tabsFor({ dm, waiting, owed, fighting }: {
         /* Prep is the DM's alone: staging a fight is not a player's job, which
            is the same line the Combat tab draws by seat. */
         { id: "prep", label: "Prep", icon: "clipboard" },
-        /*
-         * The bestiary. DM-only for the same reason a creature can be staged
-         * `hidden`: a player who can look up the statblock knows the armour
-         * class and the hit points, which is exactly what the disclosure
-         * ladder exists to withhold — Task 47's argument, and V1's before it.
-         * Task 48 opens this tab to players once spells join it; nothing
-         * about the seat check changes, only what a player is allowed to see
-         * once inside.
-         */
-        { id: "book", label: "Book", icon: "book" },
+        book,
         /* No Characters here: `Party.tsx`'s rows are already buttons wired to
            `onOpen`, and `App.tsx` (~line 288) wires that to
            `claim(id); setCharacter(id); setMode("sheet")`. The DM reaches any
@@ -87,6 +88,11 @@ export function tabsFor({ dm, waiting, owed, fighting }: {
            names depending on who is looking at it is a screen two people at
            the same table cannot talk about. */
         ...(fighting === true ? [{ id: "fight", label: "Combat", icon: "sword" as const }] : []),
+        /* Unconditional, unlike Sheet and Combat: this is reference material
+           rather than a fact about this character, so there is no "has
+           nothing on it" case to gate on — a non-caster still has reason to
+           read what was just cast at them. */
+        book,
         ...rest,
       ];
 }

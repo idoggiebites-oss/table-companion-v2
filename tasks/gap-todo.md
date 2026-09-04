@@ -61,9 +61,9 @@ line: *"A player casts Hold Person and the table looks at the DM — who had the
 whole bestiary and not one spell."*
 
 **Acceptance criteria:**
-- [ ] Search all 3,443 spells and read one in full
-- [ ] Loads on first open, like the bestiary
-- [ ] Reachable by a player too — a caster looks their own spells up
+- [x] Search all 3,443 spells and read one in full
+- [x] Loads on first open, like the bestiary
+- [x] Reachable by a player too — a caster looks their own spells up
 
 **Verification:** component test with an injected fetcher
 **Dependencies:** none · **Scope:** M

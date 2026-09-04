@@ -1,0 +1,10 @@
+/* The one heading this screen owns — `Bestiary.tsx` carries its own,
+   matching, for the section below. Same style as `Prep.module.css`'s
+   `.title`, which is the existing convention for a stacked section inside
+   `DmShell`. */
+.title {
+  margin: 0; font-size: var(--t-note); letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--ink-dim); font-weight: 500;
+}
+
+.section { display: flex; flex-direction: column; gap: var(--s-4); }

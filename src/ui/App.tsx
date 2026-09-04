@@ -29,7 +29,7 @@ import { useSeat } from "../features/room/useSeat";
 import { Party } from "../features/dm/Party";
 import { Staging } from "../features/dm/Staging";
 import { PrepScreen } from "../features/dm/PrepScreen";
-import { Bestiary } from "../features/dm/Bestiary";
+import { BookScreen } from "../features/book/BookScreen";
 import { scenesFrom } from "../features/dm/scene";
 import { homebrewFrom, HOMEBREW } from "../features/sheet/homebrew";
 import { Fight as PlayerFight } from "../features/room/Fight";
@@ -238,9 +238,10 @@ export function App({ dbName }: { dbName?: string }) {
     );
   }
 
-  /* No events, no wiring — the bestiary reads the compendium, not the log.
-     `tabs.ts` keeps this DM-only, which is the only gate it needs. */
-  if (mode === "book") return <Bestiary nav={nav("book")} />;
+  /* No events, no wiring — the book reads the compendium, not the log.
+     Task 48: `tabs.ts` no longer gates this tab by seat, only `BookScreen`'s
+     own `dm` prop gates the bestiary SECTION inside it — see that file. */
+  if (mode === "book") return <BookScreen dm={dm} nav={nav("book")} />;
 
   if (mode === "fight") {
     /*

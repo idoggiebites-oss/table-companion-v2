@@ -1,10 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { DmShell } from "./DmShell";
 import { bestiary, describe, statblock, CREATURE_KINDS, creatureKind, type CreatureKind, type Statblock } from "./creatures";
 import { StatblockView } from "./StatblockView";
 import type { CreatureEntry } from "../../content/schema";
 import type { Fetcher } from "../../content/load";
-import type { ReactNode } from "react";
 import s from "./Bestiary.module.css";
 
 /** How many rows a DM is shown before being asked to narrow — see `Staging.tsx`'s own cap. */
@@ -29,8 +27,15 @@ const CAP = 60;
  * deadly/legendary), is dropped: it answers the same "is this a fair fight"
  * question the ceiling does, in a different shape, and a second control for
  * one question is not a decision — it is a duplicate.
+ *
+ * No `DmShell` of its own since Task 48: this used to be the whole of the
+ * DM's Book screen and owned the shell outright, but the Book tab now opens
+ * to spells for both seats, and `BookScreen.tsx` folds this in as the section
+ * beneath them, DM-only, in the one shell it already owns. So this renders a
+ * bare section with its own heading rather than a page — the only caller left
+ * is `BookScreen.tsx`, and it decides the shell.
  */
-export function Bestiary({ nav, fetcher }: { nav?: ReactNode; fetcher?: Fetcher }) {
+export function Bestiary({ fetcher }: { fetcher?: Fetcher }) {
   const [all, setAll] = useState<readonly CreatureEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
@@ -73,7 +78,8 @@ export function Bestiary({ nav, fetcher }: { nav?: ReactNode; fetcher?: Fetcher 
   const shown = matches.slice(0, CAP);
 
   return (
-    <DmShell title="The bestiary" below={nav}>
+    <section className={s.section} aria-label="Creatures">
+      <h2 className={s.heading}>Creatures</h2>
       <div className={s.controls}>
         <input
           className={s.search}
@@ -123,7 +129,7 @@ export function Bestiary({ nav, fetcher }: { nav?: ReactNode; fetcher?: Fetcher 
                {...(fetcher === undefined ? {} : { fetcher })} />
         ))}
       </div>
-    </DmShell>
+    </section>
   );
 }
 
