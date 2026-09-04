@@ -2,6 +2,7 @@ import type { Event, DeviceId } from "../../core/types";
 import { FIGHT } from "../dm/fight";
 import { PREP } from "../dm/encounter";
 import { SCENE } from "../dm/scene";
+import { NPC } from "../dm/npc";
 
 /**
  * What a player's log is allowed to say.
@@ -75,9 +76,12 @@ const AT_THE_TABLE = new Set([
  * screen and V2's log printed it to the table. A player who reads that the DM
  * just prepared something has been told what is coming — and for a scene, whose
  * one line is "the cellar · dark · a note", they have been told rather more.
- * Fixed here rather than per feature, so Task 20's NPCs need only join the set.
+ * Fixed here rather than per feature, so an NPC needs only join the set: V1
+ * puts `npcSaved`/`npcDeleted` behind the screen for the same reason — a
+ * shopkeeper the DM just wrote down is prep, not something the table watched
+ * happen, whichever of the two acts on it fires.
  */
-const PREP_KINDS = new Set<string>([PREP, SCENE]);
+const PREP_KINDS = new Set<string>([PREP, SCENE, NPC]);
 
 const actOf = (e: Event): string | null =>
   e.kind === FIGHT ? String((e.data as Record<string, unknown>)["act"] ?? "") : null;

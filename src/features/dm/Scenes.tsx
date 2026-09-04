@@ -78,9 +78,13 @@ export function Scenes({ scenes, encounters, onPrepare, onForget, onOpen }: {
       {draft !== null && (
         <div className={s.draft} data-testid="place-draft">
           <label className={s.field}>
+            {/* No `aria-label`: the visible tag is the label, and an
+                `aria-label` would override it — a screen reader announcing
+                "Place name" while the screen reads "What the place is called"
+                is two different labels for one field. */}
             <span className={s.tag}>What the place is called</span>
             <input
-              className={s.text} value={draft.name} aria-label="Place name"
+              className={s.text} value={draft.name}
               placeholder="The cellar under the mill"
               onChange={(e) => setDraft({ ...draft, name: e.target.value })}
             />
@@ -95,7 +99,7 @@ export function Scenes({ scenes, encounters, onPrepare, onForget, onOpen }: {
             <label className={s.field}>
               <span className={s.tag}>Waiting in it</span>
               <select
-                className={s.pick} aria-label="Encounter waiting"
+                className={s.pick}
                 value={draft.encounter ?? ""}
                 onChange={(e) => {
                   /* `exactOptionalPropertyTypes`: absent means nothing is
@@ -114,7 +118,7 @@ export function Scenes({ scenes, encounters, onPrepare, onForget, onOpen }: {
           <label className={s.field}>
             <span className={s.tag}>What you mean to say</span>
             <textarea
-              className={s.note} aria-label="Note" maxLength={400} rows={3}
+              className={s.note} maxLength={400} rows={3}
               placeholder="The stair gives under your weight. Something below stops moving."
               value={draft.note ?? ""}
               onChange={(e) => setDraft({ ...draft, note: e.target.value })}

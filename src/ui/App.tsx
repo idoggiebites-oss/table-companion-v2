@@ -31,6 +31,7 @@ import { Staging } from "../features/dm/Staging";
 import { Prep } from "../features/dm/Prep";
 import { prepFrom, keepFrom, PREP } from "../features/dm/encounter";
 import { blankScene, scenesFrom, openActs, SCENE, type Scene } from "../features/dm/scene";
+import { peopleFrom, NPC } from "../features/dm/npc";
 import { Fight as PlayerFight } from "../features/room/Fight";
 import { scoresOf } from "../features/creation/scores";
 import { BLANK } from "../rules/5e/abilities";
@@ -63,7 +64,6 @@ export function App({ dbName }: { dbName?: string }) {
   /* 10,760 items, 225KB gzipped — fetched when somebody opens their pack and
      not on the way to a fight. */
   const gear = useCatalogue(mode === "sheet");
-
 
   const newId = () => `c${Math.random().toString(36).slice(2, 8)}`;
 
@@ -222,10 +222,13 @@ export function App({ dbName }: { dbName?: string }) {
       <Prep
         encounters={prepFrom(events).encounters}
         scenes={scenesFrom(events).scenes}
+        npcs={peopleFrom(events).npcs}
         nav={nav("prep")}
         onPrepare={(sc) => record(SCENE, { act: "prepare", scene: sc } as unknown as Record<string, unknown>)}
         onForgetScene={(id) => record(SCENE, { act: "forget", id })}
         onOpenScene={(sc) => { openPlace(sc); setMode("fight"); }}
+        onSaveNpc={(person) => record(NPC, { act: "save", npc: person } as unknown as Record<string, unknown>)}
+        onForgetNpc={(id) => record(NPC, { act: "forget", id })}
         onStage={(e) => {
           /* An encounter with no place is a place with nothing said about the
              room — the same one press, so it is the same code path. */

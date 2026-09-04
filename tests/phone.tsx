@@ -16,6 +16,8 @@ export type Phone = {
   screens(): number;
   /** Every interactive box smaller than 44px in either axis. */
   smallTargets(): string[];
+  /** Every control whose `aria-label` overrides a visible label. */
+  mislabelled(): string[];
   destroy(): void;
 };
 
@@ -60,6 +62,34 @@ export async function mountPhone(ui: ReactNode, theme: "light" | "dark" = "light
         if (r.height < 44 || r.width < 44) {
           bad.push(`<${el.tagName.toLowerCase()}> "${(el.textContent ?? "").trim().slice(0, 24)}" is ${Math.round(r.width)}x${Math.round(r.height)}`);
         }
+      }
+      return bad;
+    },
+    /*
+     * A control inside a <label> already HAS a name — the label's own text.
+     * An `aria-label` on it silently REPLACES that name, so the screen can
+     * read "What they are" while a screen reader announces "NPC role": two
+     * labels for one field, and no way to ask for it by what you can see.
+     *
+     * The rule is WCAG 2.5.3's, not something stricter: the announced name
+     * must CONTAIN the visible one. An `aria-label` that expands a terse tag
+     * is fine and is used deliberately elsewhere — `Swing.tsx` shows "to hit"
+     * and announces "What you rolled to hit, with your bonus". What is
+     * flagged is a name that replaces rather than expands.
+     *
+     * A placeholder is not a label, so a control with no visible text of its
+     * own still needs its `aria-label` and is not counted here.
+     */
+    mislabelled() {
+      const bad: string[] = [];
+      for (const el of doc.querySelectorAll("input, textarea, select")) {
+        const aria = el.getAttribute("aria-label");
+        if (aria === null) continue;
+        const label = el.closest("label");
+        const visible = (label?.textContent ?? "").replace(el.textContent ?? "", "").trim();
+        if (label === null || visible === "") continue;
+        if (aria.toLowerCase().includes(visible.toLowerCase())) continue;
+        bad.push(`<${el.tagName.toLowerCase()}> reads "${visible}" but announces "${aria}"`);
       }
       return bad;
     },

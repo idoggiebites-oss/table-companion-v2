@@ -814,9 +814,32 @@ contact who knows a guy — and forcing them through a creature form would mean
 inventing an armour class for a man who sells rope."
 
 **Acceptance criteria:**
-- [ ] A record is notes-first; stats are optional and absent by default
-- [ ] Inventory hangs off a `trader` flag rather than existing on every NPC — a stock list on a record that will never sell anything is a field skipped every time the form opens
-- [ ] NPCs are behind the screen in the log
+- [x] A record is notes-first; stats are optional and absent by default
+- [x] Inventory hangs off a `trader` flag rather than existing on every NPC — a stock list on a record that will never sell anything is a field skipped every time the form opens
+- [x] NPCs are behind the screen in the log
+
+**What it turned up.** Task 19's `PREP_KINDS` made criterion 3 a one-line
+change, which is what a root fix is supposed to buy.
+
+Out of scope and stated rather than silently dropped: V1's `Shop.tsx` buying
+and selling, because moving coin needs a party purse V2 does not model, and
+the SRD-catalogue stock picker. Stock is typed by hand — a shelf the DM can
+describe. `sellOne` came across as a pure function with no caller yet.
+`money.ts` brought only `formatPrice` and `parseCoins`; the purse half of V1's
+file stayed behind. No stats editor: V1 never built one either, and `stats` is
+written by nothing in either version.
+
+**A defect both screens shared.** An `aria-label` on a field that already sits
+inside a `<label>` REPLACES the visible name rather than adding to it, so the
+screen read "What they are" while a screen reader announced "NPC role". Mine
+from Task 19 as much as this one. `mountPhone` grew a `mislabelled()` check
+beside `smallTargets()`, holding WCAG 2.5.3's actual rule — the announced name
+must contain the visible one, so a terse tag expanded by a fuller sentence
+still passes.
+
+**Still open, not fixed here:** `SeatControl.tsx` shows "I am" and announces
+"Which seat this device is in", which the rule would flag. Untouched on scope
+grounds — it is not this task's file.
 
 **Dependencies:** Task 19
 **Estimated scope:** M

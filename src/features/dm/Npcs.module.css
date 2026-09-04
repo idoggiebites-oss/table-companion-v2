@@ -1,0 +1,105 @@
+/* Same flat card and hairline as Places and Encounters beside it. */
+.wrap { display: flex; flex-direction: column; gap: var(--s-4); min-width: 0; }
+
+.head { display: flex; justify-content: space-between; align-items: center; gap: var(--s-4); }
+
+.title {
+  margin: 0; font-size: var(--t-note); letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--ink-dim); font-weight: 500;
+}
+
+.new, .edit {
+  min-height: var(--tap); padding: 0 var(--s-5); font-size: var(--t-sm);
+  color: var(--ink); background: var(--surface-1);
+  border: var(--panel-border); border-radius: var(--r-control);
+}
+
+.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s-3); }
+
+.card {
+  display: grid; grid-template-columns: 1fr; gap: var(--s-3);
+  padding: var(--s-4) var(--s-5); background: var(--surface-1);
+  border: var(--panel-border); border-radius: var(--r-card);
+}
+
+.cardHead { display: flex; flex-direction: column; gap: var(--s-1); min-width: 0; }
+.name { font-weight: 600; font-size: var(--t-sm); }
+.meta { font-size: var(--t-aside); color: var(--ink-dim); font-family: var(--font-mono); }
+
+.actions { display: flex; gap: var(--s-3); align-items: center; }
+
+@media (min-width: 30rem) {
+  .card { grid-template-columns: 1fr auto; align-items: center; }
+}
+
+.forget { min-width: var(--tap); min-height: var(--tap); background: none; border: none; color: var(--ink-dim); font-size: var(--t-sm); }
+
+.draft {
+  display: flex; flex-direction: column; gap: var(--s-3);
+  padding: var(--s-5); background: var(--surface-1);
+  border: var(--panel-border); border-radius: var(--r-card);
+}
+
+.field { display: flex; flex-direction: column; gap: var(--s-2); }
+
+.tag {
+  font-size: var(--t-note); letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.text, .note {
+  font: inherit; font-size: var(--t-sm); color: var(--ink);
+  background: var(--surface-2); border: var(--panel-border);
+  border-radius: var(--r-control); padding: var(--s-4) var(--s-5);
+}
+.text { min-height: var(--tap); }
+.note { resize: vertical; }
+
+/* A control the DM chooses, not a card sitting on the canvas — a hairline,
+   not `--panel-border`, same as the room picker's terrain rows. Gold marks
+   what is on. */
+.chip {
+  align-self: flex-start; min-height: var(--tap); padding: 0 var(--s-5);
+  font-size: var(--t-sm); color: var(--ink); background: var(--surface-1);
+  border: 1px solid var(--hairline); border-radius: var(--r-control);
+}
+.on { background: var(--gold-wash); border-color: var(--gold-fill); }
+
+.stock {
+  display: flex; flex-direction: column; gap: var(--s-3);
+  padding-top: var(--s-3); border-top: 1px solid var(--hairline);
+}
+.stockRow { display: flex; align-items: center; gap: var(--s-3); }
+.stockName { flex: 1; font-size: var(--t-sm); min-width: 0; }
+.stockMeta { font-size: var(--t-aside); color: var(--ink-dim); font-family: var(--font-mono); }
+.remove { min-width: var(--tap); min-height: var(--tap); background: none; border: none; color: var(--ink-dim); }
+
+.stockAdd { display: flex; flex-wrap: wrap; gap: var(--s-3); align-items: center; }
+.stockInput {
+  flex: 1 1 8rem; min-height: var(--tap); font: inherit; font-size: var(--t-sm);
+  color: var(--ink); background: var(--surface-2); border: var(--panel-border);
+  border-radius: var(--r-control); padding: 0 var(--s-4);
+}
+.add {
+  min-height: var(--tap); padding: 0 var(--s-5); font-size: var(--t-sm);
+  color: var(--on-gold); background: var(--gold-fill);
+  border: 1px solid var(--gold-edge); border-radius: var(--r-control);
+}
+.add:disabled { opacity: 0.45; }
+
+.row { display: flex; gap: var(--s-3); align-items: center; flex-wrap: wrap; margin-top: var(--s-3); }
+
+.keep {
+  min-height: var(--tap); padding: 0 var(--s-5); font-size: var(--t-sm);
+  color: var(--on-gold); background: var(--gold-fill);
+  border: 1px solid var(--gold-edge); border-radius: var(--r-control);
+}
+.keep:disabled { opacity: 0.45; }
+
+.throw {
+  min-height: var(--tap); padding: 0 var(--s-5); font-size: var(--t-sm);
+  color: var(--ink-dim); background: none;
+  border: var(--panel-border); border-radius: var(--r-control);
+}
+
+.empty { font-size: var(--t-sm); color: var(--ink-dim); margin: 0; max-width: 34em; }

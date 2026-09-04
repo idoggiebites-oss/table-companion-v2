@@ -67,6 +67,15 @@ describe("the places drawer, on the reference phone", () => {
     expect(phone.smallTargets()).toEqual([]);
   });
 
+  it("names its fields once — the label the screen shows is the one announced", async () => {
+    /* An `aria-label` on a control already named by its <label> replaces that
+       name rather than adding to it, so the two disagree. See `mislabelled`. */
+    phone = await mount([]);
+    phone.doc.querySelector<HTMLButtonElement>("button")!.click();
+    await new Promise((r) => setTimeout(r, 40));
+    expect(phone.mislabelled()).toEqual([]);
+  });
+
   it("explains what a place is when there are none", async () => {
     phone = await mount([]);
     expect(phone.doc.querySelector('[data-testid="places-empty"]')?.textContent)
