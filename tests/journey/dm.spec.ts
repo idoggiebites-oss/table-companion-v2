@@ -863,7 +863,7 @@ test("the DM asks for a roll and it arrives over whatever the player is doing", 
   const modal = page.getByTestId("roll-request");
   await expect(modal).toBeVisible();
   await expect(modal).toContainText("Perception Check");
-  await expect(modal).toContainText("ability check");
+  await expect(modal).toContainText("rolled with Wisdom");
   await expect(modal).toContainText("You scan the ruins for hidden details.");
   await expect(modal.getByTestId("dc")).toHaveText("14");
 
@@ -879,4 +879,13 @@ test("the DM asks for a roll and it arrives over whatever the player is doing", 
   await page.getByTestId("seat").selectOption({ value: "dm" });
   await bar(page).getByRole("button", { name: "Party" }).click();
   await expect(page.getByTestId("ask-answers")).toContainText("Bree Thorn 17");
+
+  /* And a save is a different roll, not a check with another word on it. */
+  await page.getByTestId("ask-open").click();
+  await page.getByTestId("ask-kind-save").click();
+  await page.getByTestId("ask-save").selectOption("dex");
+  await page.getByTestId("ask-send").click();
+  await page.getByTestId("seat").selectOption({ label: "Bree Thorn" });
+  await expect(page.getByTestId("roll-request")).toContainText("Dexterity Saving Throw");
+  await expect(page.getByTestId("roll-request")).not.toContainText("Check");
 });

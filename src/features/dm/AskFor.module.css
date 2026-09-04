@@ -40,3 +40,12 @@
   color: var(--ink-dim); font-family: var(--font-sans); font-size: var(--t-note);
   cursor: pointer;
 }
+
+.kinds { display: flex; gap: var(--s-2); flex: 1; }
+
+.kind {
+  flex: 1; min-height: var(--tap);
+  border: 1px solid var(--hairline); border-radius: var(--r-control);
+  background: var(--surface-2); font-family: var(--font-sans);
+  font-size: var(--t-note); color: var(--ink-dim); cursor: pointer;
+}

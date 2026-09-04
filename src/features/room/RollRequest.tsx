@@ -51,47 +51,49 @@ export function RollRequest({ ask, scores, level, proficient, guidance, onAnswer
          aria-label={`The DM is asking for ${ask.name}`} data-testid="roll-request">
       <div className={s.card}>
         <img className={s.crest} src="/art/roll/crest.webp" alt="" aria-hidden="true" />
-        <img className={s.banner} src="/art/roll/banner.webp" alt="" aria-hidden="true" />
+        {/* The banner is empty art now, so the words sit ON it rather than
+            being baked into it — which is why this is readable text again
+            instead of a visually-hidden label beside a picture of itself. */}
         <p className={s.eyebrow}>DM request</p>
 
         {/* The ruins sit behind the naming, fading into the parchment — the
             mockup's one piece of atmosphere, and the reason it reads as a
             moment rather than a form. */}
         <div className={s.scene}>
-          {/* "Perception Check", then "Wisdom · ability check" underneath.
-              The book's phrasing is Wisdom (Perception): the SKILL names the
-              check and the ABILITY is what you roll. Saying "Wisdom Perception
-              check" describes a thing that does not exist. */}
-          <h2 className={s.title}>{ask.name} Check</h2>
+          {/*
+            * One name for the roll, and one only.
+            *
+            * It read "Perception Check" over a large "Wisdom", which is two
+            * different words in the two biggest slots on the screen — Arturo,
+            * twice: "you keep saying perception check and asking for a wisdom
+            * roll." The ability is not a second heading; it is where the
+            * modifier comes from, and the bonus boxes below already say so.
+            */}
+          <h2 className={s.title}>
+            {ask.name} {ask.kind === "save" ? "Saving Throw" : "Check"}
+          </h2>
           <p className={s.sub}>The DM is asking you to make a roll.</p>
           {ask.flavour !== undefined && ask.flavour !== "" && (
             <p className={s.flavour}>“{ask.flavour}”</p>
           )}
         </div>
 
-        <img className={s.rule} src="/art/roll/divider.webp" alt="" aria-hidden="true" />
+        <img className={s.rule} src="/art/roll/rule.webp" alt="" aria-hidden="true" />
 
         <div className={s.facts}>
-          {/* Dropped when the DM asked for a bare ability: the title already
-              says "Wisdom Check", and repeating it underneath is the app
-              filling a slot rather than telling anybody anything. */}
-          {skill !== undefined && (
-            <div className={s.ability}>
-              <span className={s.abilityName}>{ABILITY_NAME[ask.ability]}</span>
-              <span className={s.abilityKind}>ability check</span>
-            </div>
-          )}
+          {/* Which ability it is rolled with, said once and said small — the
+              boxes underneath carry the number it is worth. */}
+          <span className={s.rolls}>
+            rolled with {ABILITY_NAME[ask.ability]}
+          </span>
           {/* Drawn only when the DM said one. A DC of "—" is a number the
               player would try to read. */}
           {ask.dc !== undefined && (
             <div className={s.dc}>
               <span className={s.dcLabel}>Difficulty class</span>
-              {/* Two shields, one inside the other: `clip-path` clips a
-                  border along with the box, so a single element loses its
-                  outline exactly where the point is. The outer is the edge. */}
-              <span className={s.dcShield}>
-                <span className={s.dcFace} data-testid="dc">{ask.dc}</span>
-              </span>
+              {/* One element again: the shield is drawn art now, so there is
+                  no border for `clip-path` to cut off at the point. */}
+              <span className={s.dcShield} data-testid="dc">{ask.dc}</span>
             </div>
           )}
         </div>
@@ -119,15 +121,17 @@ export function RollRequest({ ask, scores, level, proficient, guidance, onAnswer
         <button type="button" className={s.submit} disabled={!ready}
                 data-testid="roll-submit"
                 onClick={() => { onAnswer(value); }}>
-          <img className={s.spark} src="/art/roll/spark.webp" alt="" aria-hidden="true" />
+          {/* The plaque carries its own sparkles. */}
           Submit
-          <img className={s.spark} src="/art/roll/spark.webp" alt="" aria-hidden="true" />
         </button>
         <button type="button" className={s.cancel} data-testid="roll-pass"
                 onClick={onPass}>Cancel</button>
 
-        <img className={`${s.corner} ${s.cornerL}`} src="/art/roll/corner.webp" alt="" aria-hidden="true" />
-        <img className={`${s.corner} ${s.cornerR}`} src="/art/roll/corner.webp" alt="" aria-hidden="true" />
+        {/* All four, as the frame art has them. */}
+        <img className={`${s.corner} ${s.tl}`} src="/art/roll/corner.webp" alt="" aria-hidden="true" />
+        <img className={`${s.corner} ${s.tr}`} src="/art/roll/corner.webp" alt="" aria-hidden="true" />
+        <img className={`${s.corner} ${s.bl}`} src="/art/roll/corner.webp" alt="" aria-hidden="true" />
+        <img className={`${s.corner} ${s.br}`} src="/art/roll/corner.webp" alt="" aria-hidden="true" />
       </div>
     </div>
   );

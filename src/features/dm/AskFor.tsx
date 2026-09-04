@@ -27,28 +27,60 @@ export function AskFor({ party, onAsk, onClose }: {
   onAsk: (ask: Omit<Ask, "id">) => void;
   onClose: () => void;
 }) {
+  /*
+   * A check or a save, because they are not the same roll.
+   *
+   * Arturo: "not all rolls are perception checks." A Dexterity SAVE and a
+   * Dexterity CHECK share a modifier and not a proficiency, and a save is what
+   * a DM calls for every time a spell or a breath weapon lands. There was no
+   * way to ask for one.
+   */
+  const [kind, setKind] = useState<"check" | "save">("check");
   const [skill, setSkill] = useState<string>("perception");
+  const [save, setSave] = useState<Ability>("dex");
   const [dc, setDc] = useState("");
   const [flavour, setFlavour] = useState("");
   const [who, setWho] = useState<readonly string[]>([]);
 
-  /* A bare ability is a real ask — "roll a Strength save" names no skill. */
-  const chosen = SKILLS.find((x) => x.id === skill);
-  const ability: Ability = chosen?.ability ?? (skill as Ability);
+  /* A bare ability is a real ask too — "everyone roll Strength". */
+  const chosen = kind === "save" ? undefined : SKILLS.find((x) => x.id === skill);
+  const ability: Ability = kind === "save" ? save : chosen?.ability ?? (skill as Ability);
   const name = chosen?.name ?? ABILITY_NAME[ability];
   const dcValue = Number(dc.trim());
 
   return (
     <section className={s.wrap} aria-label="Ask for a roll" data-testid="ask-for">
+      <div className={s.field}>
+        <span className={s.label}>Kind</span>
+        <span className={s.kinds} role="group" aria-label="Check or saving throw">
+          {(["check", "save"] as const).map((k) => (
+            <button key={k} type="button" data-testid={`ask-kind-${k}`}
+                    className={kind === k ? `${s.kind} ${s.on}` : s.kind}
+                    aria-pressed={kind === k} onClick={() => setKind(k)}>
+              {k === "check" ? "Check" : "Saving throw"}
+            </button>
+          ))}
+        </span>
+      </div>
+
       <label className={s.field}>
         <span className={s.label}>What</span>
-        <select className={s.select} value={skill} data-testid="ask-skill"
-                onChange={(e) => setSkill(e.target.value)}>
-          {SKILLS.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
-          {ABILITIES.map((a) => (
-            <option key={a} value={a}>{ABILITY_NAME[a]} (bare)</option>
-          ))}
-        </select>
+        {kind === "save" ? (
+          <select className={s.select} value={save} data-testid="ask-save"
+                  onChange={(e) => setSave(e.target.value as Ability)}>
+            {ABILITIES.map((a) => (
+              <option key={a} value={a}>{ABILITY_NAME[a]}</option>
+            ))}
+          </select>
+        ) : (
+          <select className={s.select} value={skill} data-testid="ask-skill"
+                  onChange={(e) => setSkill(e.target.value)}>
+            {SKILLS.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
+            {ABILITIES.map((a) => (
+              <option key={a} value={a}>{ABILITY_NAME[a]} (bare)</option>
+            ))}
+          </select>
+        )}
       </label>
 
       <label className={s.field}>
@@ -88,7 +120,7 @@ export function AskFor({ party, onAsk, onClose }: {
         <button type="button" className={s.ask} data-testid="ask-send"
                 onClick={() => {
                   onAsk({
-                    who, name, ability,
+                    who, name, ability, kind,
                     ...(chosen === undefined ? {} : { skill: chosen.id }),
                     ...(Number.isFinite(dcValue) && dc.trim() !== "" ? { dc: dcValue } : {}),
                     ...(flavour.trim() === "" ? {} : { flavour: flavour.trim() }),

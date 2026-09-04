@@ -5,8 +5,6 @@
  * points of each other and this app already runs a contrast invariant over its
  * palette. A modal is not the place to fork it.
  */
-:root { --shield: polygon(0 0, 100% 0, 100% 62%, 50% 100%, 0 62%); }
-
 .scrim {
   position: fixed; inset: 0; z-index: 60;
   display: grid; place-items: center;
@@ -16,22 +14,25 @@
 .card {
   position: relative; width: min(30rem, 100%);
   display: flex; flex-direction: column; align-items: center; gap: var(--s-4);
-  padding: var(--s-8) var(--s-6); /* room at the top for the crest */
-  margin-block: var(--s-8);
+  padding: 3.2rem var(--s-6) var(--s-8); /* room at the top for the crest */
+  margin-block: 3.2rem var(--s-8);
   border: 1px solid var(--gold-edge); border-radius: var(--r-card); background: var(--gold-wash);
   box-shadow: 0 0 0 3px var(--gold-wash), 0 0 0 4px var(--gold-edge), var(--lift-2);
 }
 
-/* The crest hangs over the top edge; the banner clears it. They collided,
-   and "DM REQUEST" read as "DM ... EST". */
-.crest { position: absolute; top: -1.9rem; width: 4.2rem; }
-.banner { width: 13rem; margin-top: 1.6rem; }
+/* The crest hangs over the top edge; the banner clears it. */
+.crest { position: absolute; top: -2.4rem; width: 6.4rem; }
 
-/* The banner carries the words as art; this is the same words for anyone not
-   looking at pictures. */
+/* Plaques as nine-slices: `border-image` keeps each ribbon's ornate end-caps
+   their own size and stretches only what is between them. Scaling them as a
+   background would smear the ornaments the wider the screen got. */
 .eyebrow {
-  position: absolute; width: 1px; height: 1px;
-  margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%);
+  display: grid; place-items: center;
+  min-width: 13rem; min-height: 3rem; margin: 1.2rem 0 0; padding: 0 var(--s-6);
+  border: 0 solid transparent; border-inline-width: 52px;
+  border-image: url("/art/roll/banner.webp") 0 52 fill stretch;
+  font-family: var(--font-sans); font-size: var(--t-micro);
+  letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink);
 }
 
 .scene {
@@ -56,31 +57,20 @@
 }
 .sub { margin: 0; font-size: var(--t-sm); color: var(--ink); }
 .flavour { margin: 0; font-family: var(--font-display); font-style: italic; font-size: var(--t-note); color: var(--ink-dim); }
-.rule { width: 11rem; opacity: 0.9; }
+.rule { width: 12rem; }
 .facts {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
   gap: var(--s-6); width: 100%;
 }
-.ability { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-.abilityName { font-family: var(--font-display); font-size: var(--t-d1); color: var(--ink); }
 
-.abilityKind, .dcLabel {
-  font-size: var(--t-micro); letter-spacing: 0.14em;
-  text-transform: uppercase; color: var(--ink-dim);
-}
+.rolls, .dcLabel { font-size: var(--t-micro); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-dim); }
 .dc { display: flex; flex-direction: column; align-items: center; gap: var(--s-1); }
 
 /* The shield, drawn rather than cut: the sheet bakes "14" into it. */
 .dcShield {
-  display: grid; place-items: center; width: 3rem; height: 3.6rem;
-  background: var(--gold-edge); clip-path: var(--shield);
-}
-
-.dcFace {
-  /* The point eats the bottom third, so the number sits in the top two. */
-  display: grid; place-items: center; padding-bottom: 1rem;
-  width: calc(100% - 4px); height: calc(100% - 4px);
-  background: var(--surface-1); clip-path: var(--shield);
+  display: grid; place-items: center; width: 3.1rem; height: 3.9rem;
+  padding-bottom: 0.7rem;
+  background: url("/art/roll/shield.webp") center / contain no-repeat;
   font-family: var(--font-display); font-size: var(--t-d1); color: var(--ink);
 }
 
@@ -90,49 +80,64 @@
   border: 1px solid var(--gold-edge); border-radius: var(--r-control); background: var(--surface-1);
 }
 
-.enter {
-  font-size: var(--t-micro); letter-spacing: 0.14em;
-  text-transform: uppercase; color: var(--ink-dim);
-}
+.enter { font-size: var(--t-micro); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-dim); }
 
 .input {
-  width: 100%; min-height: var(--tap); padding: 0 var(--s-4);
-  border: 1px solid var(--gold-edge); border-radius: var(--r-control);
-  background: var(--gold-wash); text-align: center;
+  /* The art carries a d20 and a divider at its left, so the typing starts to
+     the right of them rather than under them. */
+  width: 100%; min-height: 3.4rem; padding: 0 var(--s-5) 0 5rem;
+  border: 0 solid transparent; border-inline-width: 46px;
+  border-image: url("/art/roll/input.webp") 0 46 fill stretch;
+  background: none; text-align: start;
   font-family: var(--font-display); font-size: var(--t-d1); color: var(--ink);
   appearance: textfield; -moz-appearance: textfield; /* the die is on the table */
 }
-.input::-webkit-outer-spin-button, .input::-webkit-inner-spin-button { appearance: none; margin: 0; }
-.hint { margin: 0; font-size: var(--t-aside); color: var(--ink-dim); text-align: center; }
+.input::-webkit-outer-spin-button, .input::-webkit-inner-spin-button { appearance: none; }
+/* Gold, not the platform's blue: a focus ring is the one bit of chrome that
+   lands in the middle of somebody else's art, and it still has to be visible. */
+.input:focus-visible { outline: 2px solid var(--gold-ink); outline-offset: 3px; }
+.hint {
+  display: grid; place-items: center; width: 100%; margin: 0;
+  min-height: 2.6rem; padding: 0 var(--s-5) 0 3rem;
+  border: 0 solid transparent; border-inline-width: 34px;
+  border-image: url("/art/roll/info.webp") 0 34 fill stretch;
+  font-size: var(--t-aside); color: var(--ink-dim); text-align: center;
+}
 .bonuses { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--s-2); width: 100%; }
 
 .bonus {
-  flex: 1 1 5rem; gap: 1px; padding: var(--s-2) var(--s-1);
+  flex: 1 1 5rem; gap: 1px; min-height: 3.2rem; justify-content: center;
   display: flex; flex-direction: column; align-items: center;
-  border: 1px solid var(--hairline); border-radius: var(--r-control);
+  border: 0 solid transparent; border-inline-width: 26px;
+  border-image: url("/art/roll/box.webp") 0 26 fill stretch;
 }
-.bonusStrong { border-color: var(--gold-edge); background: var(--gold-wash); }
+.bonusStrong .bonusValue { color: var(--gold-ink); }
 .bonusLabel { font-size: var(--t-micro); color: var(--ink-dim); }
 .bonusValue { font-family: var(--font-display); font-size: var(--t-sm); color: var(--ink); }
 
 .submit {
-  display: flex; align-items: center; justify-content: center; gap: var(--s-4);
-  width: 100%; min-height: 3rem;
-  border: 1px solid var(--gold-ink); border-radius: var(--r-control);
-  background: linear-gradient(180deg, #d9b567 0%, var(--gold-fill) 45%, #a97f34 100%);
-  color: var(--on-gold); font-family: var(--font-sans); font-size: var(--t-sm);
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; min-height: 3.4rem;
+  border: 0 solid transparent; border-inline-width: 76px;
+  border-image: url("/art/roll/submit.webp") 0 76 fill stretch;
+  background: none; color: var(--on-gold); font-family: var(--font-sans); font-size: var(--t-sm);
   letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer;
 }
 .submit:disabled { filter: grayscale(0.7); opacity: 0.6; cursor: default; }
-.spark { width: 1rem; } .submit:disabled .spark { opacity: 0.5; }
 
 .cancel {
   min-height: var(--tap); padding: 0 var(--s-5); border: 0; background: none;
   color: var(--ink-dim); font-family: var(--font-sans); font-size: var(--t-micro);
   letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer;
 }
-.corner { position: absolute; bottom: var(--s-2); width: 2.2rem; opacity: 0.8; pointer-events: none; }
-.cornerL { left: var(--s-2); } .cornerR { right: var(--s-2); transform: scaleX(-1); }
+.corner { position: absolute; width: 2.1rem; opacity: 0.85; pointer-events: none; }
+/* Each corner carries the flourish from the one diagonally opposite: the
+   ornament has a direction, and this runs the curl the same way down both
+   diagonals instead of chasing itself around the frame. */
+.tl { top: var(--s-2); left: var(--s-2); transform: scaleX(-1); }
+.tr { top: var(--s-2); right: var(--s-2); }
+.bl { bottom: var(--s-2); left: var(--s-2); transform: scale(-1); }
+.br { bottom: var(--s-2); right: var(--s-2); transform: scaleY(-1); }
 
 @media (prefers-reduced-motion: no-preference) {
   .card { animation: rise var(--m-sheet, 180ms) var(--m-ease-out, ease-out); }

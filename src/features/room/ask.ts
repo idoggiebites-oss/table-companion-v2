@@ -22,11 +22,24 @@ export const ASK = "room.ask";
  * the table something, and the DM waiting on a name needs to know the
  * difference between "no" and "not yet".
  */
+/**
+ * A check or a saving throw.
+ *
+ * Not all rolls are ability checks, and the difference is not cosmetic: a
+ * Dexterity SAVE and a Dexterity CHECK use the same modifier and a different
+ * proficiency — a rogue is proficient in Dexterity saves whether or not they
+ * have Acrobatics. Absent means a check, so asks made before this folds
+ * forward as what they were.
+ */
+export type AskKind = "check" | "save";
+
 export type Ask = {
   readonly id: string;
+  readonly kind?: AskKind;
   /** Character ids. Empty means the whole table — see `askedOf`. */
   readonly who: readonly string[];
-  /** What the DM said out loud. "Perception", "a Strength save". */
+  /** The bare noun: "Perception", "Dexterity". The screen adds "Check" or
+      "Saving Throw" from `kind`, so the log and the DM keep the short one. */
   readonly name: string;
   readonly ability: Ability;
   /** The skill's id, when it is a skill rather than a bare ability. */

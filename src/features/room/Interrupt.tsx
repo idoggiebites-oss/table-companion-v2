@@ -1,7 +1,7 @@
 import { RollRequest } from "./RollRequest";
 import { askedFrom, openFor, ASK } from "./ask";
 import { buildFrom, charactersIn } from "../creation/log";
-import { scoresOf } from "../creation/scores";
+import { scoresOf, savesOf } from "../creation/scores";
 import { SKILLS } from "../../rules/5e/skills";
 import type { Event } from "../../core/types";
 
@@ -39,6 +39,11 @@ export function Interrupt({ events, character, dm, record }: {
 
   const build = buildFrom(events, character);
   const skill = SKILLS.find((x) => x.id === ask.skill);
+  /* A save and a check share a modifier and not a proficiency: a rogue is
+     proficient in Dexterity saves whether or not they have Acrobatics. */
+  const proficient = ask.kind === "save"
+    ? savesOf(build).includes(ask.ability)
+    : skill !== undefined && build.skills.includes(skill.id);
 
   return (
     <RollRequest
@@ -47,7 +52,7 @@ export function Interrupt({ events, character, dm, record }: {
         level={build.level}
         /* Proficiency is a fact about the character, not about the ask — the
            DM should not have to know who is good at what to call for a roll. */
-        proficient={skill !== undefined && build.skills.includes(skill.id)}
+        proficient={proficient}
         onAnswer={(total) => record(ASK, { act: "answer", ask: ask.id, who: character, total })}
       onPass={() => record(ASK, { act: "pass", ask: ask.id, who: character })}
     />
