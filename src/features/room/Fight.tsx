@@ -7,6 +7,8 @@ import { proficiency } from "../../rules/5e/skills";
 import { signed, type Scores } from "../../rules/5e/abilities";
 import type { Attack } from "../../rules/5e/attack";
 import { Swing } from "../sheet/Swing";
+import { Turn } from "./Turn";
+import { spentBy } from "../dm/economy";
 import type { ReactNode } from "react";
 import s from "./Fight.module.css";
 
@@ -26,7 +28,7 @@ import s from "./Fight.module.css";
  * a name, a vague one is a WORD — "bloodied", never a bar, because a bar is a
  * number wearing a disguise — and only at exact are there figures.
  */
-export function Fight({ state, me, attacks, scores, level, conditions = [], nav, onAct }: {
+export function Fight({ state, me, attacks, scores, level, conditions = [], caster = false, nav, onAct }: {
   state: State;
   /** This device's combatant id in the fight, if it is in it at all. */
   me: string | null;
@@ -35,6 +37,8 @@ export function Fight({ state, me, attacks, scores, level, conditions = [], nav,
   level: number;
   /** What is on the person swinging — half of what decides the dice. */
   conditions?: readonly string[];
+  /** Whether this character has spells, so the menu does not teach them to a fighter. */
+  caster?: boolean;
   nav?: ReactNode;
   onAct: (a: Act) => void;
 }) {
@@ -81,6 +85,25 @@ export function Fight({ state, me, attacks, scores, level, conditions = [], nav,
             : "Someone else"}
         </p>
         {!mine && <p className={s.quiet}>Nothing to do until it comes round.</p>}
+
+        {/*
+          * The menu, and only on your own go.
+          *
+          * V1: "a new player's turn is not limited by the rules, it is limited
+          * by not knowing what is on the menu." This screen could swing an
+          * attack and name nothing else — a player had no way to learn Dodge
+          * or Disengage, and no way to see that their bonus action was still
+          * in hand. Off your turn it is not drawn at all, because most of a
+          * fight is waiting and the waiting state is deliberately empty.
+          */}
+        {mine && me !== null && (
+          <Turn
+            spent={spentBy(state, me)}
+            armed={attacks.length > 0}
+            caster={caster}
+            onTake={(cost) => { onAct({ act: "spend", id: me, kind: cost, on: true }); }}
+          />
+        )}
 
         {mine && attacks.length === 0 && (
           <p className={s.quiet} data-testid="nothing-to-swing">

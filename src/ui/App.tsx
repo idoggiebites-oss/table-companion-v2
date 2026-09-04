@@ -287,6 +287,9 @@ export function App({ dbName }: { dbName?: string }) {
         scores={build === null ? BLANK : scoresOf(build)}
         level={build?.level ?? 1}
         conditions={build === null ? [] : vitalsFrom(events, character, build).conditions}
+        /* `actions.ts`'s `whenCaster`: read from what they KNOW, not their
+           class, so Magic Initiate on a fighter still counts. */
+        caster={(build?.spells.length ?? 0) > 0}
         nav={nav("fight")}
         onAct={act}
       />

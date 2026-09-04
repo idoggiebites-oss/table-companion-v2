@@ -1,0 +1,72 @@
+.wrap { display: flex; flex-direction: column; gap: var(--s-4); }
+
+/* What is left, at a glance. Spent reads as spent rather than as absent — a
+   pip that vanished would leave a player counting what used to be there. */
+.pips { display: flex; gap: var(--s-2); }
+
+.pip {
+  flex: 1;
+  padding: var(--s-2) 0;
+  border: 1px solid var(--gold-edge);
+  border-radius: var(--r-pill);
+  background: var(--gold-wash);
+  color: var(--gold-ink);
+  font-size: var(--t-micro);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.gone {
+  border-color: var(--hairline);
+  background: none;
+  color: var(--steel);
+  text-decoration: line-through;
+}
+
+/* A grid of marks is something you aim at; twelve rows of words is a list you
+   read. V1's argument, and a turn is aimed at. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+  gap: var(--s-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  min-height: var(--tap);
+  padding: var(--s-3);
+  border: var(--panel-border);
+  border-radius: var(--r-card);
+  background: var(--surface-1);
+  box-shadow: var(--lift-1);
+  text-align: start;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* Present, not hidden: a menu that hides Dodge until you qualify never teaches
+   Dodge. Dimmed and unpressable, with the reason where the sentence was. */
+.blocked { background: none; box-shadow: none; color: var(--ink-dim); cursor: default; }
+
+.mark { color: var(--gold-ink); }
+.blocked .mark { color: var(--steel); }
+
+.name { font-size: var(--t-sm); font-weight: 600; }
+
+.cost {
+  color: var(--ink-dim);
+  font-size: var(--t-micro);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.what { font-size: var(--t-aside); color: var(--ink-dim); line-height: 1.4; }
+.then { font-size: var(--t-aside); color: var(--gold-ink); line-height: 1.4; }

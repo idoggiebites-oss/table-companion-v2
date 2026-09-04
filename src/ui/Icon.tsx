@@ -9,7 +9,10 @@
 export type IconName =
   | "sword" | "staff" | "note" | "sun" | "leaf" | "fist" | "shield" | "bow"
   | "dagger" | "spark" | "book" | "eye" | "die" | "pact" | "flask" | "person"
-  | "list" | "moon" | "pin" | "clipboard";
+  | "list" | "moon" | "pin" | "clipboard"
+  /* Added for the turn menu (`rules/5e/actions.ts`). V1 had its own set and
+     V2's did not cover these four. */
+  | "dash" | "slip" | "clock" | "search";
 
 const PATHS: Record<IconName, string> = {
   sword: "M14.5 3.5 17 6l-7.5 7.5-2.5-2.5L14.5 3.5ZM7 13l-2 4 4-2M5.5 15.5 3 18",
@@ -38,6 +41,10 @@ const PATHS: Record<IconName, string> = {
   /* A place, for the outline and Quick Create. The mockup's map pin. */
   pin: "M10 17s5-4.6 5-9a5 5 0 0 0-10 0c0 4.4 5 9 5 9ZM12 8a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z",
   /* The session itself — what the whole night is, before its parts. */
+  dash: "M3 10h9M9 6l4 4-4 4M15 5v10M18 5v10",
+  slip: "M4 15c3-1 5-3 6-6M10 9l3-3 3 3M13 6v7M3 17h14",
+  clock: "M10 5v5l3 2M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z",
+  search: "M12.5 12.5 17 17M14 9a5 5 0 1 1-10 0 5 5 0 0 1 10 0Z",
   clipboard: "M7.5 4H6a1.5 1.5 0 0 0-1.5 1.5v10A1.5 1.5 0 0 0 6 17h8a1.5 1.5 0 0 0 1.5-1.5v-10A1.5 1.5 0 0 0 14 4h-1.5M7.5 4a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1M7.5 4a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1M7.5 9.5h5M7.5 13h3",
   moon: "M16 12.3A6.5 6.5 0 0 1 7.7 4 7 7 0 1 0 16 12.3Z",
 };

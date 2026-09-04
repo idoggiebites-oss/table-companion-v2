@@ -69,11 +69,13 @@ from acts. Say so in a comment wherever that changes a shape.
 **Verification:** domain tests per economy rule; a journey through a full round
 **Scope:** L · **Deps:** none — **the largest unblocker in this phase**
 
-## Task 57 · **Opus**: A player's turn
-**Description:** Task 56's model on the player's `Fight.tsx`, which is V1's
-two-state screen and today can swing an attack and name nothing else.
-**Accepts:** a player sees what their turn still holds, and what each option
-costs · **Scope:** M · **Deps:** 56
+## Task 57 · **Opus**: A player's turn — **done**
+Task 56's model on the player's `Fight.tsx`, plus V1's `actions.ts` (166) as
+the menu. *"A new player's turn is not limited by the rules, it is limited by
+not knowing what is on the menu."*
+- [x] A player sees what their turn still holds, and what each option costs
+- [x] Every option is present, including the blocked ones, with the reason
+- [x] Nothing rolls
 
 ## Task 58 · **Opus**: The claim seam, reversed
 **Description:** V2's claim runs player → DM. Every roll-request feature wants

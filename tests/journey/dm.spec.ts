@@ -769,3 +769,66 @@ test("a creature's turn is spent, and a dragon acts on somebody else's", async (
   await expect(dragon.getByTestId("legendary-left")).toContainText("3 legendary left");
   await expect(dragon.getByTestId("econ-action")).toHaveAttribute("aria-pressed", "false");
 });
+
+test("a player is taught what a turn holds, not just what they can swing", async ({ page }) => {
+  /*
+   * V1's `actions.ts`, and its whole argument: "a new player's turn is not
+   * limited by the rules, it is limited by not knowing what is on the menu.
+   * Nobody discovers Dodge by reading a character sheet."
+   *
+   * This screen could swing an attack and name nothing else.
+   */
+  await hub(page);
+  await make(page, "Bree Thorn");
+
+  await bar(page).getByRole("button", { name: "Characters" }).click();
+  await page.getByTestId("seat").selectOption({ value: "dm" });
+  await bar(page).getByRole("button", { name: "Combat" }).click();
+  await page.getByTestId("bestiary-search").fill("goblin");
+  await page.getByTestId("bestiary-row").first().click();
+
+  const goblin = page.getByTestId("staged-row").first();
+  await goblin.getByRole("spinbutton", { name: /^Initiative/ }).fill("2");
+  await page.getByRole("button", { name: /^Put Bree Thorn in the fight/ }).click();
+  await page.getByTestId("staged-row").filter({ hasText: "Bree Thorn" })
+    .getByRole("spinbutton", { name: /^Initiative/ }).fill("20");
+  await page.getByRole("button", { name: "Begin", exact: true }).click();
+
+  await toHub(page);
+  await page.getByTestId("seat").selectOption({ label: "Bree Thorn" });
+  await bar(page).getByRole("button", { name: "Combat" }).click();
+
+  /* Bree rolled highest, so it is her go and the menu is there. */
+  await expect(page.getByTestId("whose-turn")).toHaveText("Your turn");
+  await expect(page.getByTestId("turn")).toBeVisible();
+  for (const taught of ["Dodge", "Disengage", "Dash", "Hide", "Ready"]) {
+    await expect(page.getByTestId("turn")).toContainText(taught);
+  }
+
+  /* Everything in hand, then Dodge spends the action. */
+  await expect(page.getByTestId("pip-action")).not.toContainText("spent");
+  await page.getByRole("button", { name: /^Dodge:/ }).click();
+  await expect(page.getByTestId("pip-action")).toContainText("spent");
+  await expect(page.getByTestId("pip-bonus")).not.toContainText("spent");
+
+  /* The off-hand swing is still blocked — but for being unarmed, not for the
+     action being gone. Bree has nothing on her sheet to swing, and the reason
+     given is the one that would actually fix it. A bonus action is not an
+     action, and `blockedBecause` asks in that order. */
+  await expect(page.getByRole("button", { name: /^Off-hand attack:.*equip a weapon/ }))
+    .toBeVisible();
+
+  /* And it stays spent across the goblin's turn, coming back only when hers
+     opens again — which is the rule, and the reason a reaction is worth having. */
+  await toHub(page);
+  await page.getByTestId("seat").selectOption({ value: "dm" });
+  await bar(page).getByRole("button", { name: "Combat" }).click();
+  await page.getByRole("button", { name: /^Next:/ }).click();
+  await page.getByRole("button", { name: /^Next:/ }).click();
+
+  await toHub(page);
+  await page.getByTestId("seat").selectOption({ label: "Bree Thorn" });
+  await bar(page).getByRole("button", { name: "Combat" }).click();
+  await expect(page.getByTestId("whose-turn")).toHaveText("Your turn");
+  await expect(page.getByTestId("pip-action")).not.toContainText("spent");
+});
