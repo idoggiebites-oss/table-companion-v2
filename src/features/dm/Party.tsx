@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Shell } from "../../ui/Shell";
 import { AskFor } from "./AskFor";
 import { askedFrom, addressees, type Ask } from "../room/ask";
+import { progressFrom, levelsOwed, xpOf, type XpAct } from "./xp";
 import { VAGUE } from "../../rules/5e/vitals";
 import { membersIn, type Member } from "./members";
 import type { Event } from "../../core/types";
@@ -22,7 +23,7 @@ import s from "./Party.module.css";
  * columns as the width allows and collapses to one on a phone, because the DM
  * side has to work on both without being two designs.
  */
-export function Party({ events, nav, who, onOpen, onHit, onAsk }: {
+export function Party({ events, nav, who, onOpen, onHit, onAsk, onAward }: {
   events: readonly Event[];
   nav?: ReactNode;
   /**
@@ -48,10 +49,13 @@ export function Party({ events, nav, who, onOpen, onHit, onAsk }: {
   onHit?: (character: string, amount: number) => void;
   /** "Everyone roll Perception." See `features/room/ask.ts`. */
   onAsk?: (ask: Omit<Ask, "id">) => void;
+  /** Experience, or a level outright. See `features/dm/xp.ts`. */
+  onAward?: (act: XpAct) => void;
 }) {
   const party = membersIn(events);
   const [asking, setAsking] = useState(false);
   const asked = askedFrom(events);
+  const progress = progressFrom(events);
   const ids = party.map((m) => m.id);
   return (
     <Shell title="The party" below={nav} trail={who} wide>
@@ -62,7 +66,12 @@ export function Party({ events, nav, who, onOpen, onHit, onAsk }: {
         </p>
       ) : (
         <div className={s.grid} data-testid="party">
-          {party.map((m) => <Row key={m.id} m={m} {...(onHit === undefined ? {} : { onHit })} {...(onOpen === undefined ? {} : { onOpen })} />)}
+          {party.map((m) => (
+            <Row key={m.id} m={m} xp={xpOf(progress, m.id)}
+                 owed={levelsOwed(progress, m.id, m.level)}
+                 {...(onHit === undefined ? {} : { onHit })}
+                 {...(onOpen === undefined ? {} : { onOpen })} />
+          ))}
         </div>
       )}
 
@@ -77,6 +86,35 @@ export function Party({ events, nav, who, onOpen, onHit, onAsk }: {
           <button type="button" className={s.ask} data-testid="ask-open"
                   onClick={() => setAsking(true)}>Ask for a roll</button>
         )
+      )}
+
+      {/*
+        * Experience, or a level outright — Arturo's "exp or milestone".
+        *
+        * Here because this is the screen with the table on it, and because
+        * `encounter.ts` has computed what a fight is worth since Task 31 with
+        * nobody to give it to. The DM says a level is owed; the PLAYER takes
+        * it, because which subclass is theirs to choose.
+        */}
+      {onAward !== undefined && party.length > 0 && (
+        <form className={s.award} data-testid="award"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const field = new FormData(e.currentTarget).get("xp");
+                const amount = Number(String(field ?? "").trim());
+                if (!Number.isFinite(amount) || amount === 0) return;
+                onAward({ act: "award", amount, to: ids });
+                e.currentTarget.reset();
+              }}>
+          <input className={s.xp} name="xp" type="number" inputMode="numeric"
+                 placeholder="XP" data-testid="award-xp"
+                 aria-label="Experience for the party, split evenly" />
+          <button type="submit" className={s.awardGo} data-testid="award-send">Award</button>
+          <button type="button" className={s.awardGo} data-testid="award-milestone"
+                  onClick={() => onAward({ act: "milestone", to: ids })}>
+            Milestone
+          </button>
+        </form>
       )}
 
       {/* What came back, and who is still being waited on — the whole reason
@@ -99,8 +137,9 @@ export function Party({ events, nav, who, onOpen, onHit, onAsk }: {
   );
 }
 
-function Row({ m, onOpen, onHit }: {
-  m: Member; onOpen?: (id: string) => void;
+function Row({ m, xp, owed, onOpen, onHit }: {
+  m: Member; xp: number; owed: number;
+  onOpen?: (id: string) => void;
   onHit?: (character: string, amount: number) => void;
 }) {
   /* A bar AND the number. The vague word is what a PLAYER gets about a
@@ -114,7 +153,13 @@ function Row({ m, onOpen, onHit }: {
         <span className={s.name}>{m.name}</span>
         <span className={s.ac} title="Armour class">{m.ac}</span>
       </span>
-      <span className={s.kind}>{m.kind}</span>
+      <span className={s.kind}>
+        {m.kind}
+        {/* Only where there is one. A milestone table counts no experience,
+            and a number nobody is counting is worse than no number. */}
+        {xp > 0 && <span className={s.xpHeld}> · {xp.toLocaleString()} XP</span>}
+        {owed > 0 && <span className={s.owed}>level waiting</span>}
+      </span>
 
       <span className={s.hp}>
         <span className={s.bar} aria-hidden="true">

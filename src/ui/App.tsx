@@ -14,7 +14,7 @@ import { asking } from "../features/creation/facts";
 import { adopt } from "../features/creation/transfer";
 import { HubScreen } from "../features/creation/HubScreen";
 import { RoomBar } from "../features/room/RoomBar";
-import { Sheet } from "../features/sheet/Sheet";
+import { SheetScreen } from "../features/sheet/SheetScreen";
 import { buildFrom, charactersIn } from "../features/creation/log";
 import { characterOf } from "../features/creation/choices";
 import { vitalsFrom, VITAL, type Vital } from "../features/sheet/model";
@@ -34,12 +34,12 @@ import { Staging } from "../features/dm/Staging";
 import { PrepScreen } from "../features/dm/PrepScreen";
 import { BookScreen } from "../features/book/BookScreen";
 import { scenesFrom } from "../features/dm/scene";
-import { homebrewFrom, HOMEBREW } from "../features/sheet/homebrew";
 import { Fight as PlayerFight } from "../features/room/Fight";
 import { scoresOf } from "../features/creation/scores";
 import { BLANK } from "../rules/5e/abilities";
 import { fightFrom, FIGHT, type Act } from "../features/dm/fight";
 import { onTurn, onAsked } from "../features/dm/nudge";
+import { progressFrom, levelsOwed, XP } from "../features/dm/xp";
 import { SeatControl } from "../features/room/SeatControl";
 import { PushToggle } from "../features/room/PushToggle";
 import { membersIn } from "../features/dm/members";
@@ -208,27 +208,12 @@ export function App({ dbName }: { dbName?: string }) {
   }
 
   if (mode === "sheet") {
-    const build = current;
-    /* The whole integration, and one line is the point — see
-       `features/sheet/homebrew.ts`. The compendium comes FIRST so an exact
-       catalogue name wins a tie. */
-    const made = homebrewFrom(events);
     return (
-      <Sheet
-        build={build}
-        features={features}
-        catalogue={[...gear.items, ...made]}
-        made={made}
-        onMake={(i) => record(HOMEBREW, { act: "save", item: i } as unknown as Record<string, unknown>)}
-        onForgetMade={(id) => record(HOMEBREW, { act: "forget", id })}
-        catalogueLoading={gear.loading}
-        onChoose={(c) => record(CHOICE, { ...(c as unknown as Record<string, unknown>), character })}
-        vitals={vitalsFrom(events, character, build)}
-        name={build.identity["name"] ?? "Unnamed"}
-        onAct={(v: Vital) => record(VITAL, { ...(v as unknown as Record<string, unknown>), character })}
-        onBack={() => setMode("hub")}
-        nav={nav("sheet")}
-        onLevelUp={() => setMode("levelup")}
+      <SheetScreen
+        events={events} character={character} build={current} features={features}
+        catalogue={gear.items} catalogueLoading={gear.loading}
+        nav={nav("sheet")} record={record}
+        onBack={() => setMode("hub")} onLevelUp={() => setMode("levelup")}
       />
     );
   }
@@ -304,6 +289,7 @@ export function App({ dbName }: { dbName?: string }) {
   if (mode === "party") {
     return (
       <Party
+        onAward={(a) => record(XP, a as unknown as Record<string, unknown>)}
         onAsk={(a) => {
           const ask = { ...a, id: `ask${Date.now().toString(36)}` };
           record(ASK, { act: "ask", ask } as unknown as Record<string, unknown>);

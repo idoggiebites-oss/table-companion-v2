@@ -31,7 +31,7 @@ type Asking = { kind: "damage" } | { kind: "heal" } | { kind: "hitdie"; die: num
  * now, and only then what they are — which is the Overview tab.
  */
 export function Sheet({
-  build, vitals, name, onAct, onBack, onLevelUp, nav, features = [],
+  build, vitals, name, onAct, onBack, onLevelUp, owed = 0, nav, features = [],
   catalogue = [], catalogueLoading = false, made = [], onMake, onForgetMade, onChoose,
 }: {
   build: Build;
@@ -53,6 +53,8 @@ export function Sheet({
   /** Gained features, loaded per class by the screen above. */
   features?: readonly { readonly level: number; readonly names: readonly string[] }[];
   onLevelUp?: () => void;
+  /** Levels the DM has made available — see `features/dm/xp.ts`. */
+  owed?: number;
 }) {
   const [tab, setTab] = useState<Tab>("overview");
   const [conditions, setConditions] = useState(false);
@@ -74,7 +76,19 @@ export function Sheet({
         <ButtonRow>
           <Button onClick={() => onAct({ act: "rest", length: "short" })}>Short rest</Button>
           <Button onClick={() => onAct({ act: "rest", length: "long" })}>Long rest</Button>
-          {onLevelUp !== undefined && <Button tone="gold" onClick={onLevelUp}>Level up</Button>}
+          {/*
+            * Only when one is waiting.
+            *
+            * It was a Level up on every sheet, pressable whenever — the player
+            * holding a key that is the DM's. `xp.ts` decides: experience
+            * crossed a threshold, or the DM called a milestone. The DM still
+            * never TAKES it, because which subclass is theirs to choose.
+            */}
+          {onLevelUp !== undefined && owed > 0 && (
+            <Button tone="gold" onClick={onLevelUp}>
+              Level up{owed > 1 ? ` (${owed})` : ""}
+            </Button>
+          )}
         </ButtonRow>
       }
     >

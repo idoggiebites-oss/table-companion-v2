@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { cont, makeFighter, makeSorcerer } from "./build";
+import { cont, makeFighter, makeSorcerer, grantLevels } from "./build";
 
 /* Slice 5's acceptance test, across a real boundary: a character grown at the
    table, whose levels survive a reload and travel through an export. */
@@ -7,6 +7,7 @@ import { cont, makeFighter, makeSorcerer } from "./build";
 
 test("a character grows one level at a time, and the hit points follow", async ({ page }) => {
   await makeFighter(page);
+  await grantLevels(page, "Bel Harrow");
   const hp = () => page.getByTestId("vitals");
   const max = Number((await hp().textContent())?.match(/\/\s*(\d+)/)?.[1] ?? 0);
   expect(max).toBeGreaterThan(0);
@@ -27,6 +28,7 @@ test("a character grows one level at a time, and the hit points follow", async (
 
 test("the fourth level asks for an improvement and will not proceed without it", async ({ page }) => {
   await makeFighter(page);
+  await grantLevels(page, "Bel Harrow", 3);
   for (let i = 0; i < 2; i++) {
     await page.getByRole("button", { name: "Level up" }).click();
     // Third level asks a fighter for its Martial Archetype.
@@ -55,6 +57,7 @@ test("the fourth level asks for an improvement and will not proceed without it",
 
 test("a sorcerer is asked about Metamagic when they reach it, and offered its own spells", async ({ page }) => {
   await makeSorcerer(page);
+  await grantLevels(page, "Sera", 3);
   await page.getByRole("button", { name: "Level up" }).click();
 
   /*
@@ -90,6 +93,7 @@ test("a sorcerer is asked about Metamagic when they reach it, and offered its ow
 
 test("a class will not have you without its minimums, and says so", async ({ page }) => {
   await makeSorcerer(page);
+  await grantLevels(page, "Sera");
   await page.getByRole("button", { name: "Level up" }).click();
 
   /* Without a dip on this screen a character could never multiclass after

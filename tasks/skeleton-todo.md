@@ -119,14 +119,14 @@ prepare, cast or spend a slot. A fourth sheet tab. `casting.ts` and
 **Verification:** domain tests per casting class; a journey that casts and rests
 **Scope:** L · **Deps:** Phase 9's Task 51 (class resources) for the slot pool
 
-## Task 62 · **Sonnet**: Experience, and who holds the key to a level
+## Task 62 · **Opus**: Experience, and who holds the key to a level — **done**
 **Description:** `encounter.ts` computes what a fight is worth; nothing receives
 it, and levelling is the player's own button. Arturo wants it at the DM's
 discretion — *"exp or milestone"*, so both.
 **Accepts:**
-- [ ] The DM awards experience, or grants a level outright
-- [ ] A player's level-up unlocks when the DM says, not before
-- [ ] Milestone needs no numbers at all
+- [x] The DM awards experience, or grants a level outright
+- [x] A player's level-up unlocks when the DM says, not before
+- [x] Milestone needs no numbers at all
 **Verification:** domain test on the award fold; a journey where a level unlocks
 **Scope:** M · **Deps:** none
 

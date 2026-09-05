@@ -157,3 +157,24 @@ export async function finish(page: Page, name = "Bel Harrow"): Promise<void> {
   await expect(page.getByTestId("review")).toBeVisible();
   await page.getByRole("button", { name: "Finish" }).click();
 }
+
+/**
+ * Levels handed over by the DM, then back into the character.
+ *
+ * Task 62 moved the key: "Level up" appears only when one is owed, because a
+ * player holding it meant the DM had no say in when the table levelled. These
+ * journeys are about the level-up FLOW, so they take the shortest honest route
+ * to being owed one — a milestone, which is what a DM does when they are not
+ * counting experience.
+ */
+export async function grantLevels(page: Page, name: string, n = 1): Promise<void> {
+  const bar = page.getByTestId("tabbar");
+  await bar.getByRole("button", { name: "Characters" }).click();
+  await page.getByTestId("seat").selectOption({ value: "dm" });
+  await bar.getByRole("button", { name: "Party" }).click();
+  for (let i = 0; i < n; i++) await page.getByTestId("award-milestone").click();
+  await bar.getByRole("button", { name: "Log" }).click();
+  await page.getByRole("button", { name: "Characters" }).click();
+  await page.getByTestId("seat").selectOption({ label: name });
+  await bar.getByRole("button", { name: "Sheet" }).click();
+}

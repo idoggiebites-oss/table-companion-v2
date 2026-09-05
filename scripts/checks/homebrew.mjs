@@ -32,8 +32,10 @@ const MAY_IMPORT = new Set([
      and it is the one screen whose subject IS homebrew. */
   "src/features/sheet/MakeItem.tsx",
   "src/features/sheet/MakeItem.test.tsx",
-  /* The single merge. */
-  "src/ui/App.tsx",
+  /* The single merge. It lived in `App.tsx` until the sheet's assembly was
+     split out at the component budget; it moved with the assembly rather than
+     multiplying, which is the thing this check exists to prevent. */
+  "src/features/sheet/SheetScreen.tsx",
 ]);
 
 const IMPORTS = /from\s+"[^"]*\/homebrew"/g;

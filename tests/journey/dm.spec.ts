@@ -889,3 +889,38 @@ test("the DM asks for a roll and it arrives over whatever the player is doing", 
   await expect(page.getByTestId("roll-request")).toContainText("Dexterity Saving Throw");
   await expect(page.getByTestId("roll-request")).not.toContainText("Check");
 });
+
+test("a level is the DM's to hand over and the player's to take", async ({ page }) => {
+  /*
+   * Levelling was the player's own button, pressable whenever — and
+   * `Hero.tsx` said the other half out loud: "no experience is tracked
+   * anywhere", while `encounter.ts` has computed what a fight is worth since
+   * Task 31 with nobody to give it to.
+   */
+  await hub(page);
+  await make(page, "Bree Thorn");
+
+  /* Nothing owed, so there is nothing to press. */
+  await bar(page).getByRole("button", { name: "Sheet" }).click();
+  await expect(page.getByRole("button", { name: /^Level up/ })).toHaveCount(0);
+
+  await bar(page).getByRole("button", { name: "Characters" }).click();
+  await page.getByTestId("seat").selectOption({ value: "dm" });
+  await bar(page).getByRole("button", { name: "Party" }).click();
+
+  /* Not enough for a level yet: 300 is the second. */
+  await page.getByTestId("award-xp").fill("200");
+  await page.getByTestId("award-send").click();
+  await expect(page.getByTestId("party")).toContainText("200 XP");
+  await expect(page.getByTestId("party")).not.toContainText("level waiting");
+
+  await page.getByTestId("award-xp").fill("150");
+  await page.getByTestId("award-send").click();
+  await expect(page.getByTestId("party")).toContainText("level waiting");
+
+  /* The DM never takes it — which subclass is Bree's to choose. */
+  await toHub(page);
+  await page.getByTestId("seat").selectOption({ label: "Bree Thorn" });
+  await bar(page).getByRole("button", { name: "Sheet" }).click();
+  await expect(page.getByRole("button", { name: /^Level up/ })).toBeVisible();
+});

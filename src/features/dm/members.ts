@@ -20,6 +20,8 @@ export type Member = {
   readonly name: string;
   /** "Half-Elf · Bard 3", as a person says it. */
   readonly kind: string;
+  /** Total across classes — what `levelsOwed` is measured against. */
+  readonly level: number;
   readonly hp: number;
   readonly max: number;
   readonly temp: number;
@@ -63,6 +65,7 @@ export function membersIn(events: readonly Event[]): readonly Member[] {
         id,
         name: build.identity["name"] ?? "Unnamed",
         kind: kindOf(build),
+        level: build.classes.reduce((n, c) => n + c.level, 0) || 1,
         hp: health.hp,
         max: health.max,
         temp: health.temp,

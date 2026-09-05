@@ -122,3 +122,28 @@
 .answers { display: flex; flex-wrap: wrap; gap: var(--s-3); margin: 0; align-items: baseline; }
 .askName { font-size: var(--t-micro); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-dim); }
 .answer { font-family: var(--font-mono); font-size: var(--t-note); color: var(--ink); }
+
+.award { display: flex; gap: var(--s-2); align-items: center; }
+
+.xp {
+  flex: 0 0 6rem; min-height: var(--tap); padding: 0 var(--s-3);
+  border: 1px solid var(--hairline); border-radius: var(--r-control);
+  background: var(--surface-1); font-family: var(--font-sans);
+  font-size: var(--t-sm); color: var(--ink);
+}
+
+.awardGo {
+  min-height: var(--tap); padding: 0 var(--s-5);
+  border: 1px solid var(--gold-edge); border-radius: var(--r-pill);
+  background: none; color: var(--gold-ink); font-family: var(--font-sans);
+  font-size: var(--t-micro); letter-spacing: 0.08em; text-transform: uppercase;
+  cursor: pointer;
+}
+
+.xpHeld { font-variant-numeric: tabular-nums; }
+
+.owed {
+  margin-inline-start: var(--s-3); padding: 0 var(--s-2);
+  border-radius: var(--r-pill); background: var(--gold-fill); color: var(--on-gold);
+  font-size: var(--t-micro); letter-spacing: 0.06em; text-transform: uppercase;
+}
