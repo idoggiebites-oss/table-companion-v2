@@ -1,0 +1,22 @@
+.wrap { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); padding: var(--s-2) 0; }
+.count { display: flex; align-items: center; gap: var(--s-1); }
+
+.step {
+  min-width: var(--tap); min-height: var(--tap);
+  border: 1px solid var(--hairline); border-radius: var(--r-control);
+  background: var(--surface-2); color: var(--ink); font-size: var(--t-sm); cursor: pointer;
+}
+
+.n { min-width: 1.6rem; text-align: center; font-variant-numeric: tabular-nums; }
+
+.to {
+  min-height: var(--tap); padding: 0 var(--s-4);
+  border: 1px solid var(--gold-edge); border-radius: var(--r-pill);
+  background: none; color: var(--gold-ink); font-family: var(--font-sans);
+  font-size: var(--t-note); cursor: pointer;
+}
+
+.never {
+  min-height: var(--tap); padding: 0 var(--s-3); border: 0; background: none;
+  color: var(--ink-dim); font-family: var(--font-sans); font-size: var(--t-aside); cursor: pointer;
+}

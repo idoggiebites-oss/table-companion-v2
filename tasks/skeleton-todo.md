@@ -94,15 +94,16 @@ a thing to answer, not a line in a log.
 **Accepts:** it interrupts, it says who asked and what for, it is dismissible,
 and dismissing is itself an answer the DM can see · **Scope:** M · **Deps:** 58
 
-## Task 60 · **Opus**: The purse, and moving a thing
+## Task 60 · **Opus**: The purse, and moving a thing — **mostly done**
 **Description:** One mechanism serves three of Arturo's lines — player-to-player
 sharing, the DM granting or taking, and buying. Phase 9's Task 53 is the same
 work; **this replaces it.** V1's rule on splitting travels: *"an even split
 only; the remainder stays in the stash."*
 **Accepts:**
-- [ ] A player gives another player some of a stack
-- [ ] The DM adds or removes items and currency from anyone
-- [ ] Coins are a purse, not words — `EncounterEditor`'s prose rewards can stay
+- [x] A player gives another player some of a stack
+- [x] The DM adds or removes items and currency from anyone
+- [x] Coins are a purse, not words — `EncounterEditor`'s prose rewards still are
+- [ ] *Left for the shop:* an even coin split, and buying against the purse
 **Verification:** domain tests on transfer and split; a two-device room journey
 **Scope:** L · **Deps:** 55
 

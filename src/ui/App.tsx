@@ -40,6 +40,7 @@ import { BLANK } from "../rules/5e/abilities";
 import { fightFrom, FIGHT, type Act } from "../features/dm/fight";
 import { onTurn, onAsked } from "../features/dm/nudge";
 import { progressFrom, levelsOwed, XP } from "../features/dm/xp";
+import { HOLD } from "../features/room/holdings";
 import { SeatControl } from "../features/room/SeatControl";
 import { PushToggle } from "../features/room/PushToggle";
 import { membersIn } from "../features/dm/members";
@@ -290,6 +291,8 @@ export function App({ dbName }: { dbName?: string }) {
     return (
       <Party
         onAward={(a) => record(XP, a as unknown as Record<string, unknown>)}
+        onHold={(a) => record(HOLD, a as unknown as Record<string, unknown>)}
+        catalogue={gear.items}
         onAsk={(a) => {
           const ask = { ...a, id: `ask${Date.now().toString(36)}` };
           record(ASK, { act: "ask", ask } as unknown as Record<string, unknown>);

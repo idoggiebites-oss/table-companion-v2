@@ -34,6 +34,34 @@ export function toCopper(amount: number, unit: Coin): number {
  * "15 gp" and 1550 reads "15.5 gp". Rounds toward the shown unit rather than
  * inventing precision.
  */
+/** Units a purse is SHOWN in, largest first. Not the units it accepts. */
+const SHOWN: readonly Coin[] = ["gp", "sp", "cp"];
+
+/**
+ * A purse, broken into the coins somebody would actually hand over.
+ *
+ * Electrum and platinum convert on the way in and are never shown: neither is
+ * on a price list anyone uses, and a purse that turns the 10 gp you were just
+ * handed into "1 pp" starts a rules argument in the middle of a shop.
+ */
+export function splitCoins(copper: number): Partial<Record<Coin, number>> {
+  let left = Math.max(0, Math.trunc(copper));
+  const out: Partial<Record<Coin, number>> = {};
+  for (const coin of SHOWN) {
+    const n = Math.floor(left / COPPER_PER[coin]);
+    if (n > 0) out[coin] = n;
+    left -= n * COPPER_PER[coin];
+  }
+  return out;
+}
+
+/** "15 gp", "1 gp 5 sp", "0 cp" — never an empty string. */
+export function formatCoins(copper: number): string {
+  if (copper <= 0) return "0 cp";
+  const parts = splitCoins(copper);
+  return SHOWN.filter((c) => parts[c] !== undefined).map((c) => `${String(parts[c])} ${c}`).join(" ");
+}
+
 export function formatPrice(copper: number): string {
   if (copper <= 0) return "—";
   if (copper >= COPPER_PER.gp) {

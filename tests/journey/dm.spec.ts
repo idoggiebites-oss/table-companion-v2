@@ -924,3 +924,48 @@ test("a level is the DM's to hand over and the player's to take", async ({ page 
   await bar(page).getByRole("button", { name: "Sheet" }).click();
   await expect(page.getByRole("button", { name: /^Level up/ })).toBeVisible();
 });
+
+test("things and coins change hands", async ({ page }) => {
+  /*
+   * One mechanism, three of Arturo's lines: a player giving another player
+   * half their potions, a DM handing out a reward or taking a ring back, and
+   * the buying that the shop will do on top of it.
+   */
+  await hub(page);
+  await make(page, "Bree Thorn");
+  await toHub(page);
+  await make(page, "Brom Stonebeard");
+
+  await toHub(page);
+  await page.getByTestId("seat").selectOption({ value: "dm" });
+  await bar(page).getByRole("button", { name: "Party" }).click();
+
+  /* The DM hands Bree coins and a thing. */
+  const bree = page.getByTestId("party-row-wrap").filter({ hasText: "Bree Thorn" });
+  await bree.getByTestId("grant-open").click();
+  await bree.getByTestId("grant-coins").fill("25 gp");
+  await bree.getByTestId("grant-item").fill("2 potions of healing");
+  await bree.getByTestId("grant-send").click();
+  await expect(bree).toContainText("25 gp");
+
+  /* Bree has them, and can hand one on. */
+  await toHub(page);
+  await page.getByTestId("seat").selectOption({ label: "Bree Thorn" });
+  await bar(page).getByRole("button", { name: "Sheet" }).click();
+  await page.getByRole("tab", { name: "Inventory" }).click();
+  await expect(page.getByTestId("purse")).toHaveText("25 gp");
+
+  const potion = page.getByTestId("give-open").first();
+  await expect(potion).toBeVisible();
+  await potion.click();
+  await page.getByTestId("give-to").first().click();
+
+  /* And a minus takes it back — the same gesture with the sign flipped. */
+  await toHub(page);
+  await page.getByTestId("seat").selectOption({ value: "dm" });
+  await bar(page).getByRole("button", { name: "Party" }).click();
+  await bree.getByTestId("grant-open").click();
+  await bree.getByTestId("grant-coins").fill("-25 gp");
+  await bree.getByTestId("grant-send").click();
+  await expect(bree).not.toContainText("25 gp");
+});

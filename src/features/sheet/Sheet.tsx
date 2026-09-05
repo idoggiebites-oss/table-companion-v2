@@ -2,6 +2,7 @@ import { useState, type ReactNode } from "react";
 import { Shell } from "../../ui/Shell";
 import { Button, ButtonRow } from "../../ui/Button";
 import { Drawer } from "../../ui/Drawer";
+import type { Stack } from "../../rules/5e/items";
 import { Pad } from "../../ui/Pad";
 import { Crest } from "../../ui/Icon";
 import { Segmented } from "../../ui/step/Controls";
@@ -32,6 +33,7 @@ type Asking = { kind: "damage" } | { kind: "heal" } | { kind: "hitdie"; die: num
  */
 export function Sheet({
   build, vitals, name, onAct, onBack, onLevelUp, owed = 0, nav, features = [],
+  purse = 0, held, party = [], onGive,
   catalogue = [], catalogueLoading = false, made = [], onMake, onForgetMade, onChoose,
 }: {
   build: Build;
@@ -55,6 +57,12 @@ export function Sheet({
   onLevelUp?: () => void;
   /** Levels the DM has made available — see `features/dm/xp.ts`. */
   owed?: number;
+  /** Copper held — see `features/room/holdings.ts`. */
+  purse?: number;
+  held?: (base: readonly Stack[]) => readonly Stack[];
+  /** Everyone a thing can be handed to. Never includes this character. */
+  party?: readonly { readonly id: string; readonly name: string }[];
+  onGive?: (to: string, stack: Stack, qty: number) => void;
 }) {
   const [tab, setTab] = useState<Tab>("overview");
   const [conditions, setConditions] = useState(false);
@@ -152,6 +160,8 @@ export function Sheet({
       )}
       {tab === "inventory" && (
         <Inventory build={build} catalogue={catalogue} loading={catalogueLoading}
+                   purse={purse} {...(held === undefined ? {} : { held })}
+                   party={party} {...(onGive === undefined ? {} : { onGive })}
                    made={made} {...(onMake === undefined ? {} : { onMake })}
                    {...(onForgetMade === undefined ? {} : { onForgetMade })}
                    {...(onChoose === undefined ? {} : { onAct: onChoose })} />

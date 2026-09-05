@@ -3,7 +3,7 @@ import { Icon, type IconName } from "../../ui/Icon";
 import { acFor } from "../../rules/5e/defence";
 import { displacedBy } from "../../rules/5e/slots";
 import { Figure, detailOf } from "./Figure";
-import { carryLimit, weightOf, type Item } from "../../rules/5e/items";
+import { carryLimit, weightOf, type Item, type Stack } from "../../rules/5e/items";
 import { wornFrom } from "../../rules/5e/armour";
 import type { Build } from "../creation/model";
 import { scoresOf } from "../creation/scores";
@@ -11,6 +11,8 @@ import type { Choice } from "../creation/choices";
 import { stacksOf, equippedOf } from "./carried";
 import { Pack } from "./Pack";
 import { MakeItem } from "./MakeItem";
+import { Give } from "./Give";
+import { formatCoins } from "../../rules/5e/money";
 import s from "./Inventory.module.css";
 
 const TABS = [
@@ -32,7 +34,8 @@ const TABS = [
  * attack derivation yet, and a fabricated `+7` beside a real `1d8` is the one
  * thing worse than a missing column.
  */
-export function Inventory({ build, catalogue, made = [], loading, onAct, onMake, onForgetMade }: {
+export function Inventory({ build, catalogue, made = [], loading, onAct, onMake, onForgetMade,
+  purse = 0, held, party = [], onGive }: {
   build: Build;
   catalogue: readonly Item[];
   /**
@@ -48,11 +51,21 @@ export function Inventory({ build, catalogue, made = [], loading, onAct, onMake,
   onAct?: (c: Choice) => void;
   onMake?: (i: Item) => void;
   onForgetMade?: (id: string) => void;
+  /** Copper. See `features/room/holdings.ts`. */
+  purse?: number;
+  /** What is actually carried once things have changed hands — creation's own
+      answer when nothing has. */
+  held?: (base: readonly Stack[]) => readonly Stack[];
+  /** Everyone a thing can be handed to. */
+  party?: readonly { readonly id: string; readonly name: string }[];
+  onGive?: (to: string, stack: Stack, qty: number) => void;
 }) {
   const [tab, setTab] = useState<string>("weapons");
   const [making, setMaking] = useState(false);
   const of = (id: string) => catalogue.find((i) => i.id === id);
-  const stacks = stacksOf(build, catalogue);
+  /* What creation gave them, plus everything that has changed hands since. */
+  const base = stacksOf(build, catalogue);
+  const stacks = held === undefined ? base : [...held(base)];
   /* Seeded from what creation decided when nobody has said otherwise —
      otherwise the first thing put on rebuilds `worn` from a set that never
      held the armour, and the character loses it. */
@@ -85,12 +98,17 @@ export function Inventory({ build, catalogue, made = [], loading, onAct, onMake,
       <div className={s.carry}>
         <span className={s.carryHead}>
           <span className={s.label}>Carry weight</span>
+          {/* Only where there is one: a table that has never handed out a coin
+              is not counting them, and a "0 cp" nobody earned is a number
+              somebody would try to read. */}
+          {purse > 0 && <span className={s.label}>Purse</span>}
           <span className={s.label}>Armor class</span>
         </span>
         <span className={s.carryBody}>
           <span className={s.weight}>
             {carried.toFixed(1)}<span className={s.of}> / {limit} lb</span>
           </span>
+          {purse > 0 && <span className={s.purse} data-testid="purse">{formatCoins(purse)}</span>}
           <span className={s.shield}>{ac.value}</span>
         </span>
         <span className={s.track}>
@@ -114,7 +132,8 @@ export function Inventory({ build, catalogue, made = [], loading, onAct, onMake,
 
       <Figure equipped={equipped} onTake={(i) => wear(i, false)} />
 
-      <Pack stacks={stacks} catalogue={catalogue} equipped={equippedIds} onWear={wear} />
+      <Pack stacks={stacks} catalogue={catalogue} equipped={equippedIds} onWear={wear}
+            party={party} {...(onGive === undefined ? {} : { onGive })} />
 
       {onMake !== undefined && (
         <button type="button" className={s.make} onClick={() => setMaking(true)}>

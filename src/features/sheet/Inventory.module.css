@@ -99,3 +99,13 @@
   color: var(--ink-dim); background: none;
   border: 1px solid var(--hairline); border-radius: var(--r-control);
 }
+
+/* Beside the weight and the armour class, because all three are "what am I
+   carrying" read at a glance. Gold, because a purse is the one number on this
+   screen that goes up as well as down. */
+.purse {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--t-sm);
+  color: var(--gold-ink);
+}

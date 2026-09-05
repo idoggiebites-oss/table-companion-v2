@@ -3,6 +3,7 @@ import { Icon, type IconName } from "../../ui/Icon";
 import { isArmour, isShield, isWeapon, type Item, type Stack } from "../../rules/5e/items";
 import { inBucket } from "./carried";
 import { detailOf } from "./Figure";
+import { Give } from "./Give";
 import s from "./Pack.module.css";
 
 const TABS = [
@@ -19,13 +20,17 @@ const TABS = [
  * derivation until the fight, and a fabricated `+7` beside a real `1d8` is the
  * one thing worse than a missing column.
  */
-export function Pack({ stacks, catalogue, equipped, onWear }: {
+export function Pack({ stacks, catalogue, equipped, onWear, party = [], onGive }: {
   stacks: readonly Stack[];
   catalogue: readonly Item[];
   equipped: readonly string[];
   onWear: (i: Item, on: boolean) => void;
+  /** Everyone a thing can be handed to — see `Give`. */
+  party?: readonly { readonly id: string; readonly name: string }[];
+  onGive?: (to: string, stack: Stack, qty: number) => void;
 }) {
   const [tab, setTab] = useState<string>("weapons");
+  const [giving, setGiving] = useState<string | null>(null);
   const of = (id: string) => catalogue.find((i) => i.id === id);
   const rows = inBucket(stacks, catalogue, tab);
 
@@ -67,6 +72,18 @@ export function Pack({ stacks, catalogue, equipped, onWear }: {
                           onClick={() => onWear(item, !on)}>
                     {on ? "Equipped" : "Equip"}
                   </button>
+                )}
+                {/* Only where there is somebody to hand it to. */}
+                {onGive !== undefined && party.length > 0 && (
+                  <button type="button" className={s.give} data-testid="give-open"
+                          aria-label={`Give ${st.name} to somebody`}
+                          onClick={() => setGiving(giving === st.itemId ? null : st.itemId)}>
+                    Give
+                  </button>
+                )}
+                {giving === st.itemId && onGive !== undefined && (
+                  <Give stack={st} party={party} onClose={() => setGiving(null)}
+                        onGive={(to, qty) => onGive(to, st, qty)} />
                 )}
               </span>
             );

@@ -2,6 +2,8 @@ import { Sheet } from "./Sheet";
 import { homebrewFrom, HOMEBREW } from "./homebrew";
 import { vitalsFrom, VITAL, type Vital } from "./model";
 import { progressFrom, levelsOwed } from "../dm/xp";
+import { holdingsFrom, purseOf, heldBy, HOLD } from "../room/holdings";
+import { membersIn } from "../dm/members";
 import { CHOICE } from "../creation/model";
 import type { Build } from "../creation/model";
 import type { Choice } from "../creation/choices";
@@ -35,6 +37,7 @@ export function SheetScreen({
      `features/sheet/homebrew.ts`. The compendium comes FIRST so an exact
      catalogue name wins a tie. */
   const made = homebrewFrom(events);
+  const held = holdingsFrom(events);
   return (
     <Sheet
       build={build}
@@ -53,6 +56,13 @@ export function SheetScreen({
       /* A level is the DM's to hand over and the player's to take. */
       owed={levelsOwed(progressFrom(events), character, build.level)}
       onLevelUp={onLevelUp}
+      purse={purseOf(held, character)}
+      held={(base) => heldBy(held, character, base)}
+      /* Never themselves: handing something to yourself is not a thing. */
+      party={membersIn(events).filter((m) => m.id !== character).map((m) => ({ id: m.id, name: m.name }))}
+      onGive={(to, stack, qty) => record(HOLD, {
+        act: "move", from: character, to, itemId: stack.itemId, name: stack.name, qty,
+      })}
     />
   );
 }

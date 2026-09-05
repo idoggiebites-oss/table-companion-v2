@@ -3,6 +3,10 @@ import { Shell } from "../../ui/Shell";
 import { AskFor } from "./AskFor";
 import { askedFrom, addressees, type Ask } from "../room/ask";
 import { progressFrom, levelsOwed, xpOf, type XpAct } from "./xp";
+import { holdingsFrom, purseOf, type HoldAct } from "../room/holdings";
+import { formatCoins, parseCoins } from "../../rules/5e/money";
+import { Grant } from "./Grant";
+import type { Item } from "../../rules/5e/items";
 import { VAGUE } from "../../rules/5e/vitals";
 import { membersIn, type Member } from "./members";
 import type { Event } from "../../core/types";
@@ -23,7 +27,7 @@ import s from "./Party.module.css";
  * columns as the width allows and collapses to one on a phone, because the DM
  * side has to work on both without being two designs.
  */
-export function Party({ events, nav, who, onOpen, onHit, onAsk, onAward }: {
+export function Party({ events, nav, who, onOpen, onHit, onAsk, onAward, onHold, catalogue = [] }: {
   events: readonly Event[];
   nav?: ReactNode;
   /**
@@ -51,11 +55,16 @@ export function Party({ events, nav, who, onOpen, onHit, onAsk, onAward }: {
   onAsk?: (ask: Omit<Ask, "id">) => void;
   /** Experience, or a level outright. See `features/dm/xp.ts`. */
   onAward?: (act: XpAct) => void;
+  /** Coins and things, handed out or taken back. See `room/holdings.ts`. */
+  onHold?: (act: HoldAct) => void;
+  /** The compendium's items, so a typed "potion of healing" finds a real one. */
+  catalogue?: readonly Item[];
 }) {
   const party = membersIn(events);
   const [asking, setAsking] = useState(false);
   const asked = askedFrom(events);
   const progress = progressFrom(events);
+  const holdings = holdingsFrom(events);
   const ids = party.map((m) => m.id);
   return (
     <Shell title="The party" below={nav} trail={who} wide>
@@ -69,6 +78,8 @@ export function Party({ events, nav, who, onOpen, onHit, onAsk, onAward }: {
           {party.map((m) => (
             <Row key={m.id} m={m} xp={xpOf(progress, m.id)}
                  owed={levelsOwed(progress, m.id, m.level)}
+                 purse={purseOf(holdings, m.id)}
+                 {...(onHold === undefined ? {} : { onHold })} catalogue={catalogue}
                  {...(onHit === undefined ? {} : { onHit })}
                  {...(onOpen === undefined ? {} : { onOpen })} />
           ))}
@@ -137,11 +148,15 @@ export function Party({ events, nav, who, onOpen, onHit, onAsk, onAward }: {
   );
 }
 
-function Row({ m, xp, owed, onOpen, onHit }: {
-  m: Member; xp: number; owed: number;
+function Row({ m, xp, owed, purse, catalogue = [], onOpen, onHit, onHold }: {
+  m: Member; xp: number; owed: number; purse: number;
+  /** For reading "2 potions of healing" against real items — see `Grant`. */
+  catalogue?: readonly Item[];
   onOpen?: (id: string) => void;
   onHit?: (character: string, amount: number) => void;
+  onHold?: (act: HoldAct) => void;
 }) {
+  const [handing, setHanding] = useState(false);
   /* A bar AND the number. The vague word is what a PLAYER gets about a
      creature; the DM looking after this party gets the real figure. */
   const part = m.max > 0 ? Math.max(0, Math.min(1, m.hp / m.max)) : 0;
@@ -159,6 +174,7 @@ function Row({ m, xp, owed, onOpen, onHit }: {
             and a number nobody is counting is worse than no number. */}
         {xp > 0 && <span className={s.xpHeld}> · {xp.toLocaleString()} XP</span>}
         {owed > 0 && <span className={s.owed}>level waiting</span>}
+        {purse > 0 && <span className={s.xpHeld}> · {formatCoins(purse)}</span>}
       </span>
 
       <span className={s.hp}>
@@ -200,6 +216,15 @@ function Row({ m, xp, owed, onOpen, onHit }: {
                placeholder="±" aria-label={`Damage ${m.name}, or heal with a minus`} />
         <button type="submit" className={s.apply} aria-label={`Apply to ${m.name}`}>Hit</button>
       </form>
+    )}
+    {onHold !== undefined && (
+      handing
+        ? <Grant who={m.id} catalogue={catalogue} onHold={onHold} onClose={() => setHanding(false)} />
+        : (
+          <button type="button" className={s.hand} data-testid="grant-open"
+                  aria-label={`Hand something to ${m.name}`}
+                  onClick={() => setHanding(true)}>Hand over</button>
+        )
     )}
     </div>
   );

@@ -100,3 +100,11 @@
 
 .note { font-size: var(--t-sm); color: var(--ink-dim); padding: var(--s-3); }
 
+
+.give {
+  min-height: var(--tap); padding: 0 var(--s-3);
+  border: 1px solid var(--hairline); border-radius: var(--r-pill);
+  background: none; color: var(--ink-dim); font-family: var(--font-sans);
+  font-size: var(--t-micro); letter-spacing: 0.06em; text-transform: uppercase;
+  cursor: pointer;
+}
