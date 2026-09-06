@@ -279,6 +279,29 @@ export async function guard(request: Request, passphrase: string | undefined): P
    */
   if (url.pathname.startsWith("/gate/")) return {};
 
+  /*
+   * The service worker, and the two files it needs to exist.
+   *
+   * This one is not a convenience — without it the gate can strand a browser
+   * on an OLD build forever, and it did. V1 shipped a service worker at this
+   * same origin and scope. A worker's precached shell answers navigations from
+   * cache without consulting the network, so that browser never reaches the
+   * gate, never gets a cookie, and therefore cannot fetch `/sw.js` to learn
+   * that a newer worker exists — the update it needs is behind the door it
+   * cannot open. Arturo hit exactly this: "when I open the link on one of my
+   * browsers it still opens V1 even with the current link."
+   *
+   * Letting these through breaks the deadlock: the browser fetches the new
+   * worker, which calls `skipWaiting` and `clientsClaim`, takes over, and the
+   * next navigation reaches the gate properly.
+   *
+   * What it costs is the list of filenames the app precaches. No campaign
+   * data, no compendium, no room — those are all still behind the cookie, and
+   * an unauthenticated install simply fails when its precache fetches 401.
+   * The same trade as the artwork above, and for a better reason.
+   */
+  if (SERVICE_WORKER.test(url.pathname)) return {};
+
   // A room request gets a status, not a login page: it is a WebSocket
   // upgrade (or, off that path, a plain-text error from Room.ts itself), and
   // neither one ever reads an HTML body — see the file header for why this
@@ -288,6 +311,9 @@ export async function guard(request: Request, passphrase: string | undefined): P
   }
   return { response: new Response(PAGE(false), { status: 401, headers: html() }) };
 }
+
+/** `sw.js`, its Workbox chunk, the registration shim and the push handlers. */
+const SERVICE_WORKER = /^\/(sw|registerSW|push-sw|workbox-[a-z0-9]+)\.js$/;
 
 const html = () => ({
   "content-type": "text/html; charset=utf-8",

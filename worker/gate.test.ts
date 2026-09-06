@@ -104,6 +104,31 @@ describe("the gate, when a passphrase is configured", () => {
     }
   });
 
+  it("lets the service worker through, so a stale one can be replaced", async () => {
+    /*
+     * Not a convenience. V1 shipped a service worker at this same origin and
+     * scope, and a worker's precached shell answers navigations from cache
+     * without consulting the network — so that browser never reaches the gate,
+     * never gets a cookie, and cannot fetch `/sw.js` to learn a newer worker
+     * exists. The update it needs is behind the door it cannot open, and it
+     * stays on the old build forever. Arturo hit it: "it still opens V1 even
+     * with the current link."
+     */
+    for (const path of ["/sw.js", "/registerSW.js", "/push-sw.js", "/workbox-6c06881d.js"]) {
+      const open = await guard(new Request(`https://x${path}`), "friend");
+      expect(open.response, path).toBeUndefined();
+    }
+  });
+
+  it("opens for the worker's own name and nothing shaped like it", async () => {
+    /* The hole is a list of filenames, not a suffix: `/assets/sw.js` and
+       `/sw.js.map` are not the service worker and do not get through. */
+    for (const path of ["/assets/sw.js", "/sw.js.map", "/swat.js", "/workbox-.js", "/sw.json"]) {
+      const shut = await guard(new Request(`https://x${path}`), "friend");
+      expect(shut.response?.status, path).toBe(401);
+    }
+  });
+
   it("cannot be walked out of with a traversal", async () => {
     /* `new URL` normalises the path before we see it, so `..` never survives
        into the prefix test — asserted rather than assumed. */
