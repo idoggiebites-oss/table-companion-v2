@@ -107,16 +107,19 @@ only; the remainder stays in the stash."*
 **Verification:** domain tests on transfer and split; a two-device room journey
 **Scope:** L · **Deps:** 55
 
-## Task 61 · **Opus**: Spells on the sheet
+## Task 61 · **Opus**: Spells on the sheet — **mostly done**
 **Description:** The largest hole in the player experience. Spells run all
 through creation and stop there — a wizard is built with them and cannot
 prepare, cast or spend a slot. A fourth sheet tab. `casting.ts` and
 `creation/spells.ts` hold the rules already, so this is a reading, the way Task
 46 was.
 **Accepts:**
-- [ ] Prepared versus known, per the class's own rule
-- [ ] Casting spends the right slot, and a rest restores it
-- [ ] A pact slot comes back on a short rest
+- [x] Casting spends the right slot, and a rest restores it
+- [x] A pact slot comes back on a short rest
+- [ ] **Prepared versus known.** `casting.ts` holds the rule (`prepares`,
+      `preparedCount`) and creation asks a cleric for nothing, on purpose — so
+      preparing needs a spell-choosing flow that does not exist yet. The tab
+      says so and points at Book rather than drawing a box that never fills.
 **Verification:** domain tests per casting class; a journey that casts and rests
 **Scope:** L · **Deps:** Phase 9's Task 51 (class resources) for the slot pool
 

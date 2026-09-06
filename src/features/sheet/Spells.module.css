@@ -1,0 +1,38 @@
+.wrap { display: flex; flex-direction: column; gap: var(--s-5); }
+.slots { display: flex; flex-direction: column; gap: var(--s-3); }
+.row { display: flex; align-items: center; gap: var(--s-3); }
+
+.level {
+  min-width: 1.4rem; text-align: center;
+  font-family: var(--font-display); font-size: var(--t-card); color: var(--ink);
+}
+
+.pips { display: flex; flex-wrap: wrap; gap: var(--s-2); flex: 1; }
+
+/* A pip is a tap: the number is small, it changes constantly, and a player
+   mid-turn wants to spend one rather than read about one. */
+.pip {
+  width: var(--tap); height: var(--tap);
+  border: 2px solid var(--gold-edge); border-radius: var(--r-pill);
+  background: var(--gold-wash); cursor: pointer;
+}
+
+/* Spent reads as spent rather than as absent — a pip that vanished leaves
+   somebody counting what used to be there. */
+.spent { border-color: var(--hairline); background: none; cursor: default; }
+
+.left { font-size: var(--t-micro); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-dim); }
+.pactRow { padding-top: var(--s-3); border-top: 1px solid var(--hairline); }
+.save { margin: 0; font-size: var(--t-note); color: var(--ink-dim); }
+.list { display: flex; flex-direction: column; gap: var(--s-2); margin: 0; padding: 0; list-style: none; }
+
+.spell {
+  display: flex; align-items: center; gap: var(--s-3);
+  min-height: var(--tap); padding: 0 var(--s-4);
+  border: var(--panel-border); border-radius: var(--r-control); background: var(--surface-1);
+}
+
+.mark { color: var(--gold-ink); }
+.spellName { flex: 1; font-size: var(--t-sm); }
+.spellAt { font-size: var(--t-micro); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-dim); }
+.none { margin: 0; color: var(--ink-dim); font-size: var(--t-note); line-height: 1.5; }

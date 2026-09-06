@@ -1,7 +1,8 @@
 import { Sheet } from "./Sheet";
 import { homebrewFrom, HOMEBREW } from "./homebrew";
 import { vitalsFrom, VITAL, type Vital } from "./model";
-import { progressFrom, levelsOwed } from "../dm/xp";
+import { progressFrom, levelsOwed, xpOf } from "../dm/xp";
+import { xpForLevel } from "../../rules/5e/progression";
 import { holdingsFrom, purseOf, heldBy, HOLD } from "../room/holdings";
 import { membersIn } from "../dm/members";
 import { CHOICE } from "../creation/model";
@@ -57,6 +58,9 @@ export function SheetScreen({
       owed={levelsOwed(progressFrom(events), character, build.level)}
       onLevelUp={onLevelUp}
       purse={purseOf(held, character)}
+      /* Seeded from the level they hold, so it reads against the next
+         threshold rather than from zero — see `levelsOwed`. */
+      xp={(xpForLevel(build.level) ?? 0) + xpOf(progressFrom(events), character)}
       held={(base) => heldBy(held, character, base)}
       /* Never themselves: handing something to yourself is not a thing. */
       party={membersIn(events).filter((m) => m.id !== character).map((m) => ({ id: m.id, name: m.name }))}

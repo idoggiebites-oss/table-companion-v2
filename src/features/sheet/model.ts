@@ -21,6 +21,16 @@ export type Vitals = {
   /** Hit dice already spent, by die size. */
   readonly spent: Readonly<Record<number, number>>;
   /**
+   * Spell slots already spent, by spell level.
+   *
+   * Held apart from the pact below because they are not the same pool and do
+   * not come back at the same time — V1's third finding, and the one that
+   * makes a warlock a warlock: pact slots return on a SHORT rest.
+   */
+  readonly slots: Readonly<Record<number, number>>;
+  /** Pact slots spent. A warlock's, and nobody else's. */
+  readonly pact: number;
+  /**
    * What this character swings, keyed by name.
    *
    * Stored as what it IS — ability, proficiency, dice — never as the final
@@ -37,6 +47,14 @@ export type Vital =
   | { readonly act: "temp"; readonly n: number }
   | { readonly act: "hitdie"; readonly die: number; readonly rolled: number }
   | { readonly act: "rest"; readonly length: "short" | "long" }
+  /**
+   * A spell cast, at the level the slot was spent at.
+   *
+   * The LEVEL rather than the spell: upcasting is the whole reason a slot and
+   * a spell are different things, and a fireball thrown from a fifth-level
+   * slot spends a fifth-level slot.
+   */
+  | { readonly act: "cast"; readonly level: number; readonly pact?: boolean }
   | { readonly act: "condition"; readonly id: string; readonly on: boolean }
   | { readonly act: "death"; readonly result: "success" | "failure" | "clear" }
   | { readonly act: "exhaustion"; readonly n: number }
@@ -58,6 +76,8 @@ export function startingVitals(build: Build): Vitals {
     inspiration: false,
     concentrating: null,
     spent: {},
+    slots: {},
+    pact: 0,
   };
 }
 
@@ -123,8 +143,14 @@ export function reduceVitals(v: Vitals, e: Event, build: Build): Vitals {
       const spent = { ...v.spent, [a.die]: (v.spent[a.die] ?? 0) + 1 };
       return { ...v, spent, health: applyHealing(v.health, a.rolled) };
     }
+    case "cast":
+      return a.pact === true
+        ? { ...v, pact: v.pact + 1 }
+        : { ...v, slots: { ...v.slots, [a.level]: (v.slots[a.level] ?? 0) + 1 } };
     case "rest": {
-      if (a.length === "short") return v;
+      /* A short rest gives a warlock everything back and everybody else
+         nothing — the one asymmetry that makes pact magic worth having. */
+      if (a.length === "short") return v.pact === 0 ? v : { ...v, pact: 0 };
       // A long rest: all hit points, half the hit dice back, one exhaustion
       // shed, and death saves forgotten.
       return {
@@ -133,6 +159,10 @@ export function reduceVitals(v: Vitals, e: Event, build: Build): Vitals {
         deaths: EMPTY_DEATHS,
         exhaustion: clampExhaustion(v.exhaustion - 1),
         spent: afterLongRest(v.spent, build),
+        /* Every slot, and the pact with them. Unlike hit dice, which come back
+           by halves, spell slots are all or nothing. */
+        slots: {},
+        pact: 0,
       };
     }
     case "condition":

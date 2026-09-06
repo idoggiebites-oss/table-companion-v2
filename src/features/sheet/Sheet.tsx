@@ -3,6 +3,9 @@ import { Shell } from "../../ui/Shell";
 import { Button, ButtonRow } from "../../ui/Button";
 import { Drawer } from "../../ui/Drawer";
 import type { Stack } from "../../rules/5e/items";
+import type { Fetcher } from "../../content/load";
+import { Spells } from "./Spells";
+import { slotsOf, pactOf } from "../creation/scores";
 import { Pad } from "../../ui/Pad";
 import { Crest } from "../../ui/Icon";
 import { Segmented } from "../../ui/step/Controls";
@@ -23,7 +26,7 @@ import type { Build } from "../creation/model";
 import { scoresOf } from "../creation/scores";
 import s from "./Sheet.module.css";
 
-type Tab = "overview" | "combat" | "inventory" | "notes";
+type Tab = "overview" | "combat" | "spells" | "inventory" | "notes";
 type Asking = { kind: "damage" } | { kind: "heal" } | { kind: "hitdie"; die: number } | null;
 
 /**
@@ -33,7 +36,7 @@ type Asking = { kind: "damage" } | { kind: "heal" } | { kind: "hitdie"; die: num
  */
 export function Sheet({
   build, vitals, name, onAct, onBack, onLevelUp, owed = 0, nav, features = [],
-  purse = 0, held, party = [], onGive,
+  purse = 0, xp = 0, held, party = [], onGive, fetcher,
   catalogue = [], catalogueLoading = false, made = [], onMake, onForgetMade, onChoose,
 }: {
   build: Build;
@@ -59,12 +62,19 @@ export function Sheet({
   owed?: number;
   /** Copper held — see `features/room/holdings.ts`. */
   purse?: number;
+  /** Experience held, for the header. */
+  xp?: number;
   held?: (base: readonly Stack[]) => readonly Stack[];
   /** Everyone a thing can be handed to. Never includes this character. */
   party?: readonly { readonly id: string; readonly name: string }[];
   onGive?: (to: string, stack: Stack, qty: number) => void;
+  /** Injected in tests; the Spells tab pulls the index itself otherwise. */
+  fetcher?: Fetcher;
 }) {
   const [tab, setTab] = useState<Tab>("overview");
+  /* Slots, a pact, or neither — the one question that decides whether this
+     character has a Spells tab at all. */
+  const casts = slotsOf(build).length > 0 || pactOf(build) !== null;
   const [conditions, setConditions] = useState(false);
   const [allSkills, setAllSkills] = useState(false);
   const [asking, setAsking] = useState<Asking>(null);
@@ -100,7 +110,7 @@ export function Sheet({
         </ButtonRow>
       }
     >
-      <Identity build={build} />
+      <Identity build={build} xp={xp} />
 
       {waiting.length > 0 && (
         <div className={s.waiting} data-testid="waiting">
@@ -150,6 +160,10 @@ export function Sheet({
         options={[
           { id: "overview" as const, label: "Overview" },
           { id: "combat" as const, label: "Combat" },
+          /* Only for somebody who casts. `tabs.ts`'s rule, one level in: a tab
+             with nothing on it is a promise the app cannot keep, and a fighter
+             has nothing to put on this one. */
+          ...(casts ? [{ id: "spells" as const, label: "Spells" }] : []),
           { id: "inventory" as const, label: "Inventory" },
           { id: "notes" as const, label: "Notes" },
         ]}
@@ -165,6 +179,9 @@ export function Sheet({
                    made={made} {...(onMake === undefined ? {} : { onMake })}
                    {...(onForgetMade === undefined ? {} : { onForgetMade })}
                    {...(onChoose === undefined ? {} : { onAct: onChoose })} />
+      )}
+      {tab === "spells" && (
+        <Spells build={build} vitals={vitals} onAct={onAct} {...(fetcher === undefined ? {} : { fetcher })} />
       )}
       {tab === "combat" && (
         <Attacks attacks={vitals.attacks} scores={scoresOf(build)} level={build.level}

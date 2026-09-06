@@ -102,3 +102,36 @@ test("a class will not have you without its minimums, and says so", async ({ pag
   await expect(page.getByTestId("blocked")).toContainText("Intelligence 13");
   await expect(page.getByRole("button", { name: "Take the level" })).toBeDisabled();
 });
+
+test("a caster can see their slots and spend one", async ({ page }) => {
+  /*
+   * The largest hole in the player experience, and the quietest: spells ran
+   * all the way through creation — `casting.ts` knows what a sorcerer knows
+   * and what a wizard writes down — and then stopped. The sheet had three tabs
+   * and none of them was this one, so a caster could be BUILT with spells and
+   * could not cast, prepare, or spend a slot.
+   */
+  await makeSorcerer(page);
+  await page.getByRole("tab", { name: "Spells" }).click();
+
+  const first = page.getByTestId("slot-1");
+  await expect(first.first()).toBeVisible();
+  const before = await first.count();
+  expect(before).toBeGreaterThan(0);
+
+  /* Spending one leaves it there, spent — not gone. */
+  await first.first().click();
+  await expect(first).toHaveCount(before);
+  await expect(first.first()).toHaveAttribute("aria-pressed", "true");
+
+  /* And a long rest gives every one of them back. */
+  await page.getByRole("button", { name: /Long rest/i }).click();
+  await expect(first.first()).toHaveAttribute("aria-pressed", "false");
+});
+
+test("a fighter is offered no spells at all", async ({ page }) => {
+  /* `tabs.ts`'s rule, one level in: a tab with nothing on it is a promise the
+     app cannot keep, and a fighter has nothing to put on this one. */
+  await makeFighter(page);
+  await expect(page.getByRole("tab", { name: "Spells" })).toHaveCount(0);
+});

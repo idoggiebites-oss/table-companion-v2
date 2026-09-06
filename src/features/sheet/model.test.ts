@@ -223,3 +223,53 @@ describe("what a character swings", () => {
     expect(JSON.stringify(t.now().attacks[0])).not.toContain("toHit");
   });
 });
+
+describe("spell slots", () => {
+  const wizard = () => build({ classes: [{ id: "wizard", level: 5, subclass: null }], level: 5 });
+  const warlock = () => build({ classes: [{ id: "warlock", level: 5, subclass: null }], level: 5 });
+
+  it("spends the level the slot was thrown from, not the spell's own", () => {
+    /* Upcasting is the whole reason a slot and a spell are different things:
+       a fireball from a fifth-level slot spends a fifth-level slot. */
+    const s = sheet(wizard());
+    s.act({ act: "cast", level: 5 });
+    expect(s.now().slots[5]).toBe(1);
+    expect(s.now().slots[3]).toBeUndefined();
+  });
+
+  it("gives every slot back on a long rest", () => {
+    /* Unlike hit dice, which come back by halves. */
+    const s = sheet(wizard());
+    s.act({ act: "cast", level: 1 });
+    s.act({ act: "cast", level: 3 });
+    s.act({ act: "rest", length: "long" });
+    expect(s.now().slots).toEqual({});
+  });
+
+  it("gives a warlock their pact back on a SHORT rest, and nobody else anything", () => {
+    /*
+     * V1's third finding, and the one that makes a warlock a warlock: "spell
+     * slots are not universally long-rest. Warlock pact slots come back on a
+     * short rest, so slots are modelled as a resource like any other rather
+     * than as a special case with an assumed occasion."
+     */
+    const w = sheet(warlock());
+    w.act({ act: "cast", level: 3, pact: true });
+    expect(w.now().pact).toBe(1);
+    w.act({ act: "rest", length: "short" });
+    expect(w.now().pact).toBe(0);
+
+    const m = sheet(wizard());
+    m.act({ act: "cast", level: 1 });
+    m.act({ act: "rest", length: "short" });
+    expect(m.now().slots[1]).toBe(1);
+  });
+
+  it("keeps the pact apart from the rest of the pool", () => {
+    const w = sheet(warlock());
+    w.act({ act: "cast", level: 3, pact: true });
+    w.act({ act: "cast", level: 3 });
+    expect(w.now().pact).toBe(1);
+    expect(w.now().slots[3]).toBe(1);
+  });
+});
